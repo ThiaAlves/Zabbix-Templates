@@ -1,0 +1,15 @@
+zabbix_export:
+  version: '5.4'
+  date: '2021-05-28T03:22:14Z'
+  groups:
+    -
+      uuid: 8e6f6f815b5044748f0dc22d4f400725
+      name: Teste
+  templates:
+    -
+      uuid: 71979c94746f43babcbb1b34a7eec0a6
+      template: 'Template ICMP Ping'
+      name: 'Template ICMP Ping'
+      groups:
+        -
+          name: Teste

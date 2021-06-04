@@ -1,0 +1,62 @@
+zabbix_export:
+  version: '5.2'
+  date: '2021-06-04T11:16:40Z'
+  groups:
+    -
+      name: Templates/Modules
+  templates:
+    -
+      template: 'Template App Zabbix Agent'
+      name: 'Template App Zabbix Agent'
+      groups:
+        -
+          name: Templates/Modules
+      applications:
+        -
+          name: 'Zabbix agent'
+      items:
+        -
+          name: 'Host name of zabbix_agentd running'
+          key: agent.hostname
+          delay: 1h
+          history: 1w
+          trends: '0'
+          value_type: CHAR
+          description: 'Nome do Host do Zabbix_agent em andamento'
+          applications:
+            -
+              name: 'Zabbix agent'
+          triggers:
+            -
+              expression: '{diff(0)}>0'
+              name: 'Host name of zabbix_agentd was changed on {HOST.NAME}'
+              priority: INFO
+        -
+          name: 'Agent ping'
+          key: agent.ping
+          history: 1w
+          description: 'The agent always returns 1 for this item. It could be used in combination with nodata() for availability check.'
+          applications:
+            -
+              name: 'Zabbix agent'
+          triggers:
+            -
+              expression: '{nodata(5m)}=1'
+              name: 'Zabbix agent on {HOST.NAME} is unreachable for 5 minutes'
+              priority: AVERAGE
+        -
+          name: 'Version of zabbix_agent(d) running'
+          key: agent.version
+          delay: 1h
+          history: 1w
+          trends: '0'
+          value_type: CHAR
+          description: 'Versão do Zabbix_agent em andamento'
+          applications:
+            -
+              name: 'Zabbix agent'
+          triggers:
+            -
+              expression: '{diff(0)}>0'
+              name: 'Version of zabbix_agent(d) was changed on {HOST.NAME}'
+              priority: INFO

@@ -1,0 +1,291 @@
+zabbix_export:
+  version: '5.4'
+  date: '2021-05-28T03:24:00Z'
+  groups:
+    -
+      uuid: 5cb6540e2363414b835d585baa6e27ed
+      name: 'Router Mikrotik'
+  templates:
+    -
+      uuid: cdc25f7d422841af9f2e31669bbced06
+      template: 'Template Mikrotik RB750-RB1100'
+      name: 'Template Mikrotik RB750-RB1100'
+      templates:
+        -
+          name: 'Template Module ICMP Ping'
+      groups:
+        -
+          name: 'Router Mikrotik'
+      items:
+        -
+          uuid: 55f320b8c0924477b271c6587c341b53
+          name: 'Clientes HOTSPOT'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.9.9.150.1.1.1.0
+          key: mikrotik.clientes.hotspot
+          units: Conexao
+          tags:
+            -
+              tag: Application
+              value: Conexão
+        -
+          uuid: 2a708f16149442029861a7f4cf14d118
+          name: 'CPU load'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.25.3.3.1.2.1
+          key: mikrotik.cpu.load
+          tags:
+            -
+              tag: Application
+              value: CPU
+        -
+          uuid: 165972893db943ad8d31a1a01eac5de7
+          name: 'System name'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.1.5.0
+          key: mikrotik.identity.name
+          delay: 1h
+          trends: '0'
+          value_type: CHAR
+          tags:
+            -
+              tag: Application
+              value: Geral
+        -
+          uuid: 940148c86d664bc9982305e6caf6622e
+          name: 'System temperature'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.14988.1.1.3.10.0
+          key: mikrotik.system.temperature
+          units: °C
+          preprocessing:
+            -
+              type: MULTIPLIER
+              parameters:
+                - '0.1'
+          tags:
+            -
+              tag: Application
+              value: Health
+        -
+          uuid: 2c8773214ebb4dc6b705c557b78f61bf
+          name: 'Total disk space'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.25.2.3.1.5.131073
+          key: mikrotik.total.disk.space
+          units: B
+          preprocessing:
+            -
+              type: MULTIPLIER
+              parameters:
+                - '1024'
+          tags:
+            -
+              tag: Application
+              value: Disk
+        -
+          uuid: a014fe0508cd4da6a8f655484ae92738
+          name: 'Total memory'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.25.2.3.1.5.65536
+          key: mikrotik.total.memory
+          units: B
+          preprocessing:
+            -
+              type: MULTIPLIER
+              parameters:
+                - '1024'
+          tags:
+            -
+              tag: Application
+              value: Memoria
+        -
+          uuid: 4bba27d9f90b4f81929e4d1a19ac2294
+          name: 'System uptime'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.1.3.0
+          key: mikrotik.uptime
+          units: uptime
+          preprocessing:
+            -
+              type: MULTIPLIER
+              parameters:
+                - '0.01'
+          tags:
+            -
+              tag: Application
+              value: Geral
+        -
+          uuid: 314f1b49e7ea403ea494140222dcfcca
+          name: 'Used disk space'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.25.2.3.1.6.131073
+          key: mikrotik.used.disk.space
+          units: B
+          preprocessing:
+            -
+              type: MULTIPLIER
+              parameters:
+                - '1024'
+          tags:
+            -
+              tag: Application
+              value: Disk
+        -
+          uuid: 6d4f1d9a95b8452583349202a1dfa575
+          name: 'Used memory'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.25.2.3.1.6.65536
+          key: mikrotik.used.memory
+          units: B
+          preprocessing:
+            -
+              type: MULTIPLIER
+              parameters:
+                - '1024'
+          tags:
+            -
+              tag: Application
+              value: Memoria
+        -
+          uuid: 203540129e6547f5aa263e82b4b9ecc7
+          name: 'System version and hw'
+          type: SNMP_AGENT
+          snmp_oid: iso.3.6.1.2.1.47.1.1.1.1.2.65536
+          key: mikrotik.version.and.hw
+          delay: 10m
+          trends: '0'
+          value_type: CHAR
+          tags:
+            -
+              tag: Application
+              value: Geral
+        -
+          uuid: 6d9375b18497490a812cf5ae8876a97a
+          name: Voltage
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.14988.1.1.3.8.0
+          key: mikrotik.voltage
+          units: V
+          preprocessing:
+            -
+              type: MULTIPLIER
+              parameters:
+                - '0.1'
+          tags:
+            -
+              tag: Application
+              value: Health
+      discovery_rules:
+        -
+          uuid: 9800fbe45a474413a8595dcae9ff4fe5
+          name: 'LLD Interfaces'
+          type: SNMP_AGENT
+          snmp_oid: 'discovery[{#IFDESCR},IF-MIB::ifDescr]'
+          key: ifDescr
+          item_prototypes:
+            -
+              uuid: 20d221b97cfb4ccdb1e9ad5f52d92734
+              name: 'Alias Interface $1'
+              type: SNMP_AGENT
+              snmp_oid: 'ifAlias.{#SNMPINDEX}'
+              key: 'ifAlias[{#IFDESCR}]'
+              delay: 10m
+              trends: '0'
+              value_type: CHAR
+              tags:
+                -
+                  tag: Application
+                  value: 'Discovery Network'
+            -
+              uuid: e643af3c29404bfbb90c6e1070caca30
+              name: 'In-Erros Interface $1'
+              type: SNMP_AGENT
+              snmp_oid: 'ifInErrors.{#SNMPINDEX}'
+              key: 'ifInErrors[{#IFDESCR}]'
+              preprocessing:
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+              tags:
+                -
+                  tag: Application
+                  value: 'Discovery Network'
+            -
+              uuid: 7492f14358bf497abd3c9f4117ce0cb8
+              name: 'Inbound Interface $1'
+              type: SNMP_AGENT
+              snmp_oid: 'ifInOctets.{#SNMPINDEX}'
+              key: 'ifInOctets[{#SNMPVALUE}]'
+              units: bps
+              preprocessing:
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '8'
+              tags:
+                -
+                  tag: Application
+                  value: 'Discovery Network'
+            -
+              uuid: c7fa71e86680431b84b46da72ce7f5e6
+              name: 'Operacional Status Interface $1'
+              type: SNMP_AGENT
+              snmp_oid: 'ifOperStatus.{#SNMPINDEX}'
+              key: 'ifOperStatus[{#IFDESCR}]'
+              preprocessing:
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+              tags:
+                -
+                  tag: Application
+                  value: 'Discovery Network'
+              trigger_prototypes:
+                -
+                  uuid: 2a905beb59d1426bbc71014ff731707d
+                  expression: '(last(/Template Mikrotik RB750-RB1100/ifOperStatus[{#IFDESCR}],#1)<>last(/Template Mikrotik RB750-RB1100/ifOperStatus[{#IFDESCR}],#2))=1'
+                  name: 'Status Operacional Alterado {HOST.HOST} Interface {#IFDESCR}'
+                  priority: INFO
+                  description: 'Last value: {ITEM.LASTVALUE1}.'
+            -
+              uuid: a6e48907bec1423bb61cf67fcc7dde3a
+              name: 'Out-Erros Interface $1'
+              type: SNMP_AGENT
+              snmp_oid: 'ifOutErrors.{#SNMPINDEX}'
+              key: 'ifOuterrors[{#IFDESCR}]'
+              preprocessing:
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+              tags:
+                -
+                  tag: Application
+                  value: 'Discovery Network'
+            -
+              uuid: b1f6a15e22cb4712877072ef23012e3d
+              name: 'Outbound Interface $1'
+              type: SNMP_AGENT
+              snmp_oid: 'ifOutOctets.{#SNMPINDEX}'
+              key: 'ifOutOctets[{#IFDESCR}]'
+              units: bps
+              preprocessing:
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '8'
+              tags:
+                -
+                  tag: Application
+                  value: 'Discovery Network'

@@ -1,0 +1,158 @@
+zabbix_export:
+  version: '5.4'
+  date: '2021-05-28T03:55:43Z'
+  groups:
+    -
+      uuid: 57b7ae836ca64446ba2c296389c009b7
+      name: Templates/Modules
+  templates:
+    -
+      uuid: 6dd37a415f4c40aa960d7ba91b6b5143
+      template: 'Windows generic by Zabbix agent active'
+      name: 'Windows generic by Zabbix agent active'
+      description: 'Template tooling version used: 0.38'
+      groups:
+        -
+          name: Templates/Modules
+      items:
+        -
+          uuid: 09ff6e03432f4db58e5f43697d0333e8
+          name: 'Number of threads'
+          type: ZABBIX_ACTIVE
+          key: 'perf_counter_en["\System\Threads"]'
+          history: 7d
+          description: 'The number of threads used by all running processes.'
+          tags:
+            -
+              tag: Application
+              value: General
+        -
+          uuid: 665093a48f39404e9ae3221657a5e962
+          name: 'Number of processes'
+          type: ZABBIX_ACTIVE
+          key: 'proc.num[]'
+          history: 7d
+          description: 'The number of processes.'
+          tags:
+            -
+              tag: Application
+              value: General
+        -
+          uuid: 73b821a638a74e6d86be642952d2d6fe
+          name: 'System name'
+          type: ZABBIX_ACTIVE
+          key: system.hostname
+          delay: 1h
+          history: 2w
+          trends: '0'
+          value_type: CHAR
+          description: 'System host name.'
+          inventory_link: NAME
+          preprocessing:
+            -
+              type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1d
+          tags:
+            -
+              tag: Application
+              value: General
+          triggers:
+            -
+              uuid: 2f5aa644755c4d18a3eafc74bde2d3ad
+              expression: '(last(/Windows generic by Zabbix agent active/system.hostname,#1)<>last(/Windows generic by Zabbix agent active/system.hostname,#2))=1 and length(last(/Windows generic by Zabbix agent active/system.hostname))>0'
+              name: 'System name has changed (new name: {ITEM.VALUE})'
+              priority: INFO
+              description: |
+                System name has changed. Ack to close.
+                Last value: {ITEM.LASTVALUE1}.
+              manual_close: 'YES'
+        -
+          uuid: 78f2089b58f54042ac70fd9ac3b2aa7e
+          name: 'System local time'
+          key: system.localtime
+          history: 7d
+          status: DISABLED
+          units: unixtime
+          description: 'System local time of the host.'
+          tags:
+            -
+              tag: Application
+              value: General
+          triggers:
+            -
+              uuid: ed8075fd5332427ca0f9b56d55f4912b
+              expression: 'fuzzytime(/Windows generic by Zabbix agent active/system.localtime,{$SYSTEM.FUZZYTIME.MAX})=0'
+              name: 'System time is out of sync (diff with Zabbix server > {$SYSTEM.FUZZYTIME.MAX}s)'
+              priority: WARNING
+              description: |
+                The host system time is different from the Zabbix server time.
+                Last value: {ITEM.LASTVALUE1}.
+              manual_close: 'YES'
+        -
+          uuid: 0522b89bdee248c5aad6ff77d9a68311
+          name: 'Operating system architecture'
+          type: ZABBIX_ACTIVE
+          key: system.sw.arch
+          delay: 1h
+          history: 2w
+          trends: '0'
+          value_type: CHAR
+          description: 'Operating system architecture of the host.'
+          preprocessing:
+            -
+              type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1d
+          tags:
+            -
+              tag: Application
+              value: Inventory
+        -
+          uuid: 383c3f59afee455d8981fe85e46c94dd
+          name: 'System description'
+          type: ZABBIX_ACTIVE
+          key: system.uname
+          delay: 1h
+          history: 2w
+          trends: '0'
+          value_type: CHAR
+          description: 'System description of the host.'
+          preprocessing:
+            -
+              type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1d
+          tags:
+            -
+              tag: Application
+              value: General
+        -
+          uuid: e5342587828d40ed8feafdccdd6d92e3
+          name: Uptime
+          type: ZABBIX_ACTIVE
+          key: system.uptime
+          delay: 30s
+          history: 2w
+          trends: 0d
+          units: uptime
+          description: 'System uptime in ''N days, hh:mm:ss'' format.'
+          tags:
+            -
+              tag: Application
+              value: Status
+          triggers:
+            -
+              uuid: 13f9c722d9664d988a97a1c8123ad17a
+              expression: 'last(/Windows generic by Zabbix agent active/system.uptime)<10m'
+              name: 'Host has been restarted (uptime < 10m)'
+              priority: WARNING
+              description: |
+                The device uptime is less than 10 minutes.
+                Last value: {ITEM.LASTVALUE1}.
+              manual_close: 'YES'
+      macros:
+        -
+          macro: '{$SYSTEM.FUZZYTIME.MAX}'
+          value: '60'
+          description: 'The threshold for difference of system time in seconds.'

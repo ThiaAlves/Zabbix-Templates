@@ -1,0 +1,881 @@
+zabbix_export:
+  version: '5.2'
+  date: '2021-06-04T11:23:19Z'
+  groups:
+    -
+      name: 'Templates/Operating systems'
+  templates:
+    -
+      template: 'Template OS Linux'
+      name: 'Template OS Linux'
+      groups:
+        -
+          name: 'Templates/Operating systems'
+      applications:
+        -
+          name: Apache
+        -
+          name: CPU
+        -
+          name: Filesystems
+        -
+          name: General
+        -
+          name: Memory
+        -
+          name: 'Network interfaces'
+        -
+          name: OS
+        -
+          name: Performance
+        -
+          name: Processes
+        -
+          name: Security
+        -
+          name: 'Zabbix agent'
+      items:
+        -
+          name: 'Host name of zabbix_agentd running'
+          key: agent.hostname
+          delay: 1h
+          trends: '0'
+          value_type: CHAR
+          description: 'Nome do host do zabbix_agent em andamento'
+          applications:
+            -
+              name: 'Zabbix agent'
+          triggers:
+            -
+              expression: '{diff(0)}>0'
+              name: 'Host name of zabbix_agentd was changed on {HOST.HOST}'
+              priority: INFO
+              description: |
+                Zabbix_agentd was changed.
+                New hostname: {ITEM.LASTVALUE1}.
+        -
+          name: 'Agent ping'
+          key: agent.ping
+          description: 'Retorno de disponibilidade do agente Zabbix'
+          applications:
+            -
+              name: 'Zabbix agent'
+          valuemap:
+            name: 'Zabbix Agent Status'
+          triggers:
+            -
+              expression: '{nodata(5m)}=1'
+              name: 'Zabbix agent on {HOST.HOST} is unreachable for 5 minutes'
+              priority: AVERAGE
+              description: |
+                Zabbix agent no data in 5 minutes.
+                Last value: {ITEM.LASTVALUE1}.
+        -
+          name: 'Version of zabbix_agent(d) running'
+          key: agent.version
+          delay: 1h
+          trends: '0'
+          value_type: CHAR
+          description: 'Versão do agente zabbix em andamento'
+          applications:
+            -
+              name: 'Zabbix agent'
+          triggers:
+            -
+              expression: '{diff(0)}>0'
+              name: 'Version of zabbix_agent(d) was changed on {HOST.HOST}'
+              priority: INFO
+              description: |
+                Zabbix_agent version changed.
+                Last value: {ITEM.LASTVALUE1}.
+        -
+          name: 'Maximum number of opened files'
+          key: kernel.maxfiles
+          delay: 1h
+          history: 1w
+          description: 'Número máximo de arquivos abertos.'
+          applications:
+            -
+              name: OS
+          triggers:
+            -
+              expression: '{last(0)}<1024'
+              name: 'Configured max number of opened files is too low on {HOST.NAME}'
+              priority: INFO
+              description: |
+                Number of max files opened is too low, less than 1024.
+                Last value: {ITEM.LASTVALUE1}.
+        -
+          name: 'Maximum number of processes'
+          key: kernel.maxproc
+          delay: 1h
+          history: 1w
+          description: 'Número máximo de processos'
+          applications:
+            -
+              name: OS
+          triggers:
+            -
+              expression: '{last(0)}<256'
+              name: 'Configured max number of processes is too low on {HOST.NAME}'
+              priority: INFO
+              description: |
+                Number of max processes configured is too low, less than 256.
+                Last value: {ITEM.LASTVALUE1}.
+        -
+          name: 'Number of running processes'
+          key: 'proc.num[,,run]'
+          history: 1w
+          description: 'Número de processos em andamento'
+          applications:
+            -
+              name: Processes
+          triggers:
+            -
+              expression: '{avg(5m)}>300'
+              name: 'Too many processes running on {HOST.NAME}'
+              priority: WARNING
+              description: |
+                Processes in running more than 300.
+                Last value: {ITEM.LASTVALUE1}.
+        -
+          name: 'Number of processes'
+          key: 'proc.num[]'
+          history: 1w
+          description: 'Total number of processes in any state.'
+          applications:
+            -
+              name: Processes
+          triggers:
+            -
+              expression: '{avg(5m)}>750'
+              name: 'Too many processes on {HOST.NAME}'
+              priority: WARNING
+              description: |
+                Processes more than 750.
+                Last value: {ITEM.LASTVALUE1}.
+        -
+          name: 'Host boot time'
+          key: system.boottime
+          delay: 10m
+          history: 1w
+          units: unixtime
+          description: 'Tempo do boot'
+          applications:
+            -
+              name: General
+            -
+              name: OS
+        -
+          name: 'Interrupts per second'
+          key: system.cpu.intr
+          history: 1w
+          units: ips
+          description: 'Interrupções por segundo'
+          applications:
+            -
+              name: CPU
+            -
+              name: Performance
+          preprocessing:
+            -
+              type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+        -
+          name: 'Processor load (1 min average per core)'
+          key: 'system.cpu.load[percpu,avg1]'
+          delay: 5s
+          history: 1w
+          value_type: FLOAT
+          description: 'Média da carga do processador em 1 minuto'
+          applications:
+            -
+              name: CPU
+            -
+              name: Performance
+          triggers:
+            -
+              expression: '{avg(5m)}>5'
+              name: 'Processor load is too high on {HOST.NAME}'
+              priority: WARNING
+              description: |
+                Processor load more than 5.
+                Last value: {ITEM.LASTVALUE1}.
+        -
+          name: 'Processor load (5 min average per core)'
+          key: 'system.cpu.load[percpu,avg5]'
+          delay: 5s
+          history: 1w
+          value_type: FLOAT
+          description: 'Média da carga do processador em 5 minutos'
+          applications:
+            -
+              name: CPU
+            -
+              name: Performance
+        -
+          name: 'Processor load (15 min average per core)'
+          key: 'system.cpu.load[percpu,avg15]'
+          delay: 5s
+          history: 1w
+          value_type: FLOAT
+          description: 'Média da carga do processador em 15 minutos'
+          applications:
+            -
+              name: CPU
+            -
+              name: Performance
+        -
+          name: 'Context switches per second'
+          key: system.cpu.switches
+          history: 1w
+          units: sps
+          description: 'Mudanças de contexto por segundo'
+          applications:
+            -
+              name: CPU
+            -
+              name: Performance
+          preprocessing:
+            -
+              type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+        -
+          name: 'CPU guest time'
+          key: 'system.cpu.util[,guest]'
+          history: 1w
+          value_type: FLOAT
+          units: '%'
+          description: 'O tempo gasto em andamento de máquinas virtuais para sistemas convidados.'
+          applications:
+            -
+              name: CPU
+            -
+              name: Performance
+        -
+          name: 'CPU guest nice time'
+          key: 'system.cpu.util[,guest_nice]'
+          history: 1w
+          value_type: FLOAT
+          units: '%'
+          description: 'O tempo útil de Utilização da CPU em porcentagem.'
+          applications:
+            -
+              name: CPU
+            -
+              name: Performance
+        -
+          name: 'CPU idle time'
+          key: 'system.cpu.util[,idle]'
+          history: 1w
+          value_type: FLOAT
+          units: '%'
+          description: 'O tempo em porcentagem que a CPU passa sem executar nenhum processo.'
+          applications:
+            -
+              name: CPU
+            -
+              name: Performance
+        -
+          name: 'CPU interrupt time'
+          key: 'system.cpu.util[,interrupt]'
+          history: 1w
+          value_type: FLOAT
+          units: '%'
+          description: 'O tempo em porcentagem que o CPU é interrompido pelo hardware.'
+          applications:
+            -
+              name: CPU
+            -
+              name: Performance
+        -
+          name: 'CPU iowait time'
+          key: 'system.cpu.util[,iowait]'
+          history: 1w
+          value_type: FLOAT
+          units: '%'
+          description: 'O tempo que a CPU está em modo de espera.'
+          applications:
+            -
+              name: CPU
+            -
+              name: Performance
+          triggers:
+            -
+              expression: '{avg(5m)}>20'
+              name: 'Disk I/O is overloaded on {HOST.NAME}'
+              priority: WARNING
+              description: 'OS spends significant time waiting for I/O (input/output) operations. It could be indicator of performance issues with storage system.'
+        -
+          name: 'CPU nice time'
+          key: 'system.cpu.util[,nice]'
+          history: 1w
+          value_type: FLOAT
+          units: '%'
+          description: 'O tempo gasto da CPU para executar bons processos.'
+          applications:
+            -
+              name: CPU
+            -
+              name: Performance
+        -
+          name: 'CPU softirq time'
+          key: 'system.cpu.util[,softirq]'
+          history: 1w
+          value_type: FLOAT
+          units: '%'
+          description: 'O tempo de interrupção da CPU por serviços de software.'
+          applications:
+            -
+              name: CPU
+            -
+              name: Performance
+        -
+          name: 'CPU steal time'
+          key: 'system.cpu.util[,steal]'
+          history: 1w
+          value_type: FLOAT
+          units: '%'
+          description: 'The amount of CPU ''stolen'' from this virtual machine by the hypervisor for other tasks (such as running another virtual machine).'
+          applications:
+            -
+              name: CPU
+            -
+              name: Performance
+        -
+          name: 'CPU system time'
+          key: 'system.cpu.util[,system]'
+          history: 1w
+          value_type: FLOAT
+          units: '%'
+          description: 'O tempo gasto pela CPU com processos envolvendo o kernel'
+          applications:
+            -
+              name: CPU
+            -
+              name: Performance
+        -
+          name: 'CPU user time'
+          key: 'system.cpu.util[,user]'
+          history: 1w
+          value_type: FLOAT
+          units: '%'
+          description: 'O tempo gasto pela CPU por processos do usuário que não são produtivos.'
+          applications:
+            -
+              name: CPU
+            -
+              name: Performance
+        -
+          name: 'Host name'
+          key: system.hostname
+          delay: 1h
+          history: 1w
+          trends: '0'
+          value_type: CHAR
+          description: 'Nome do host'
+          inventory_link: NAME
+          applications:
+            -
+              name: General
+            -
+              name: OS
+          triggers:
+            -
+              expression: '{diff(0)}>0'
+              name: 'Hostname was changed on {HOST.NAME}'
+              priority: INFO
+        -
+          name: 'Host local time'
+          key: system.localtime
+          history: 1w
+          units: unixtime
+          description: 'Horário local do host'
+          applications:
+            -
+              name: General
+            -
+              name: OS
+        -
+          name: 'Free swap space'
+          key: 'system.swap.size[,free]'
+          history: 1w
+          units: B
+          description: 'Memória swap livre'
+          applications:
+            -
+              name: Memory
+        -
+          name: 'Free swap space in %'
+          key: 'system.swap.size[,pfree]'
+          history: 1w
+          value_type: FLOAT
+          units: '%'
+          description: 'Memória swap livre em porcentagem'
+          applications:
+            -
+              name: Memory
+          triggers:
+            -
+              expression: '{last(0)}<20'
+              name: 'Lack of free swap space on {HOST.NAME}'
+              priority: WARNING
+              description: |
+                It probably means that the systems requires more physical memory.
+                Last value: {ITEM.LASTVALUE1}.
+        -
+          name: 'Total swap space'
+          key: 'system.swap.size[,total]'
+          delay: 1h
+          history: 1w
+          units: B
+          description: 'Memória Swap Total'
+          applications:
+            -
+              name: Memory
+        -
+          name: 'System information'
+          key: system.uname
+          delay: 1h
+          history: 1w
+          trends: '0'
+          value_type: CHAR
+          description: 'Informação do Sistema'
+          inventory_link: OS
+          applications:
+            -
+              name: General
+            -
+              name: OS
+          triggers:
+            -
+              expression: '{diff(0)}>0'
+              name: 'Host information was changed on {HOST.NAME}'
+              priority: INFO
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          name: 'System uptime'
+          key: system.uptime
+          delay: 10m
+          history: 1w
+          units: uptime
+          description: 'Tempo do sistema ligado'
+          applications:
+            -
+              name: General
+            -
+              name: OS
+          triggers:
+            -
+              expression: '{last()}<10m'
+              name: '{HOST.NAME} has just been restarted'
+              priority: INFO
+              description: |
+                Host restarted uptime with changed.
+                Last value: {ITEM.LASTVALUE1}.
+        -
+          name: 'Number of logged in users'
+          key: system.users.num
+          history: 1w
+          description: 'Number of users who are currently logged in.'
+          applications:
+            -
+              name: OS
+            -
+              name: Security
+        -
+          name: 'Checksum of /etc/apache2/apache2.conf'
+          key: 'vfs.file.cksum[/etc/apache2/apache2.conf]'
+          delay: 1h
+          history: 1w
+          status: DISABLED
+          applications:
+            -
+              name: Security
+        -
+          name: 'Checksum of /etc/passwd'
+          key: 'vfs.file.cksum[/etc/passwd]'
+          delay: 1h
+          history: 1w
+          status: DISABLED
+          applications:
+            -
+              name: Security
+          triggers:
+            -
+              expression: '{diff(0)}>0'
+              name: '/etc/passwd has been changed on {HOST.NAME}'
+              priority: WARNING
+        -
+          name: 'Available memory'
+          key: 'vm.memory.size[available]'
+          history: 1w
+          units: B
+          description: 'Available memory is defined as free+cached+buffers memory.'
+          applications:
+            -
+              name: Memory
+          triggers:
+            -
+              expression: '{last(0)}<20M'
+              name: 'Lack of available memory on server {HOST.NAME}'
+              priority: AVERAGE
+              description: |
+                Memory available less than 20M.
+                Last value: {ITEM.LASTVALUE1}.
+        -
+          name: 'Total memory'
+          key: 'vm.memory.size[total]'
+          delay: 1h
+          history: 1w
+          units: B
+          description: 'Memória total'
+          applications:
+            -
+              name: Memory
+      discovery_rules:
+        -
+          name: 'Network interface discovery'
+          key: net.if.discovery
+          delay: 1h
+          filter:
+            conditions:
+              -
+                macro: '{#IFNAME}'
+                value: '@Network interfaces for discovery'
+                formulaid: A
+          description: 'Discovery of network interfaces as defined in global regular expression "Network interfaces for discovery".'
+          item_prototypes:
+            -
+              name: 'Incoming network traffic on {#IFNAME}'
+              key: 'net.if.in[{#IFNAME}]'
+              history: 1w
+              units: bps
+              description: 'Tráfego de entrada na interface'
+              applications:
+                -
+                  name: 'Network interfaces'
+              preprocessing:
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '8'
+            -
+              name: 'Outgoing network traffic on {#IFNAME}'
+              key: 'net.if.out[{#IFNAME}]'
+              history: 1w
+              units: bps
+              description: 'Tráfego de saída na interface'
+              applications:
+                -
+                  name: 'Network interfaces'
+              preprocessing:
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '8'
+          graph_prototypes:
+            -
+              name: 'Network traffic on {#IFNAME}'
+              ymin_type_1: FIXED
+              graph_items:
+                -
+                  drawtype: GRADIENT_LINE
+                  color: 00AA00
+                  item:
+                    host: 'Template OS Linux'
+                    key: 'net.if.in[{#IFNAME}]'
+                -
+                  sortorder: '1'
+                  drawtype: GRADIENT_LINE
+                  color: 3333FF
+                  item:
+                    host: 'Template OS Linux'
+                    key: 'net.if.out[{#IFNAME}]'
+        -
+          name: 'Mounted filesystem discovery'
+          key: vfs.fs.discovery
+          delay: 1h
+          filter:
+            conditions:
+              -
+                macro: '{#FSTYPE}'
+                value: '@File systems for discovery'
+                formulaid: A
+          description: 'Discovery of file systems of different types as defined in global regular expression "File systems for discovery".'
+          item_prototypes:
+            -
+              name: 'Free inodes on {#FSNAME} (percentage)'
+              key: 'vfs.fs.inode[{#FSNAME},pfree]'
+              history: 1w
+              value_type: FLOAT
+              units: '%'
+              applications:
+                -
+                  name: Filesystems
+              trigger_prototypes:
+                -
+                  expression: '{last(0)}<20'
+                  name: 'Free inodes is less than 20% on volume {#FSNAME}'
+                  priority: WARNING
+                  description: 'Last value: {ITEM.LASTVALUE1}.'
+            -
+              name: 'Free disk space on {#FSNAME}'
+              key: 'vfs.fs.size[{#FSNAME},free]'
+              history: 1w
+              units: B
+              description: 'Espaço livre no disco'
+              applications:
+                -
+                  name: Filesystems
+            -
+              name: 'Free disk space on {#FSNAME} (percentage)'
+              key: 'vfs.fs.size[{#FSNAME},pfree]'
+              history: 1w
+              value_type: FLOAT
+              units: '%'
+              description: 'Espaço livre no disco em porcentagem'
+              applications:
+                -
+                  name: Filesystems
+              trigger_prototypes:
+                -
+                  expression: '{last(0)}<20'
+                  name: 'Free disk space is less than 20% on volume {#FSNAME}'
+                  priority: WARNING
+                  description: 'Last value: {ITEM.LASTVALUE1}.'
+            -
+              name: 'Total disk space on {#FSNAME}'
+              key: 'vfs.fs.size[{#FSNAME},total]'
+              delay: 1h
+              history: 1w
+              units: B
+              description: 'Espaço total no disco'
+              applications:
+                -
+                  name: Filesystems
+            -
+              name: 'Used disk space on {#FSNAME}'
+              key: 'vfs.fs.size[{#FSNAME},used]'
+              history: 1w
+              units: B
+              description: 'Espaço usado no disco'
+              applications:
+                -
+                  name: Filesystems
+          graph_prototypes:
+            -
+              name: 'Disk space usage {#FSNAME}'
+              width: '600'
+              height: '340'
+              show_work_period: 'NO'
+              show_triggers: 'NO'
+              type: PIE
+              show_3d: 'YES'
+              graph_items:
+                -
+                  color: C80000
+                  type: GRAPH_SUM
+                  item:
+                    host: 'Template OS Linux'
+                    key: 'vfs.fs.size[{#FSNAME},total]'
+                -
+                  sortorder: '1'
+                  color: 00C800
+                  item:
+                    host: 'Template OS Linux'
+                    key: 'vfs.fs.size[{#FSNAME},free]'
+      dashboards:
+        -
+          name: 'System performance'
+          widgets:
+            -
+              type: GRAPH_CLASSIC
+              width: '12'
+              height: '5'
+              fields:
+                -
+                  type: INTEGER
+                  name: source_type
+                  value: '1'
+                -
+                  type: ITEM
+                  name: itemid
+                  value:
+                    key: 'proc.num[]'
+                    host: 'Template OS Linux'
+            -
+              type: GRAPH_CLASSIC
+              x: '12'
+              width: '12'
+              height: '5'
+              fields:
+                -
+                  type: INTEGER
+                  name: source_type
+                  value: '1'
+                -
+                  type: ITEM
+                  name: itemid
+                  value:
+                    key: 'proc.num[,,run]'
+                    host: 'Template OS Linux'
+  graphs:
+    -
+      name: 'Check arquivos'
+      graph_items:
+        -
+          sortorder: '1'
+          color: 199C0D
+          item:
+            host: 'Template OS Linux'
+            key: 'vfs.file.cksum[/etc/apache2/apache2.conf]'
+        -
+          sortorder: '2'
+          color: F63100
+          item:
+            host: 'Template OS Linux'
+            key: 'vfs.file.cksum[/etc/passwd]'
+    -
+      name: 'CPU jumps'
+      graph_items:
+        -
+          sortorder: '1'
+          color: 199C0D
+          item:
+            host: 'Template OS Linux'
+            key: system.cpu.switches
+        -
+          sortorder: '2'
+          color: F63100
+          item:
+            host: 'Template OS Linux'
+            key: system.cpu.intr
+    -
+      name: 'CPU load'
+      graph_items:
+        -
+          sortorder: '1'
+          color: 199C0D
+          item:
+            host: 'Template OS Linux'
+            key: 'system.cpu.load[percpu,avg1]'
+        -
+          sortorder: '2'
+          color: F63100
+          item:
+            host: 'Template OS Linux'
+            key: 'system.cpu.load[percpu,avg5]'
+        -
+          sortorder: '3'
+          color: 2774A4
+          item:
+            host: 'Template OS Linux'
+            key: 'system.cpu.load[percpu,avg15]'
+    -
+      name: 'CPU utilization'
+      graph_items:
+        -
+          sortorder: '1'
+          color: 199C0D
+          item:
+            host: 'Template OS Linux'
+            key: 'system.cpu.util[,guest_nice]'
+        -
+          sortorder: '2'
+          color: F63100
+          item:
+            host: 'Template OS Linux'
+            key: 'system.cpu.util[,guest]'
+        -
+          sortorder: '3'
+          color: 2774A4
+          item:
+            host: 'Template OS Linux'
+            key: 'system.cpu.util[,idle]'
+        -
+          sortorder: '4'
+          color: F7941D
+          item:
+            host: 'Template OS Linux'
+            key: 'system.cpu.util[,interrupt]'
+        -
+          sortorder: '5'
+          color: FC6EA3
+          item:
+            host: 'Template OS Linux'
+            key: 'system.cpu.util[,iowait]'
+        -
+          sortorder: '6'
+          color: 6C59DC
+          item:
+            host: 'Template OS Linux'
+            key: 'system.cpu.util[,nice]'
+        -
+          sortorder: '7'
+          color: C7A72D
+          item:
+            host: 'Template OS Linux'
+            key: 'system.cpu.util[,softirq]'
+        -
+          sortorder: '8'
+          color: BA2A5D
+          item:
+            host: 'Template OS Linux'
+            key: 'system.cpu.util[,steal]'
+        -
+          sortorder: '9'
+          color: F230E0
+          item:
+            host: 'Template OS Linux'
+            key: 'system.cpu.util[,system]'
+        -
+          sortorder: '10'
+          color: 5CCD18
+          item:
+            host: 'Template OS Linux'
+            key: 'system.cpu.util[,user]'
+    -
+      name: 'Memory usage'
+      graph_items:
+        -
+          sortorder: '1'
+          color: 199C0D
+          item:
+            host: 'Template OS Linux'
+            key: 'vm.memory.size[available]'
+    -
+      name: 'Swap usage'
+      graph_items:
+        -
+          sortorder: '1'
+          color: 199C0D
+          item:
+            host: 'Template OS Linux'
+            key: 'system.swap.size[,free]'
+        -
+          sortorder: '2'
+          color: F63100
+          item:
+            host: 'Template OS Linux'
+            key: 'system.swap.size[,total]'
+  value_maps:
+    -
+      name: 'Zabbix Agent Status'
+      mappings:
+        -
+          value: '0'
+          newvalue: Down
+        -
+          value: '1'
+          newvalue: Up

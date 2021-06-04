@@ -1,0 +1,96 @@
+zabbix_export:
+  version: '5.4'
+  date: '2021-05-28T02:54:59Z'
+  groups:
+    -
+      uuid: 7a30cc467fb04aeea42dac7935a26c81
+      name: CFTV
+  templates:
+    -
+      uuid: a74ab49d08a746f7931a429aa78e2f0c
+      template: 'NVR INTELBRAS'
+      name: 'NVR INTELBRAS'
+      templates:
+        -
+          name: 'Template Module ICMP Ping'
+      groups:
+        -
+          name: CFTV
+      items:
+        -
+          uuid: 7a4d1d6ae66040e08e2bbef97c6894ea
+          name: 'CH1 status'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.3.1.1.1.2.1.10.1.1.253
+          key: ch_1_status
+          tags:
+            -
+              tag: Application
+              value: CANAIS
+        -
+          uuid: 303f4518f6a34207b6802bf60560c9fe
+          name: 'CH2 status'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.3.1.1.1.2.1.10.1.1.254
+          key: ch_2_status
+          tags:
+            -
+              tag: Application
+              value: CANAIS
+        -
+          uuid: a3d2ae6aaba3460493857f4d94edef9f
+          name: 'interface eth input'
+          type: SNMP_AGENT
+          snmp_oid: ifInOctets.2
+          key: interface_eth_band
+          units: bps
+          tags:
+            -
+              tag: Application
+              value: GERAL
+        -
+          uuid: 58e04429d69d42b7b82ae91eb4cc0026
+          name: 'Interface eth out'
+          type: SNMP_AGENT
+          snmp_oid: ifOutOctets.2
+          key: interface_eth_out
+          units: bps
+          tags:
+            -
+              tag: Application
+              value: GERAL
+        -
+          uuid: 5a753c8c86f34d8fb099e2e805fb5d12
+          name: 'Interface Eth Status'
+          type: SNMP_AGENT
+          snmp_oid: ifAdminStatus.2
+          key: interface_status
+          tags:
+            -
+              tag: Application
+              value: GERAL
+        -
+          uuid: ed64ab4cd81440b7825279d0ab3b4295
+          name: 'Device Contact Details'
+          type: SNMP_AGENT
+          snmp_oid: sysContact.0
+          key: sysContact
+          delay: 1h
+          trends: '0'
+          value_type: CHAR
+          tags:
+            -
+              tag: Application
+              value: GERAL
+        -
+          uuid: fdcaec8a9fd34376bda7e0e74ddec0c9
+          name: 'Device Uptime'
+          type: SNMP_AGENT
+          snmp_oid: sysUpTime.0
+          key: system_uptime
+          delay: 5m
+          units: uptime
+          tags:
+            -
+              tag: Application
+              value: GERAL

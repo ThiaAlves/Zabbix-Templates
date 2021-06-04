@@ -1,0 +1,117 @@
+zabbix_export:
+  version: '5.4'
+  date: '2021-05-28T04:01:28Z'
+  groups:
+    -
+      uuid: 57b7ae836ca64446ba2c296389c009b7
+      name: Templates/Modules
+  templates:
+    -
+      uuid: dfd6f32510a840c29f9cb4b974977770
+      template: 'Windows services by Zabbix agent'
+      name: 'Windows services by Zabbix agent'
+      description: |
+        Template Services OS Windows
+        
+        Template tooling version used: 0.38
+      groups:
+        -
+          name: Templates/Modules
+      discovery_rules:
+        -
+          uuid: d4fb5efff5494013b452e5a47ac265f5
+          name: 'Windows services discovery'
+          key: service.discovery
+          delay: 1h
+          filter:
+            evaltype: AND
+            conditions:
+              -
+                macro: '{#SERVICE.NAME}'
+                value: '{$SERVICE.NAME.MATCHES}'
+                formulaid: A
+              -
+                macro: '{#SERVICE.NAME}'
+                value: '{$SERVICE.NAME.NOT_MATCHES}'
+                operator: NOT_MATCHES_REGEX
+                formulaid: B
+              -
+                macro: '{#SERVICE.STARTUPNAME}'
+                value: '{$SERVICE.STARTUPNAME.MATCHES}'
+                formulaid: C
+              -
+                macro: '{#SERVICE.STARTUPNAME}'
+                value: '{$SERVICE.STARTUPNAME.NOT_MATCHES}'
+                operator: NOT_MATCHES_REGEX
+                formulaid: D
+          description: 'Discovery of Windows services of different types as defined in template''s macros.'
+          item_prototypes:
+            -
+              uuid: 934d8e7f237d42739e880803f02f0da9
+              name: 'State of service "{#SERVICE.NAME}" ({#SERVICE.DISPLAYNAME})'
+              key: 'service.info["{#SERVICE.NAME}",state]'
+              history: 7d
+              valuemap:
+                name: 'Windows service state'
+              tags:
+                -
+                  tag: Application
+                  value: Services
+              trigger_prototypes:
+                -
+                  uuid: 9fab20eab61d48c09682fe5c142cc917
+                  expression: 'min(/Windows services by Zabbix agent/service.info["{#SERVICE.NAME}",state],#3)<>0'
+                  name: '"{#SERVICE.NAME}" ({#SERVICE.DISPLAYNAME}) is not running (startup type {#SERVICE.STARTUPNAME})'
+                  priority: AVERAGE
+                  description: |
+                    The service has a state other than "Running" for the last three times.
+                    Last value: {ITEM.LASTVALUE1}.
+      macros:
+        -
+          macro: '{$SERVICE.NAME.MATCHES}'
+          value: '^.*$'
+          description: 'This macro is used in Service discovery. Can be overridden on the host or linked template level.'
+        -
+          macro: '{$SERVICE.NAME.NOT_MATCHES}'
+          value: '^RemoteRegistry|MMCSS|gupdate|SysmonLog|clr_optimization_v.+|clr_optimization_v.+|sppsvc|gpsvc|Pml Driver HPZ12|Net Driver HPZ12|MapsBroker|IntelAudioService|Intel\(R\) TPM Provisioning Service|dbupdate|DoSvc$'
+          description: 'This macro is used in Service discovery. Can be overridden on the host or linked template level.'
+        -
+          macro: '{$SERVICE.STARTUPNAME.MATCHES}'
+          value: '^automatic|automatic delayed$'
+          description: 'This macro is used in Service discovery. Can be overridden on the host or linked template level.'
+        -
+          macro: '{$SERVICE.STARTUPNAME.NOT_MATCHES}'
+          value: ^manual|disabled$
+          description: 'This macro is used in Service discovery. Can be overridden on the host or linked template level.'
+      valuemaps:
+        -
+          uuid: 5d9a045df1df48daaa6752bd75f1681d
+          name: 'Windows service state'
+          mappings:
+            -
+              value: '0'
+              newvalue: Running
+            -
+              value: '1'
+              newvalue: Paused
+            -
+              value: '3'
+              newvalue: 'Pause pending'
+            -
+              value: '4'
+              newvalue: 'Continue pending'
+            -
+              value: '5'
+              newvalue: 'Stop pending'
+            -
+              value: '6'
+              newvalue: Stopped
+            -
+              value: '7'
+              newvalue: Unknown
+            -
+              value: '255'
+              newvalue: 'No such service'
+            -
+              value: '2'
+              newvalue: 'Start pending'

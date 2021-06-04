@@ -1,0 +1,538 @@
+zabbix_export:
+  version: '5.4'
+  date: '2021-05-28T03:48:39Z'
+  groups:
+    -
+      uuid: a571c0d144b14fd4a87a9d9b2aa9fcd6
+      name: Templates/Applications
+  templates:
+    -
+      uuid: 5899b2f0aced4085b5ac25d0461b3425
+      template: 'VMware Hypervisor'
+      name: 'VMware Hypervisor'
+      description: 'Template tooling version used: 0.38'
+      templates:
+        -
+          name: 'VMware macros'
+      groups:
+        -
+          name: Templates/Applications
+      items:
+        -
+          uuid: 3010cb082f23478b858912f944347530
+          name: 'VMware: Hypervisor ping'
+          type: SIMPLE
+          key: 'icmpping[]'
+          history: 7d
+          description: 'Checks if the hypervisor is running and accepting ICMP pings.'
+          valuemap:
+            name: 'Service state'
+          preprocessing:
+            -
+              type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 10m
+          tags:
+            -
+              tag: Application
+              value: VMware
+          triggers:
+            -
+              uuid: ab84a61566a5402db59efd40d20714a5
+              expression: 'last(/VMware Hypervisor/icmpping[])=0'
+              name: 'VMware: Hypervisor is down'
+              priority: AVERAGE
+              description: |
+                The service is unavailable or does not accept ICMP ping.
+                Last value: {ITEM.LASTVALUE1}.
+              manual_close: 'YES'
+        -
+          uuid: af4d0877fda84753816c817ad76162f1
+          name: 'VMware: Cluster name'
+          type: SIMPLE
+          key: 'vmware.hv.cluster.name[{$VMWARE.URL},{$VMWARE.HV.UUID}]'
+          delay: 1h
+          history: 7d
+          trends: '0'
+          value_type: CHAR
+          username: '{$VMWARE.USERNAME}'
+          password: '{$VMWARE.PASSWORD}'
+          description: 'Cluster name of the guest VM.'
+          preprocessing:
+            -
+              type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1d
+          tags:
+            -
+              tag: Application
+              value: VMware
+        -
+          uuid: 1bff6fbd300d4455a787a273d957bba3
+          name: 'VMware: CPU usage'
+          type: SIMPLE
+          key: 'vmware.hv.cpu.usage[{$VMWARE.URL},{$VMWARE.HV.UUID}]'
+          history: 7d
+          units: Hz
+          username: '{$VMWARE.USERNAME}'
+          password: '{$VMWARE.PASSWORD}'
+          description: 'Aggregated CPU usage across all cores on the host in Hz. This is only available if the host is connected.'
+          tags:
+            -
+              tag: Application
+              value: VMware
+        -
+          uuid: e4d27d7f9b9048d4ae6c60cbdd6c0091
+          name: 'VMware: Datacenter name'
+          type: SIMPLE
+          key: 'vmware.hv.datacenter.name[{$VMWARE.URL},{$VMWARE.HV.UUID}]'
+          delay: 1h
+          history: 7d
+          trends: '0'
+          value_type: CHAR
+          username: '{$VMWARE.USERNAME}'
+          password: '{$VMWARE.PASSWORD}'
+          description: 'Datacenter name of the hypervisor.'
+          preprocessing:
+            -
+              type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1d
+          tags:
+            -
+              tag: Application
+              value: VMware
+        -
+          uuid: 5c29837f75f04d7f9a5786691b3dd991
+          name: 'VMware: Full name'
+          type: SIMPLE
+          key: 'vmware.hv.fullname[{$VMWARE.URL},{$VMWARE.HV.UUID}]'
+          delay: 1h
+          history: 7d
+          trends: '0'
+          value_type: CHAR
+          username: '{$VMWARE.USERNAME}'
+          password: '{$VMWARE.PASSWORD}'
+          description: 'The complete product name, including the version information.'
+          preprocessing:
+            -
+              type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1d
+          tags:
+            -
+              tag: Application
+              value: VMware
+        -
+          uuid: ad0053d57b834e6a9776c08e1c455d55
+          name: 'VMware: CPU frequency'
+          type: SIMPLE
+          key: 'vmware.hv.hw.cpu.freq[{$VMWARE.URL},{$VMWARE.HV.UUID}]'
+          delay: 1h
+          history: 7d
+          units: Hz
+          username: '{$VMWARE.USERNAME}'
+          password: '{$VMWARE.PASSWORD}'
+          description: 'The speed of the CPU cores. This is an average value if there are multiple speeds. The product of CPU frequency and number of cores is approximately equal to the sum of the MHz for all the individual cores on the host.'
+          tags:
+            -
+              tag: Application
+              value: VMware
+        -
+          uuid: 3f0c35fcef9e4699ac5a1c51d80f8da4
+          name: 'VMware: CPU model'
+          type: SIMPLE
+          key: 'vmware.hv.hw.cpu.model[{$VMWARE.URL},{$VMWARE.HV.UUID}]'
+          delay: 1h
+          history: 7d
+          trends: '0'
+          value_type: CHAR
+          username: '{$VMWARE.USERNAME}'
+          password: '{$VMWARE.PASSWORD}'
+          description: 'The CPU model.'
+          tags:
+            -
+              tag: Application
+              value: VMware
+        -
+          uuid: c99a5bf2e3904f97b3d361ca20af7883
+          name: 'VMware: CPU cores'
+          type: SIMPLE
+          key: 'vmware.hv.hw.cpu.num[{$VMWARE.URL},{$VMWARE.HV.UUID}]'
+          delay: 1h
+          history: 7d
+          username: '{$VMWARE.USERNAME}'
+          password: '{$VMWARE.PASSWORD}'
+          description: 'Number of physical CPU cores on the host. Physical CPU cores are the processors contained by a CPU package.'
+          preprocessing:
+            -
+              type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1d
+          tags:
+            -
+              tag: Application
+              value: VMware
+        -
+          uuid: 89cb0a4809e7454a862f398a0e9d6bed
+          name: 'VMware: CPU threads'
+          type: SIMPLE
+          key: 'vmware.hv.hw.cpu.threads[{$VMWARE.URL},{$VMWARE.HV.UUID}]'
+          delay: 1h
+          history: 7d
+          username: '{$VMWARE.USERNAME}'
+          password: '{$VMWARE.PASSWORD}'
+          description: 'Number of physical CPU threads on the host.'
+          tags:
+            -
+              tag: Application
+              value: VMware
+        -
+          uuid: ce89c38e6e5d4338a30ee150be1b2b67
+          name: 'VMware: Total memory'
+          type: SIMPLE
+          key: 'vmware.hv.hw.memory[{$VMWARE.URL},{$VMWARE.HV.UUID}]'
+          delay: 1h
+          history: 7d
+          units: B
+          username: '{$VMWARE.USERNAME}'
+          password: '{$VMWARE.PASSWORD}'
+          description: 'The physical memory size.'
+          tags:
+            -
+              tag: Application
+              value: VMware
+        -
+          uuid: 7ed7ac26da384bcda976badf24ebbec1
+          name: 'VMware: Model'
+          type: SIMPLE
+          key: 'vmware.hv.hw.model[{$VMWARE.URL},{$VMWARE.HV.UUID}]'
+          delay: 1h
+          history: 7d
+          trends: '0'
+          value_type: CHAR
+          username: '{$VMWARE.USERNAME}'
+          password: '{$VMWARE.PASSWORD}'
+          description: 'The system model identification.'
+          tags:
+            -
+              tag: Application
+              value: VMware
+        -
+          uuid: 6c4aab55b3e640779a25ac90b9ca2a43
+          name: 'VMware: Bios UUID'
+          type: SIMPLE
+          key: 'vmware.hv.hw.uuid[{$VMWARE.URL},{$VMWARE.HV.UUID}]'
+          delay: 1h
+          history: 7d
+          trends: '0'
+          value_type: CHAR
+          username: '{$VMWARE.USERNAME}'
+          password: '{$VMWARE.PASSWORD}'
+          description: 'The hardware BIOS identification.'
+          tags:
+            -
+              tag: Application
+              value: VMware
+        -
+          uuid: aec06090d16d4bdd8ed3494b448f19d8
+          name: 'VMware: Vendor'
+          type: SIMPLE
+          key: 'vmware.hv.hw.vendor[{$VMWARE.URL},{$VMWARE.HV.UUID}]'
+          delay: 1h
+          history: 7d
+          trends: '0'
+          value_type: CHAR
+          username: '{$VMWARE.USERNAME}'
+          password: '{$VMWARE.PASSWORD}'
+          description: 'The hardware vendor identification.'
+          tags:
+            -
+              tag: Application
+              value: VMware
+        -
+          uuid: 21020a79436a49c38caf8941f6b68da3
+          name: 'VMware: Ballooned memory'
+          type: SIMPLE
+          key: 'vmware.hv.memory.size.ballooned[{$VMWARE.URL},{$VMWARE.HV.UUID}]'
+          history: 7d
+          units: B
+          username: '{$VMWARE.USERNAME}'
+          password: '{$VMWARE.PASSWORD}'
+          description: 'The amount of guest physical memory that is currently reclaimed through the balloon driver. Sum of all guest VMs.'
+          tags:
+            -
+              tag: Application
+              value: VMware
+        -
+          uuid: 93d680d6886d446badbbe995ddd9ba9c
+          name: 'VMware: Used memory'
+          type: SIMPLE
+          key: 'vmware.hv.memory.used[{$VMWARE.URL},{$VMWARE.HV.UUID}]'
+          history: 7d
+          units: B
+          username: '{$VMWARE.USERNAME}'
+          password: '{$VMWARE.PASSWORD}'
+          description: 'Physical memory usage on the host.'
+          tags:
+            -
+              tag: Application
+              value: VMware
+        -
+          uuid: 33f78ab6ee6c4e7585a83a60cdecab6f
+          name: 'VMware: Number of bytes received'
+          type: SIMPLE
+          key: 'vmware.hv.network.in[{$VMWARE.URL},{$VMWARE.HV.UUID},bps]'
+          history: 7d
+          units: Bps
+          username: '{$VMWARE.USERNAME}'
+          password: '{$VMWARE.PASSWORD}'
+          description: 'VMware hypervisor network input statistics (bytes per second).'
+          tags:
+            -
+              tag: Application
+              value: VMware
+        -
+          uuid: b013afcba08b47f4a5b590a59f464a58
+          name: 'VMware: Number of bytes transmitted'
+          type: SIMPLE
+          key: 'vmware.hv.network.out[{$VMWARE.URL},{$VMWARE.HV.UUID},bps]'
+          history: 7d
+          units: Bps
+          username: '{$VMWARE.USERNAME}'
+          password: '{$VMWARE.PASSWORD}'
+          description: 'VMware hypervisor network output statistics (bytes per second).'
+          tags:
+            -
+              tag: Application
+              value: VMware
+        -
+          uuid: 36b28fccf6db4c49bf20157c419400d0
+          name: 'VMware: Health state rollup'
+          type: SIMPLE
+          key: 'vmware.hv.sensor.health.state[{$VMWARE.URL},{$VMWARE.HV.UUID}]'
+          history: 7d
+          username: '{$VMWARE.USERNAME}'
+          password: '{$VMWARE.PASSWORD}'
+          description: 'The host health state rollup sensor value: gray - unknown, green - ok, red - it has a problem, yellow - it might have a problem.'
+          valuemap:
+            name: 'VMware status'
+          tags:
+            -
+              tag: Application
+              value: VMware
+          triggers:
+            -
+              uuid: ffb8e14b1ea546b69f40070c628ac653
+              expression: 'last(/VMware Hypervisor/vmware.hv.sensor.health.state[{$VMWARE.URL},{$VMWARE.HV.UUID}])=3'
+              name: 'VMware: The {$VMWARE.HV.UUID} health is Red'
+              priority: HIGH
+              description: |
+                One or more components in the appliance might be in an unusable status and the appliance might become unresponsive soon. Security patches might be available.
+                Last value: {ITEM.LASTVALUE1}.
+              dependencies:
+                -
+                  name: 'VMware: The {$VMWARE.HV.UUID} health is Red'
+                  expression: 'last(/VMware Hypervisor/vmware.hv.status[{$VMWARE.URL},{$VMWARE.HV.UUID}])=3'
+            -
+              uuid: 4825f11dcbf74e2c8e7e2b251cbeb7d9
+              expression: 'last(/VMware Hypervisor/vmware.hv.sensor.health.state[{$VMWARE.URL},{$VMWARE.HV.UUID}])=2'
+              name: 'VMware: The {$VMWARE.HV.UUID} health is Yellow'
+              priority: AVERAGE
+              description: |
+                One or more components in the appliance might become overloaded soon.
+                Last value: {ITEM.LASTVALUE1}.
+              dependencies:
+                -
+                  name: 'VMware: The {$VMWARE.HV.UUID} health is Red'
+                  expression: 'last(/VMware Hypervisor/vmware.hv.sensor.health.state[{$VMWARE.URL},{$VMWARE.HV.UUID}])=3'
+                -
+                  name: 'VMware: The {$VMWARE.HV.UUID} health is Red'
+                  expression: 'last(/VMware Hypervisor/vmware.hv.status[{$VMWARE.URL},{$VMWARE.HV.UUID}])=3'
+                -
+                  name: 'VMware: The {$VMWARE.HV.UUID} health is Yellow'
+                  expression: 'last(/VMware Hypervisor/vmware.hv.status[{$VMWARE.URL},{$VMWARE.HV.UUID}])=2'
+        -
+          uuid: 0cec294521314c5482233b5b96e90c8d
+          name: 'VMware: Overall status'
+          type: SIMPLE
+          key: 'vmware.hv.status[{$VMWARE.URL},{$VMWARE.HV.UUID}]'
+          history: 7d
+          username: '{$VMWARE.USERNAME}'
+          password: '{$VMWARE.PASSWORD}'
+          description: 'The overall alarm status of the host: gray - unknown, green - ok, red - it has a problem, yellow - it might have a problem.'
+          valuemap:
+            name: 'VMware status'
+          tags:
+            -
+              tag: Application
+              value: VMware
+          triggers:
+            -
+              uuid: 378511e0f1794874a68aef1b43561ee5
+              expression: 'last(/VMware Hypervisor/vmware.hv.status[{$VMWARE.URL},{$VMWARE.HV.UUID}])=3'
+              name: 'VMware: The {$VMWARE.HV.UUID} health is Red'
+              priority: HIGH
+              description: |
+                One or more components in the appliance might be in an unusable status and the appliance might become unresponsive soon. Security patches might be available.
+                Last value: {ITEM.LASTVALUE1}.
+            -
+              uuid: ef6ca4d7033c4c8cb963eb7d493b3c7b
+              expression: 'last(/VMware Hypervisor/vmware.hv.status[{$VMWARE.URL},{$VMWARE.HV.UUID}])=2'
+              name: 'VMware: The {$VMWARE.HV.UUID} health is Yellow'
+              priority: AVERAGE
+              description: |
+                One or more components in the appliance might become overloaded soon.
+                Last value: {ITEM.LASTVALUE1}.
+              dependencies:
+                -
+                  name: 'VMware: The {$VMWARE.HV.UUID} health is Red'
+                  expression: 'last(/VMware Hypervisor/vmware.hv.status[{$VMWARE.URL},{$VMWARE.HV.UUID}])=3'
+        -
+          uuid: ecad96137494476293b57a0440de3f65
+          name: 'VMware: Uptime'
+          type: SIMPLE
+          key: 'vmware.hv.uptime[{$VMWARE.URL},{$VMWARE.HV.UUID}]'
+          history: 7d
+          units: uptime
+          username: '{$VMWARE.USERNAME}'
+          password: '{$VMWARE.PASSWORD}'
+          description: 'System uptime.'
+          tags:
+            -
+              tag: Application
+              value: VMware
+          triggers:
+            -
+              uuid: 01d316b0a8cf4998b344f0c4ef1daa32
+              expression: 'last(/VMware Hypervisor/vmware.hv.uptime[{$VMWARE.URL},{$VMWARE.HV.UUID}])<10m'
+              name: 'VMware: Hypervisor has been restarted (uptime < 10m)'
+              priority: WARNING
+              description: |
+                Uptime is less than 10 minutes.
+                Last value: {ITEM.LASTVALUE1}.
+              manual_close: 'YES'
+        -
+          uuid: 222ad20887cf479b8e81a4c338078d17
+          name: 'VMware: Version'
+          type: SIMPLE
+          key: 'vmware.hv.version[{$VMWARE.URL},{$VMWARE.HV.UUID}]'
+          delay: 1h
+          history: 7d
+          trends: '0'
+          value_type: CHAR
+          username: '{$VMWARE.USERNAME}'
+          password: '{$VMWARE.PASSWORD}'
+          description: 'Dot-separated version string.'
+          tags:
+            -
+              tag: Application
+              value: VMware
+        -
+          uuid: 2045df572e864834bd4bd97046353f4e
+          name: 'VMware: Number of guest VMs'
+          type: SIMPLE
+          key: 'vmware.hv.vm.num[{$VMWARE.URL},{$VMWARE.HV.UUID}]'
+          delay: 1h
+          history: 7d
+          username: '{$VMWARE.USERNAME}'
+          password: '{$VMWARE.PASSWORD}'
+          description: 'Number of guest virtual machines.'
+          tags:
+            -
+              tag: Application
+              value: VMware
+      discovery_rules:
+        -
+          uuid: fb7774df87994355baff7402d9fabcc2
+          name: 'Datastore discovery'
+          type: SIMPLE
+          key: 'vmware.hv.datastore.discovery[{$VMWARE.URL},{$VMWARE.HV.UUID}]'
+          delay: 1h
+          username: '{$VMWARE.USERNAME}'
+          password: '{$VMWARE.PASSWORD}'
+          item_prototypes:
+            -
+              uuid: 259d1ff4bde143248f7ee2f7f880cb62
+              name: 'VMware: Average read latency of the datastore {#DATASTORE}'
+              type: SIMPLE
+              key: 'vmware.hv.datastore.read[{$VMWARE.URL},{$VMWARE.HV.UUID},{#DATASTORE},latency]'
+              history: 7d
+              username: '{$VMWARE.USERNAME}'
+              password: '{$VMWARE.PASSWORD}'
+              description: 'Average amount of time for a read operation from the datastore (milliseconds).'
+              tags:
+                -
+                  tag: Application
+                  value: VMware
+            -
+              uuid: f36245398cc4460a9cb4ec741612693b
+              name: 'VMware: Free space on datastore {#DATASTORE} (percentage)'
+              type: SIMPLE
+              key: 'vmware.hv.datastore.size[{$VMWARE.URL},{$VMWARE.HV.UUID},{#DATASTORE},pfree]'
+              delay: 5m
+              history: 7d
+              value_type: FLOAT
+              units: '%'
+              username: '{$VMWARE.USERNAME}'
+              password: '{$VMWARE.PASSWORD}'
+              description: 'VMware datastore space in percentage from total.'
+              tags:
+                -
+                  tag: Application
+                  value: VMware
+            -
+              uuid: cc83e8f5ec08483db75482706bf01aba
+              name: 'VMware: Total size of datastore {#DATASTORE}'
+              type: SIMPLE
+              key: 'vmware.hv.datastore.size[{$VMWARE.URL},{$VMWARE.HV.UUID},{#DATASTORE}]'
+              delay: 5m
+              history: 7d
+              units: B
+              username: '{$VMWARE.USERNAME}'
+              password: '{$VMWARE.PASSWORD}'
+              description: 'VMware datastore space in bytes.'
+              tags:
+                -
+                  tag: Application
+                  value: VMware
+            -
+              uuid: 9db980d8f5f44af5ad11a5949d80031d
+              name: 'VMware: Average write latency of the datastore {#DATASTORE}'
+              type: SIMPLE
+              key: 'vmware.hv.datastore.write[{$VMWARE.URL},{$VMWARE.HV.UUID},{#DATASTORE},latency]'
+              history: 7d
+              username: '{$VMWARE.USERNAME}'
+              password: '{$VMWARE.PASSWORD}'
+              description: 'Average amount of time for a write operation to the datastore (milliseconds).'
+              tags:
+                -
+                  tag: Application
+                  value: VMware
+      valuemaps:
+        -
+          uuid: 25d04e2838af4fcca9ddd21df6781497
+          name: 'Service state'
+          mappings:
+            -
+              value: '0'
+              newvalue: Down
+            -
+              value: '1'
+              newvalue: Up
+        -
+          uuid: 2b324fd8d7624874a3a81449b62c2cd6
+          name: 'VMware status'
+          mappings:
+            -
+              value: '0'
+              newvalue: gray
+            -
+              value: '1'
+              newvalue: green
+            -
+              value: '2'
+              newvalue: yellow
+            -
+              value: '3'
+              newvalue: red

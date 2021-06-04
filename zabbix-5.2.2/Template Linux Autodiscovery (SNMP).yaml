@@ -1,0 +1,214 @@
+zabbix_export:
+  version: '5.2'
+  date: '2021-06-04T11:18:46Z'
+  groups:
+    -
+      name: Templates
+  templates:
+    -
+      template: 'Template Linux Autodiscovery'
+      name: 'Template Linux Autodiscovery'
+      groups:
+        -
+          name: Templates
+      applications:
+        -
+          name: Disk
+        -
+          name: Processes
+        -
+          name: Services
+      discovery_rules:
+        -
+          name: 'Linux disk discovery'
+          type: ZABBIX_ACTIVE
+          key: custom.disks.discovery_perl
+          delay: 5m
+          status: DISABLED
+          filter:
+            conditions:
+              -
+                macro: '{#DISK}'
+                value: '@Linux disks for autodiscovery'
+                formulaid: A
+          lifetime: 5d
+          item_prototypes:
+            -
+              name: 'Disk {#VMNAME}:{#DMNAME} io spent'
+              type: ZABBIX_ACTIVE
+              key: 'custom.vfs.dev.io.ms[{#DISK}]'
+              trends: '0'
+              units: ms
+              applications:
+                -
+                  name: Disk
+            -
+              name: 'disk {#VMNAME}:{#DMNAME} read io'
+              type: ZABBIX_ACTIVE
+              key: 'custom.vfs.dev.read.ops[{#DISK}]'
+              trends: '0'
+              units: io/s
+              applications:
+                -
+                  name: Disk
+            -
+              name: 'Disk {#VMNAME}:{#DMNAME} read bw'
+              type: ZABBIX_ACTIVE
+              key: 'custom.vfs.dev.read.sectors[{#DISK}]'
+              trends: '0'
+              units: Bps
+              applications:
+                -
+                  name: Disk
+              preprocessing:
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '512'
+            -
+              name: 'Disk {#VMNAME}:{#DMNAME} write io'
+              type: ZABBIX_ACTIVE
+              key: 'custom.vfs.dev.write.ops[{#DISK}]'
+              units: io/s
+              applications:
+                -
+                  name: Disk
+            -
+              name: 'Disk {#VMNAME}:{#DMNAME} write bw'
+              type: ZABBIX_ACTIVE
+              key: 'custom.vfs.dev.write.sectors[{#DISK}]'
+              units: Bps
+              applications:
+                -
+                  name: Disk
+              preprocessing:
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '512'
+          graph_prototypes:
+            -
+              name: 'Disk {#VMANEM}:{#DMNAME} bw'
+              graph_items:
+                -
+                  sortorder: '1'
+                  color: 199C0D
+                  item:
+                    host: 'Template Linux Autodiscovery'
+                    key: 'custom.vfs.dev.read.sectors[{#DISK}]'
+                -
+                  sortorder: '2'
+                  color: F63100
+                  item:
+                    host: 'Template Linux Autodiscovery'
+                    key: 'custom.vfs.dev.write.sectors[{#DISK}]'
+            -
+              name: 'Disk {#VMNAME}:{#DMNAME} io'
+              graph_items:
+                -
+                  sortorder: '1'
+                  color: 199C0D
+                  item:
+                    host: 'Template Linux Autodiscovery'
+                    key: 'custom.vfs.dev.read.ops[{#DISK}]'
+                -
+                  sortorder: '2'
+                  color: F63100
+                  item:
+                    host: 'Template Linux Autodiscovery'
+                    key: 'custom.vfs.dev.write.ops[{#DISK}]'
+        -
+          name: 'Linux processes autodiscovery'
+          type: ZABBIX_ACTIVE
+          key: custom.proc.discovery_perl
+          delay: 5m
+          status: DISABLED
+          filter:
+            conditions:
+              -
+                macro: '{#PROCNAME}'
+                value: '@Linux processes for autodiscovery'
+                formulaid: A
+          item_prototypes:
+            -
+              name: 'Process {#PROCNAME} number of processes'
+              type: ZABBIX_ACTIVE
+              key: 'proc.num[{#PROCNAME}]'
+              delay: 5m
+              description: 'Número de processos'
+              applications:
+                -
+                  name: Processes
+              trigger_prototypes:
+                -
+                  expression: '{last(0)}=0'
+                  name: 'Process {#PROCNAME} is not running'
+                  priority: WARNING
+                  description: |
+                    This process is not running check device.
+                    Last value: {ITEM.LASTVALUE1}.
+        -
+          name: 'Linux TCP services autodiscovery by port'
+          type: ZABBIX_ACTIVE
+          key: custom.services.tcp.discovery_perl
+          delay: 5m
+          status: DISABLED
+          filter:
+            conditions:
+              -
+                macro: '{#PORT}'
+                value: '@Linux TCP servies for fordiscovery by port'
+                formulaid: A
+          item_prototypes:
+            -
+              name: 'Service TCP {#PORT}:{#PROCNAME} listenning'
+              type: ZABBIX_ACTIVE
+              key: 'net.tcp.listen[{#PORT}]'
+              applications:
+                -
+                  name: Services
+              trigger_prototypes:
+                -
+                  expression: '{last(0)}=0'
+                  name: 'Service TCP {#PORT}:{#PROCNAME} is not listening'
+                  priority: WARNING
+                  description: |
+                    Service is not listening.
+                    Last value: {ITEM.LASTVALUE1}.
+        -
+          name: 'Linux UDP services autodiscovery by port'
+          type: ZABBIX_ACTIVE
+          key: custom.services.udp.discovery_perl
+          status: DISABLED
+          filter:
+            conditions:
+              -
+                macro: '{#PORT}'
+                value: '@Linux UDP services for fordiscovery by port'
+                formulaid: A
+          lifetime: 5d
+          item_prototypes:
+            -
+              name: 'Service UDP {#PORT}:{#PROCNAME} listenning'
+              type: ZABBIX_ACTIVE
+              key: 'net.udp.listen[{#PORT}]'
+              delay: 2m
+              applications:
+                -
+                  name: Services
+              trigger_prototypes:
+                -
+                  expression: '{last(0)}=0'
+                  name: 'Service UDP {#PORT}:{#PROCNAME} is not listenning'
+                  priority: WARNING
+                  description: |
+                    Service is not listenning.
+                    Last value: {ITEM.LASTVALUE1}.

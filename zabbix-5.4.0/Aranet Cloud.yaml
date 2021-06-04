@@ -1,0 +1,1029 @@
+zabbix_export:
+  version: '5.4'
+  date: '2021-05-28T00:51:27Z'
+  groups:
+    -
+      uuid: a571c0d144b14fd4a87a9d9b2aa9fcd6
+      name: Templates/Applications
+  templates:
+    -
+      uuid: af21edc47557400583e537904ea632aa
+      template: 'Aranet Cloud'
+      name: 'Aranet Cloud'
+      description: 'Template tooling version used: 0.38'
+      groups:
+        -
+          name: Templates/Applications
+      items:
+        -
+          uuid: 56f89fce2b1541b7898ad56362d4b28a
+          name: 'Aranet: Get data'
+          type: SCRIPT
+          key: aranet.get_data
+          history: '0'
+          trends: '0'
+          value_type: TEXT
+          params: |
+            var Aranet = {
+                params: {},
+                auth_token: null,
+                refresh_token: null,
+                space_id: null,
+            
+                setParams: function (params) {
+                    ['api_endpoint', 'username', 'password', 'space_name'].forEach(function (field) {
+                        if (typeof params !== 'object' || typeof params[field] === 'undefined'
+                                || params[field] === '') {
+                            throw 'Required param is not set: "' + field + '".';
+                        }
+                    });
+            
+                    Aranet.params = params;
+                    if (typeof Aranet.params.api_endpoint === 'string') {
+                        if (!Aranet.params.api_endpoint.endsWith('/')) {
+                            Aranet.params.api_endpoint += '/';
+                        }
+                    }
+                },
+            
+                request: function (method, query, data) {
+                    var response,
+                        request = new CurlHttpRequest(),
+                        url = Aranet.params.api_endpoint + query;
+            
+                    request.AddHeader('Content-Type: application/json');
+            
+                    if (Aranet.auth_token !== null) {
+                        request.AddHeader('Authorization: Bearer ' + Aranet.auth_token);
+                    }
+            
+                    if (typeof data !== 'undefined') {
+                        data = JSON.stringify(data);
+                    }
+            
+                    switch (method) {
+                        case 'get':
+                            response = request.Get(url, data);
+                            break;
+            
+                        case 'post':
+                            response = request.Post(url, data);
+                            break;
+            
+                        default:
+                            throw 'Unsupported HTTP request method: ' + method;
+                    }
+            
+                    Zabbix.Log(4, '[ Aranet scraper ] Received response with status code ' + request.Status() + ': ' + response);
+            
+                    if (request.Status() < 200 || request.Status() >= 300) {
+                        var message = 'Request failed with status code ' + request.Status();
+            
+                        message += ': ' + response;
+                        throw message;
+                    }
+            
+                    if (response !== null) {
+                        try {
+                            response = JSON.parse(response);
+                        }
+                        catch (error) {
+                            throw 'Failed to parse response received from Aranet Cloud. Check debug log for more information.';
+                        }
+                    }
+            
+                    return {
+                        status: request.Status(),
+                        response: response
+                    };
+                },
+            
+                login: function () {
+                    var result,
+                        data = {
+                            login: Aranet.params.username,
+                            passw: Aranet.params.password
+                        };
+            
+                    result = Aranet.request('post', 'user/login', data);
+                    if (typeof result.response !== 'object'
+                            || typeof result.response.auth === 'undefined'
+                            || result.status != 200) {
+                        throw 'Cannot login to Aranet Cloud. Check debug log for more information.';
+                    }
+            
+                    Aranet.auth_token = result.response.auth;
+                    Aranet.refresh_token = result.response.refresh;
+            
+                    var spaces = result.response.spaces;
+                    for (var key in spaces) {
+                        if (spaces[key] == Aranet.params.space_name) {
+                            Aranet.space_id = key;
+                            break;
+                        }
+                    }
+            
+                    return result.response;
+                },
+            
+                logout: function () {
+                    var result,
+                        data = {
+                            refresh: Aranet.refresh_token
+                        };
+            
+                    try {
+                        result = Aranet.request('post', 'user/logout', data);
+                        if (result.status != 204) {
+                            throw 'Cannot logout from Aranet Cloud ' + request.Status() + ': ' + result.response;
+                        }
+                    }
+                    catch (error) {
+                        Zabbix.Log(4, '[ Aranet scraper ] ' + error)
+                    }
+                },
+            
+                getMetrics: function () {
+                    var result = Aranet.request('get', 'metrics/' + Aranet.space_id);
+            
+                    if (typeof result.response !== 'object'
+                            || typeof result.response.data === 'undefined'
+                            || result.status != 200) {
+                        throw 'Cannot get metrics data from Aranet Cloud. Check debug log for more information.';
+                    };
+            
+                    return result.response;
+                },
+            
+                getSensors: function () {
+                    var result = Aranet.request('get', 'sensors/' + Aranet.space_id + '?fields=metrics,telemetry,name');
+            
+                    if (typeof result.response !== 'object'
+                            || typeof result.response.data === 'undefined'
+                            || result.status != 200) {
+                        throw 'Cannot get sensors data from Aranet Cloud. Check debug log for more information.';
+                    };
+            
+                    return result.response;
+                }
+            }
+            
+            var processed_metrics = {},
+                processed_sensors = [];
+            
+            try {
+                Aranet.setParams(JSON.parse(value));
+            
+                Aranet.login();
+            
+                var raw_metrics = Aranet.getMetrics(),
+                    raw_sensors = Aranet.getSensors();
+                
+                Aranet.logout();
+            
+                raw_metrics.data.items.forEach(function (item) {
+                    var unit_name;
+            
+                    item.units.some(function (unit) {
+                        unit_name = unit.name;
+                        if (unit.selected) {
+                            return true;
+                        }
+                    });
+            
+                    processed_metrics[item.id] = {
+                        name: item.name,
+                        unit: unit_name
+                    }
+                });
+            
+                raw_sensors.data.items.forEach(function (item) {
+                    var sensor_metrics = [];
+            
+                    item.metrics.forEach(function (metric) {
+                        var unit = processed_metrics[metric.id];
+            
+                        sensor_metrics.push({
+                            name: unit.name,
+                            unit: unit.unit,
+                            value: metric.v
+                        });
+                    });
+            
+                    item.telemetry.forEach(function (tel) {
+                        var unit = processed_metrics[tel.id];
+            
+                        sensor_metrics.push({
+                            name: unit.name,
+                            unit: unit.unit,
+                            value: tel.v
+                        });
+                    });
+            
+                    processed_sensors.push({
+                        id: item.id,
+                        name: item.name,
+                        metrics: sensor_metrics
+                    });
+                });
+            
+                return JSON.stringify(processed_sensors);
+            }
+            catch (error) {
+                Zabbix.Log(3, '[ Aranet scraper ] ERROR: ' + error);
+                throw 'Scraping failed: ' + error;
+            }
+          timeout: 10s
+          parameters:
+            -
+              name: password
+              value: '{$ARANET.API.PASSWORD}'
+            -
+              name: space_name
+              value: '{$ARANET.API.SPACE_NAME}'
+            -
+              name: username
+              value: '{$ARANET.API.USERNAME}'
+            -
+              name: api_endpoint
+              value: '{$ARANET.API.ENDPOINT}'
+          tags:
+            -
+              tag: Application
+              value: 'Zabbix raw items'
+        -
+          uuid: 92fb73948fa74de8a6a219397b77b570
+          name: 'Aranet: Sensors discovery'
+          type: DEPENDENT
+          key: aranet.sensor.discovery
+          delay: '0'
+          history: '0'
+          trends: '0'
+          value_type: TEXT
+          description: 'Discovery for Aranet Cloud sensors'
+          preprocessing:
+            -
+              type: JAVASCRIPT
+              parameters:
+                - |
+                  var input = JSON.parse(value),
+                      output = [];
+                  
+                  input.forEach(function (sensor) {
+                      sensor.metrics.forEach(function (metric) {
+                          output.push(
+                              {
+                                  '{#ID}': sensor.id,
+                                  '{#SENSOR}': sensor.name,
+                                  '{#METRIC}': metric.name,
+                                  '{#UNIT}': metric.unit
+                              }
+                          )
+                      })
+                  });
+                  
+                  return JSON.stringify(output);
+            -
+              type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 15m
+          master_item:
+            key: aranet.get_data
+          tags:
+            -
+              tag: Application
+              value: 'Zabbix raw items'
+      discovery_rules:
+        -
+          uuid: c4d177c29cb34e87b6bec0d22bd3ae23
+          name: 'Battery voltage sensors discovery'
+          type: DEPENDENT
+          key: aranet.battery.voltage.discovery
+          delay: '0'
+          filter:
+            evaltype: AND
+            conditions:
+              -
+                macro: '{#SENSOR}'
+                value: '{$ARANET.LLD.FILTER.SENSOR.MATCHES}'
+                formulaid: B
+              -
+                macro: '{#SENSOR}'
+                value: '{$ARANET.LLD.FILTER.SENSOR.NOT_MATCHES}'
+                operator: NOT_MATCHES_REGEX
+                formulaid: C
+              -
+                macro: '{#METRIC}'
+                value: 'Battery voltage'
+                formulaid: A
+          description: 'Discovery for Aranet Cloud Battery voltage sensors'
+          item_prototypes:
+            -
+              uuid: 35f71cfe12ed4cdead57012b2d9bc6f6
+              name: '{#METRIC}: {#SENSOR}'
+              type: DEPENDENT
+              key: 'aranet.battery.voltage["{#ID}"]'
+              delay: '0'
+              history: 7d
+              value_type: FLOAT
+              units: '{#UNIT}'
+              preprocessing:
+                -
+                  type: JSONPATH
+                  parameters:
+                    - '$[?(@.id == "{#ID}" && @.name == "{#SENSOR}")].metrics[?(@.name == "{#METRIC}")].value.first()'
+              master_item:
+                key: aranet.get_data
+              tags:
+                -
+                  tag: Application
+                  value: '{#METRIC}'
+              trigger_prototypes:
+                -
+                  uuid: 0e72d8a100934eb1ae7fc2da758cb19b
+                  expression: 'max(/Aranet Cloud/aranet.battery.voltage["{#ID}"],5m) < {$ARANET.BATT.VOLTAGE.MIN.CRIT:"{#SENSOR}"}'
+                  name: '{#METRIC}: Critically low battery voltage on "{#SENSOR}" (below {$ARANET.BATT.VOLTAGE.MIN.CRIT:"{#SENSOR}"}{#UNIT} for 5m)'
+                  priority: HIGH
+                  description: 'Last value: {ITEM.LASTVALUE1}.'
+                -
+                  uuid: 5b5bc1f49e50478097520cf48cb2e314
+                  expression: 'max(/Aranet Cloud/aranet.battery.voltage["{#ID}"],5m) < {$ARANET.BATT.VOLTAGE.MIN.WARN:"{#SENSOR}"}'
+                  name: '{#METRIC}: Low battery voltage on "{#SENSOR}" (below {$ARANET.BATT.VOLTAGE.MIN.WARN:"{#SENSOR}"}{#UNIT} for 5m)'
+                  priority: WARNING
+                  description: 'Last value: {ITEM.LASTVALUE1}.'
+                  dependencies:
+                    -
+                      name: '{#METRIC}: Critically low battery voltage on "{#SENSOR}" (below {$ARANET.BATT.VOLTAGE.MIN.CRIT:"{#SENSOR}"}{#UNIT} for 5m)'
+                      expression: 'max(/Aranet Cloud/aranet.battery.voltage["{#ID}"],5m) < {$ARANET.BATT.VOLTAGE.MIN.CRIT:"{#SENSOR}"}'
+          master_item:
+            key: aranet.sensor.discovery
+        -
+          uuid: f10b45e1e1024cb19ea8a705281e61fc
+          name: 'CO2 sensors discovery'
+          type: DEPENDENT
+          key: aranet.co2.discovery
+          delay: '0'
+          filter:
+            evaltype: AND
+            conditions:
+              -
+                macro: '{#SENSOR}'
+                value: '{$ARANET.LLD.FILTER.SENSOR.MATCHES}'
+                formulaid: B
+              -
+                macro: '{#SENSOR}'
+                value: '{$ARANET.LLD.FILTER.SENSOR.NOT_MATCHES}'
+                operator: NOT_MATCHES_REGEX
+                formulaid: C
+              -
+                macro: '{#METRIC}'
+                value: CO₂
+                formulaid: A
+          description: 'Discovery for Aranet Cloud CO2 sensors'
+          item_prototypes:
+            -
+              uuid: e23d46ba0d124be589d8203b3d87081e
+              name: '{#METRIC}: {#SENSOR}'
+              type: DEPENDENT
+              key: 'aranet.co2["{#ID}"]'
+              delay: '0'
+              history: 7d
+              value_type: FLOAT
+              units: '{#UNIT}'
+              preprocessing:
+                -
+                  type: JSONPATH
+                  parameters:
+                    - '$[?(@.id == "{#ID}" && @.name == "{#SENSOR}")].metrics[?(@.name == "{#METRIC}")].value.first()'
+              master_item:
+                key: aranet.get_data
+              tags:
+                -
+                  tag: Application
+                  value: '{#METRIC}'
+              trigger_prototypes:
+                -
+                  uuid: 05d29e25dba941a69c9bd545711fcba4
+                  expression: 'min(/Aranet Cloud/aranet.co2["{#ID}"],5m) > {$ARANET.CO2.MAX.CRIT:"{#SENSOR}"}'
+                  name: '{#METRIC}: Critically high CO2 level on "{#SENSOR}" (over {$ARANET.CO2.MAX.CRIT:"{#SENSOR}"}{#UNIT} for 5m)'
+                  priority: HIGH
+                  description: 'Last value: {ITEM.LASTVALUE1}.'
+                -
+                  uuid: 4fff22b419504408bf89466110508039
+                  expression: 'min(/Aranet Cloud/aranet.co2["{#ID}"],5m) > {$ARANET.CO2.MAX.WARN:"{#SENSOR}"}'
+                  name: '{#METRIC}: High CO2 level on "{#SENSOR}" (over {$ARANET.CO2.MAX.WARN:"{#SENSOR}"}{#UNIT} for 5m)'
+                  priority: WARNING
+                  description: 'Last value: {ITEM.LASTVALUE1}.'
+                  dependencies:
+                    -
+                      name: '{#METRIC}: Critically high CO2 level on "{#SENSOR}" (over {$ARANET.CO2.MAX.CRIT:"{#SENSOR}"}{#UNIT} for 5m)'
+                      expression: 'min(/Aranet Cloud/aranet.co2["{#ID}"],5m) > {$ARANET.CO2.MAX.CRIT:"{#SENSOR}"}'
+          master_item:
+            key: aranet.sensor.discovery
+        -
+          uuid: c42c2ae80f0d40688031f0ef3adb4dfb
+          name: 'Current sensors discovery'
+          type: DEPENDENT
+          key: aranet.current.discovery
+          delay: '0'
+          filter:
+            evaltype: AND
+            conditions:
+              -
+                macro: '{#SENSOR}'
+                value: '{$ARANET.LLD.FILTER.SENSOR.MATCHES}'
+                formulaid: B
+              -
+                macro: '{#SENSOR}'
+                value: '{$ARANET.LLD.FILTER.SENSOR.NOT_MATCHES}'
+                operator: NOT_MATCHES_REGEX
+                formulaid: C
+              -
+                macro: '{#METRIC}'
+                value: Current
+                formulaid: A
+          description: 'Discovery for Aranet Cloud Current sensors'
+          item_prototypes:
+            -
+              uuid: 34c30f4b7c5f46ce9ac4d507473a66fe
+              name: '{#METRIC}: {#SENSOR}'
+              type: DEPENDENT
+              key: 'aranet.current["{#ID}"]'
+              delay: '0'
+              history: 7d
+              value_type: FLOAT
+              units: '{#UNIT}'
+              preprocessing:
+                -
+                  type: JSONPATH
+                  parameters:
+                    - '$[?(@.id == "{#ID}" && @.name == "{#SENSOR}")].metrics[?(@.name == "{#METRIC}")].value.first()'
+              master_item:
+                key: aranet.get_data
+              tags:
+                -
+                  tag: Application
+                  value: '{#METRIC}'
+          master_item:
+            key: aranet.sensor.discovery
+        -
+          uuid: b9f0950111b6488098c79a60b2a444d6
+          name: 'Distance sensors discovery'
+          type: DEPENDENT
+          key: aranet.distance.discovery
+          delay: '0'
+          filter:
+            evaltype: AND
+            conditions:
+              -
+                macro: '{#SENSOR}'
+                value: '{$ARANET.LLD.FILTER.SENSOR.MATCHES}'
+                formulaid: B
+              -
+                macro: '{#SENSOR}'
+                value: '{$ARANET.LLD.FILTER.SENSOR.NOT_MATCHES}'
+                operator: NOT_MATCHES_REGEX
+                formulaid: C
+              -
+                macro: '{#METRIC}'
+                value: Distance
+                formulaid: A
+          description: 'Discovery for Aranet Cloud Distance sensors'
+          item_prototypes:
+            -
+              uuid: 042ba99415964aea9274199f03010522
+              name: '{#METRIC}: {#SENSOR}'
+              type: DEPENDENT
+              key: 'aranet.distance["{#ID}"]'
+              delay: '0'
+              history: 7d
+              value_type: FLOAT
+              units: '{#UNIT}'
+              preprocessing:
+                -
+                  type: JSONPATH
+                  parameters:
+                    - '$[?(@.id == "{#ID}" && @.name == "{#SENSOR}")].metrics[?(@.name == "{#METRIC}")].value.first()'
+              master_item:
+                key: aranet.get_data
+              tags:
+                -
+                  tag: Application
+                  value: '{#METRIC}'
+          master_item:
+            key: aranet.sensor.discovery
+        -
+          uuid: 7cf9f5296e784045a86aa0fc7bb1ba69
+          name: 'Humidity sensors discovery'
+          type: DEPENDENT
+          key: aranet.humidity.discovery
+          delay: '0'
+          filter:
+            evaltype: AND
+            conditions:
+              -
+                macro: '{#SENSOR}'
+                value: '{$ARANET.LLD.FILTER.SENSOR.MATCHES}'
+                formulaid: B
+              -
+                macro: '{#SENSOR}'
+                value: '{$ARANET.LLD.FILTER.SENSOR.NOT_MATCHES}'
+                operator: NOT_MATCHES_REGEX
+                formulaid: C
+              -
+                macro: '{#METRIC}'
+                value: Humidity
+                formulaid: A
+          description: 'Discovery for Aranet Cloud humidity sensors'
+          item_prototypes:
+            -
+              uuid: 710313ddef7644709182767e5b549f35
+              name: '{#METRIC}: {#SENSOR}'
+              type: DEPENDENT
+              key: 'aranet.humidity["{#ID}"]'
+              delay: '0'
+              history: 7d
+              value_type: FLOAT
+              units: '{#UNIT}'
+              preprocessing:
+                -
+                  type: JSONPATH
+                  parameters:
+                    - '$[?(@.id == "{#ID}" && @.name == "{#SENSOR}")].metrics[?(@.name == "{#METRIC}")].value.first()'
+              master_item:
+                key: aranet.get_data
+              tags:
+                -
+                  tag: Application
+                  value: '{#METRIC}'
+              trigger_prototypes:
+                -
+                  uuid: b805d01dce1e499e8f1019889c6d3171
+                  expression: 'min(/Aranet Cloud/aranet.humidity["{#ID}"],5m) > {$ARANET.HUMIDITY.MAX.WARN:"{#SENSOR}"}'
+                  name: '{#METRIC}: High humidity on "{#SENSOR}" (over {$ARANET.HUMIDITY.MAX.WARN:"{#SENSOR}"}{#UNIT} for 5m)'
+                  priority: HIGH
+                  description: 'Last value: {ITEM.LASTVALUE1}.'
+                -
+                  uuid: 116db25d5a5c45f18b128cb3496d9617
+                  expression: 'max(/Aranet Cloud/aranet.humidity["{#ID}"],5m) < {$ARANET.HUMIDITY.MIN.WARN:"{#SENSOR}"}'
+                  name: '{#METRIC}: Low humidity on "{#SENSOR}" (below {$ARANET.HUMIDITY.MIN.WARN:"{#SENSOR}"}{#UNIT} for 5m)'
+                  priority: WARNING
+                  description: 'Last value: {ITEM.LASTVALUE1}.'
+                  dependencies:
+                    -
+                      name: '{#METRIC}: High humidity on "{#SENSOR}" (over {$ARANET.HUMIDITY.MAX.WARN:"{#SENSOR}"}{#UNIT} for 5m)'
+                      expression: 'min(/Aranet Cloud/aranet.humidity["{#ID}"],5m) > {$ARANET.HUMIDITY.MAX.WARN:"{#SENSOR}"}'
+          master_item:
+            key: aranet.sensor.discovery
+        -
+          uuid: 144396930b4b4049acb4bfd7b183a6f7
+          name: 'Illuminance sensors discovery'
+          type: DEPENDENT
+          key: aranet.illuminance.discovery
+          delay: '0'
+          filter:
+            evaltype: AND
+            conditions:
+              -
+                macro: '{#SENSOR}'
+                value: '{$ARANET.LLD.FILTER.SENSOR.MATCHES}'
+                formulaid: B
+              -
+                macro: '{#SENSOR}'
+                value: '{$ARANET.LLD.FILTER.SENSOR.NOT_MATCHES}'
+                operator: NOT_MATCHES_REGEX
+                formulaid: C
+              -
+                macro: '{#METRIC}'
+                value: Illuminance
+                formulaid: A
+          description: 'Discovery for Aranet Cloud Illuminance sensors'
+          item_prototypes:
+            -
+              uuid: 4f51fab87dc74fb0b4cface14c7ecb14
+              name: '{#METRIC}: {#SENSOR}'
+              type: DEPENDENT
+              key: 'aranet.illuminance["{#ID}"]'
+              delay: '0'
+              history: 7d
+              value_type: FLOAT
+              units: '{#UNIT}'
+              preprocessing:
+                -
+                  type: JSONPATH
+                  parameters:
+                    - '$[?(@.id == "{#ID}" && @.name == "{#SENSOR}")].metrics[?(@.name == "{#METRIC}")].value.first()'
+              master_item:
+                key: aranet.get_data
+              tags:
+                -
+                  tag: Application
+                  value: '{#METRIC}'
+          master_item:
+            key: aranet.sensor.discovery
+        -
+          uuid: 9b33a2810e644c3c998d431a4a860993
+          name: 'pH sensors discovery'
+          type: DEPENDENT
+          key: aranet.ph.discovery
+          delay: '0'
+          filter:
+            evaltype: AND
+            conditions:
+              -
+                macro: '{#SENSOR}'
+                value: '{$ARANET.LLD.FILTER.SENSOR.MATCHES}'
+                formulaid: B
+              -
+                macro: '{#SENSOR}'
+                value: '{$ARANET.LLD.FILTER.SENSOR.NOT_MATCHES}'
+                operator: NOT_MATCHES_REGEX
+                formulaid: C
+              -
+                macro: '{#METRIC}'
+                value: pH
+                formulaid: A
+          description: 'Discovery for Aranet Cloud pH sensors'
+          item_prototypes:
+            -
+              uuid: 723910aa49f44ed4addbe6bf10ab6849
+              name: '{#METRIC}: {#SENSOR}'
+              type: DEPENDENT
+              key: 'aranet.ph["{#ID}"]'
+              delay: '0'
+              history: 7d
+              value_type: FLOAT
+              preprocessing:
+                -
+                  type: JSONPATH
+                  parameters:
+                    - '$[?(@.id == "{#ID}" && @.name == "{#SENSOR}")].metrics[?(@.name == "{#METRIC}")].value.first()'
+              master_item:
+                key: aranet.get_data
+              tags:
+                -
+                  tag: Application
+                  value: '{#METRIC}'
+          master_item:
+            key: aranet.sensor.discovery
+        -
+          uuid: c1a3941026c24d178a494de66c7be2cc
+          name: 'PPFD sensors discovery'
+          type: DEPENDENT
+          key: aranet.ppfd.discovery
+          delay: '0'
+          filter:
+            evaltype: AND
+            conditions:
+              -
+                macro: '{#SENSOR}'
+                value: '{$ARANET.LLD.FILTER.SENSOR.MATCHES}'
+                formulaid: B
+              -
+                macro: '{#SENSOR}'
+                value: '{$ARANET.LLD.FILTER.SENSOR.NOT_MATCHES}'
+                operator: NOT_MATCHES_REGEX
+                formulaid: C
+              -
+                macro: '{#METRIC}'
+                value: PPFD
+                formulaid: A
+          description: 'Discovery for Aranet Cloud PPFD sensors'
+          item_prototypes:
+            -
+              uuid: 89b6d695821d4a0eac71cad8d38ccdbb
+              name: '{#METRIC}: {#SENSOR}'
+              type: DEPENDENT
+              key: 'aranet.ppfd["{#ID}"]'
+              delay: '0'
+              history: 7d
+              value_type: FLOAT
+              units: '{#UNIT}'
+              preprocessing:
+                -
+                  type: JSONPATH
+                  parameters:
+                    - '$[?(@.id == "{#ID}" && @.name == "{#SENSOR}")].metrics[?(@.name == "{#METRIC}")].value.first()'
+              master_item:
+                key: aranet.get_data
+              tags:
+                -
+                  tag: Application
+                  value: '{#METRIC}'
+          master_item:
+            key: aranet.sensor.discovery
+        -
+          uuid: 11a77f7018ca4b8f92f65888e3e2a237
+          name: 'Atmospheric pressure sensors discovery'
+          type: DEPENDENT
+          key: aranet.pressure.discovery
+          delay: '0'
+          filter:
+            evaltype: AND
+            conditions:
+              -
+                macro: '{#SENSOR}'
+                value: '{$ARANET.LLD.FILTER.SENSOR.MATCHES}'
+                formulaid: B
+              -
+                macro: '{#SENSOR}'
+                value: '{$ARANET.LLD.FILTER.SENSOR.NOT_MATCHES}'
+                operator: NOT_MATCHES_REGEX
+                formulaid: C
+              -
+                macro: '{#METRIC}'
+                value: 'Atmospheric Pressure'
+                formulaid: A
+          description: 'Discovery for Aranet Cloud atmospheric pressure sensors'
+          item_prototypes:
+            -
+              uuid: 05c6fe5f739042c68f90a7e87dd8965b
+              name: '{#METRIC}: {#SENSOR}'
+              type: DEPENDENT
+              key: 'aranet.pressure["{#ID}"]'
+              delay: '0'
+              history: 7d
+              value_type: FLOAT
+              units: '{#UNIT}'
+              preprocessing:
+                -
+                  type: JSONPATH
+                  parameters:
+                    - '$[?(@.id == "{#ID}" && @.name == "{#SENSOR}")].metrics[?(@.name == "{#METRIC}")].value.first()'
+              master_item:
+                key: aranet.get_data
+              tags:
+                -
+                  tag: Application
+                  value: '{#METRIC}'
+          master_item:
+            key: aranet.sensor.discovery
+        -
+          uuid: 2caab3aefe0b498588aa3ec0d8578e09
+          name: 'RSSI sensors discovery'
+          type: DEPENDENT
+          key: aranet.rssi.discovery
+          delay: '0'
+          filter:
+            evaltype: AND
+            conditions:
+              -
+                macro: '{#SENSOR}'
+                value: '{$ARANET.LLD.FILTER.SENSOR.MATCHES}'
+                formulaid: B
+              -
+                macro: '{#SENSOR}'
+                value: '{$ARANET.LLD.FILTER.SENSOR.NOT_MATCHES}'
+                operator: NOT_MATCHES_REGEX
+                formulaid: C
+              -
+                macro: '{#METRIC}'
+                value: RSSI
+                formulaid: A
+          description: 'Discovery for Aranet Cloud RSSI sensors'
+          item_prototypes:
+            -
+              uuid: adc87a7a27374010a5d24430fdcc0c3b
+              name: '{#METRIC}: {#SENSOR}'
+              type: DEPENDENT
+              key: 'aranet.rssi["{#ID}"]'
+              delay: '0'
+              history: 7d
+              value_type: FLOAT
+              units: '{#UNIT}'
+              preprocessing:
+                -
+                  type: JSONPATH
+                  parameters:
+                    - '$[?(@.id == "{#ID}" && @.name == "{#SENSOR}")].metrics[?(@.name == "{#METRIC}")].value.first()'
+              master_item:
+                key: aranet.get_data
+              tags:
+                -
+                  tag: Application
+                  value: '{#METRIC}'
+          master_item:
+            key: aranet.sensor.discovery
+        -
+          uuid: 215affa3d0d34aa2b27be4ec75ba3349
+          name: 'Temperature sensors discovery'
+          type: DEPENDENT
+          key: aranet.temp.discovery
+          delay: '0'
+          filter:
+            evaltype: AND
+            conditions:
+              -
+                macro: '{#SENSOR}'
+                value: '{$ARANET.LLD.FILTER.SENSOR.MATCHES}'
+                formulaid: B
+              -
+                macro: '{#SENSOR}'
+                value: '{$ARANET.LLD.FILTER.SENSOR.NOT_MATCHES}'
+                operator: NOT_MATCHES_REGEX
+                formulaid: C
+              -
+                macro: '{#METRIC}'
+                value: Temperature
+                formulaid: A
+          description: 'Discovery for Aranet Cloud temperature sensors'
+          item_prototypes:
+            -
+              uuid: 2d44c672428949ef991f5da131ef8f98
+              name: '{#METRIC}: {#SENSOR}'
+              type: DEPENDENT
+              key: 'aranet.temp["{#ID}"]'
+              delay: '0'
+              history: 7d
+              value_type: FLOAT
+              units: '{#UNIT}'
+              preprocessing:
+                -
+                  type: JSONPATH
+                  parameters:
+                    - '$[?(@.id == "{#ID}" && @.name == "{#SENSOR}")].metrics[?(@.name == "{#METRIC}")].value.first()'
+              master_item:
+                key: aranet.get_data
+              tags:
+                -
+                  tag: Application
+                  value: '{#METRIC}'
+          master_item:
+            key: aranet.sensor.discovery
+        -
+          uuid: 9e9bf9e27be743368c50036f02fab572
+          name: 'Voltage sensors discovery'
+          type: DEPENDENT
+          key: aranet.voltage.discovery
+          delay: '0'
+          filter:
+            evaltype: AND
+            conditions:
+              -
+                macro: '{#SENSOR}'
+                value: '{$ARANET.LLD.FILTER.SENSOR.MATCHES}'
+                formulaid: B
+              -
+                macro: '{#SENSOR}'
+                value: '{$ARANET.LLD.FILTER.SENSOR.NOT_MATCHES}'
+                operator: NOT_MATCHES_REGEX
+                formulaid: C
+              -
+                macro: '{#METRIC}'
+                value: Voltage
+                formulaid: A
+          description: 'Discovery for Aranet Cloud Voltage sensors'
+          item_prototypes:
+            -
+              uuid: b5bb020269464d39bdd0d28f660d21c8
+              name: '{#METRIC}: {#SENSOR}'
+              type: DEPENDENT
+              key: 'aranet.voltage["{#ID}"]'
+              delay: '0'
+              history: 7d
+              value_type: FLOAT
+              units: '{#UNIT}'
+              preprocessing:
+                -
+                  type: JSONPATH
+                  parameters:
+                    - '$[?(@.id == "{#ID}" && @.name == "{#SENSOR}")].metrics[?(@.name == "{#METRIC}")].value.first()'
+              master_item:
+                key: aranet.get_data
+              tags:
+                -
+                  tag: Application
+                  value: '{#METRIC}'
+          master_item:
+            key: aranet.sensor.discovery
+        -
+          uuid: 319390432a25433c956bdf290a16b662
+          name: 'Volumetric Water Content sensors discovery'
+          type: DEPENDENT
+          key: aranet.volumetric.water.content.discovery
+          delay: '0'
+          filter:
+            evaltype: AND
+            conditions:
+              -
+                macro: '{#SENSOR}'
+                value: '{$ARANET.LLD.FILTER.SENSOR.MATCHES}'
+                formulaid: B
+              -
+                macro: '{#SENSOR}'
+                value: '{$ARANET.LLD.FILTER.SENSOR.NOT_MATCHES}'
+                operator: NOT_MATCHES_REGEX
+                formulaid: C
+              -
+                macro: '{#METRIC}'
+                value: 'Volumetric Water Content'
+                formulaid: A
+          description: 'Discovery for Aranet Cloud Volumetric Water Content sensors'
+          item_prototypes:
+            -
+              uuid: 598fdfad846943d2abe423d66175d7a0
+              name: '{#METRIC}: {#SENSOR}'
+              type: DEPENDENT
+              key: 'aranet.volumetric.water.content["{#ID}"]'
+              delay: '0'
+              history: 7d
+              value_type: FLOAT
+              units: '{#UNIT}'
+              preprocessing:
+                -
+                  type: JSONPATH
+                  parameters:
+                    - '$[?(@.id == "{#ID}" && @.name == "{#SENSOR}")].metrics[?(@.name == "{#METRIC}")].value.first()'
+              master_item:
+                key: aranet.get_data
+              tags:
+                -
+                  tag: Application
+                  value: '{#METRIC}'
+          master_item:
+            key: aranet.sensor.discovery
+        -
+          uuid: 414889299c224d748c857fcf028d9e96
+          name: 'Weight sensors discovery'
+          type: DEPENDENT
+          key: aranet.weight.discovery
+          delay: '0'
+          filter:
+            evaltype: AND
+            conditions:
+              -
+                macro: '{#SENSOR}'
+                value: '{$ARANET.LLD.FILTER.SENSOR.MATCHES}'
+                formulaid: B
+              -
+                macro: '{#SENSOR}'
+                value: '{$ARANET.LLD.FILTER.SENSOR.NOT_MATCHES}'
+                operator: NOT_MATCHES_REGEX
+                formulaid: C
+              -
+                macro: '{#METRIC}'
+                value: Weight
+                formulaid: A
+          description: 'Discovery for Aranet Cloud Weight sensors'
+          item_prototypes:
+            -
+              uuid: 32568baef91748e4976b67b4b8492efb
+              name: '{#METRIC}: {#SENSOR}'
+              type: DEPENDENT
+              key: 'aranet.weight["{#ID}"]'
+              delay: '0'
+              history: 7d
+              value_type: FLOAT
+              units: '{#UNIT}'
+              preprocessing:
+                -
+                  type: JSONPATH
+                  parameters:
+                    - '$[?(@.id == "{#ID}" && @.name == "{#SENSOR}")].metrics[?(@.name == "{#METRIC}")].value.first()'
+              master_item:
+                key: aranet.get_data
+              tags:
+                -
+                  tag: Application
+                  value: '{#METRIC}'
+          master_item:
+            key: aranet.sensor.discovery
+      macros:
+        -
+          macro: '{$ARANET.API.ENDPOINT}'
+          value: 'https://aranet.cloud/api'
+        -
+          macro: '{$ARANET.API.PASSWORD}'
+          value: '<PUT YOUR PASSWORD>'
+        -
+          macro: '{$ARANET.API.SPACE_NAME}'
+          value: '<PUT YOUR SPACE NAME>'
+        -
+          macro: '{$ARANET.API.USERNAME}'
+          value: '<PUT YOUR USERNAME>'
+        -
+          macro: '{$ARANET.BATT.VOLTAGE.MIN.CRIT}'
+          value: '2'
+        -
+          macro: '{$ARANET.BATT.VOLTAGE.MIN.WARN}'
+          value: '1'
+        -
+          macro: '{$ARANET.CO2.MAX.CRIT}'
+          value: '1000'
+        -
+          macro: '{$ARANET.CO2.MAX.WARN}'
+          value: '600'
+        -
+          macro: '{$ARANET.HUMIDITY.MAX.WARN}'
+          value: '70'
+        -
+          macro: '{$ARANET.HUMIDITY.MIN.WARN}'
+          value: '20'
+        -
+          macro: '{$ARANET.LLD.FILTER.SENSOR.MATCHES}'
+          value: .+
+          description: 'Filter of discoverable sensors'
+        -
+          macro: '{$ARANET.LLD.FILTER.SENSOR.NOT_MATCHES}'
+          value: CHANGE_IF_NEEDED
+          description: 'Filter to exclude discoverable sensors'

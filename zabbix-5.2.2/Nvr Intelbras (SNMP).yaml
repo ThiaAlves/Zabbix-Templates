@@ -1,0 +1,188 @@
+zabbix_export:
+  version: '5.2'
+  date: '2021-06-04T11:12:27Z'
+  groups:
+    -
+      name: CFTV
+  templates:
+    -
+      template: 'NVR INTELBRAS'
+      name: 'NVR INTELBRAS'
+      groups:
+        -
+          name: CFTV
+      applications:
+        -
+          name: CANAIS
+        -
+          name: GERAL
+        -
+          name: Status
+      items:
+        -
+          name: 'CH1 status'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.3.1.1.1.2.1.10.1.1.253
+          key: ch_1_status
+          delay: 15s
+          history: 7d
+          description: 'Estado do Channel 1'
+          applications:
+            -
+              name: CANAIS
+        -
+          name: 'CH2 status'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.3.1.1.1.2.1.10.1.1.254
+          key: ch_2_status
+          delay: 15s
+          history: 7d
+          description: 'Estado do Channel 2'
+          applications:
+            -
+              name: CANAIS
+        -
+          name: 'ICMP ping'
+          type: SIMPLE
+          key: icmpping
+          description: 'Retorno de disponibilidade do dispositivo por PING'
+          applications:
+            -
+              name: Status
+          valuemap:
+            name: 'Ping State'
+          triggers:
+            -
+              expression: '{max(#6)}=0'
+              name: 'Unavailable by ICMP ping'
+              priority: HIGH
+              description: |
+                Six Attempt failure, Check this Device
+                Last value: {ITEM.LASTVALUE1}.
+        -
+          name: 'ICMP loss'
+          type: SIMPLE
+          key: icmppingloss
+          value_type: FLOAT
+          units: '%'
+          description: 'Perda de pacotes ping'
+          applications:
+            -
+              name: Status
+        -
+          name: 'ICMP response time'
+          type: SIMPLE
+          key: icmppingsec
+          description: 'Tempo de resposta por Ping'
+          applications:
+            -
+              name: Status
+          triggers:
+            -
+              expression: '{avg(5m)}>{$ICMP_RESPONSE_TIME_WARN}'
+              name: 'High ICMP response time'
+              priority: WARNING
+              description: |
+                Response time bigger than {$ICMP_RESPONSE_TIME_WARN}
+                Last value: {ITEM.LASTVALUE1}.
+              dependencies:
+                -
+                  name: 'High ICMP ping loss'
+                  expression: '{NVR INTELBRAS:icmpping.min(5m)}>{$ICMP_LOSS_WARN} and {NVR INTELBRAS:icmppingloss.min(5m)}<150'
+                -
+                  name: 'Unavailable by ICMP ping'
+                  expression: '{NVR INTELBRAS:icmpping.max(#6)}=0'
+        -
+          name: 'interface eth input'
+          type: SNMP_AGENT
+          snmp_oid: ifInOctets.2
+          key: interface_eth_band
+          delay: 60s
+          history: 1w
+          units: bps
+          description: 'Tráfego de entrada na interface Eth'
+          applications:
+            -
+              name: GERAL
+        -
+          name: 'interface eth out'
+          type: SNMP_AGENT
+          snmp_oid: ifOutOctets.2
+          key: interface_eth_out
+          delay: 60s
+          history: 1w
+          units: bps
+          description: 'Tráfego de saída na interface Eth'
+          applications:
+            -
+              name: GERAL
+        -
+          name: 'Interface Eth Status'
+          type: SNMP_AGENT
+          snmp_oid: ifAdminStatus.2
+          key: interface_status
+          delay: 30s
+          description: |
+            1 UP
+            2 DOWN
+          applications:
+            -
+              name: GERAL
+        -
+          name: 'Device Contact Details'
+          type: SNMP_AGENT
+          snmp_oid: sysContact.0
+          key: sysContact
+          delay: 1h
+          history: 2w
+          trends: '0'
+          value_type: CHAR
+          description: 'Detalhes de contato do dispositivo'
+          applications:
+            -
+              name: GERAL
+        -
+          name: 'Device Uptime'
+          type: SNMP_AGENT
+          snmp_oid: sysUpTime.0
+          key: system_uptime
+          delay: 60s
+          history: 1w
+          trends: '0'
+          units: uptime
+          description: 'Tempo do dispositivo ligado'
+          applications:
+            -
+              name: GERAL
+      macros:
+        -
+          macro: '{$ICMP_LOSS_WARN}'
+          value: '20'
+        -
+          macro: '{$ICMP_RESPONSE_TIME_WARN}'
+          value: '0.15'
+        -
+          macro: '{$SNMP_COMMUNITY}'
+          value: public
+  triggers:
+    -
+      expression: '{NVR INTELBRAS:icmpping.min(5m)}>{$ICMP_LOSS_WARN} and {NVR INTELBRAS:icmppingloss.min(5m)}<150'
+      name: 'High ICMP ping loss'
+      priority: WARNING
+      description: |
+        High loss packages 
+        Last value: {ITEM.LASTVALUE1}.
+      dependencies:
+        -
+          name: 'Unavailable by ICMP ping'
+          expression: '{NVR INTELBRAS:icmpping.max(#6)}=0'
+  value_maps:
+    -
+      name: 'Ping State'
+      mappings:
+        -
+          value: '0'
+          newvalue: Down
+        -
+          value: '1'
+          newvalue: Up

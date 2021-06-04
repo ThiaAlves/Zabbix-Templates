@@ -1,0 +1,913 @@
+zabbix_export:
+  version: '5.2'
+  date: '2021-06-04T11:18:24Z'
+  groups:
+    -
+      name: Templates
+  templates:
+    -
+      template: 'Template Juniper MX'
+      name: 'Template Juniper MX'
+      description: |
+        External script discovery BGP4: 
+        LLD.py["-h", {HOST.CONN}, "-c", "{$SNMP_COMMUNITY}", "-mi", "{#PEERADDR}", "-m", "{#PREFXTBL}", "{#ADDRTYPE}", "{#ASNUM}"]
+        
+        
+        Built-in BGP4 discovery: discovery[{#PEERADDR}, .1.3.6.1.4.1.2636.5.1.1.2.1.1.1.11, {#PREFXTBL}, .1.3.6.1.4.1.2636.5.1.1.2.1.1.1.14, {#ADDRTYPE}, .1.3.6.1.4.1.2636.5.1.1.2.1.1.1.10, {#ASNUM}, .1.3.6.1.4.1.2636.5.1.1.2.1.1.1.13]
+      groups:
+        -
+          name: Templates
+      applications:
+        -
+          name: BGP4
+        -
+          name: 'Device Health'
+        -
+          name: Interfaces
+      items:
+        -
+          name: 'Ping check'
+          type: SIMPLE
+          key: icmpping
+          delay: '30'
+          units: Binary
+          description: 'Checagem de Ping'
+          applications:
+            -
+              name: 'Device Health'
+          triggers:
+            -
+              expression: '{sum(#3)}=0 or ({TRIGGER.VALUE}=1 and {sum(#3)}<>3)'
+              name: 'Ping check'
+              priority: DISASTER
+              description: |
+                Ping not available in Device.
+                Last value: {ITEM.LASTVALUE1}.
+        -
+          name: jnxRedAlarmState
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.2636.3.4.2.3.1.0
+          key: jnxRedAlarmState
+          delay: '30'
+          description: |
+            Estado do alarme vermelho em caso de falhas
+            (1) Unknown
+            (2) Off
+            (3) Active
+          applications:
+            -
+              name: 'Device Health'
+          triggers:
+            -
+              expression: '{last(0)}<>2'
+              name: 'Red Alarm on router {HOSTNAME}'
+              priority: HIGH
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          name: jnxYellowAlarmState
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.2636.3.4.2.2.1.0
+          key: jnxYellowAlarmState
+          delay: '60'
+          description: |
+            Estado do alarme amarelo em casos de atenção
+            (1) Unknown
+            (2) OFF
+            (3) On
+          applications:
+            -
+              name: 'Device Health'
+          triggers:
+            -
+              expression: '{last(0)}<>2'
+              name: 'Yellow Alarm on router {HOSTNAME}'
+              priority: AVERAGE
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          name: Uptime
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.1.3.0
+          key: Uptime
+          delay: '60'
+          units: s
+          description: 'Tempo do Sistema Ligado'
+          applications:
+            -
+              name: 'Device Health'
+          preprocessing:
+            -
+              type: MULTIPLIER
+              parameters:
+                - '0.01'
+          triggers:
+            -
+              expression: '{last(0)}<600'
+              name: '{HOSTNAME} Has just been restarted'
+              priority: AVERAGE
+              description: |
+                Your Device has been Restarted, Uptime less than 10 minutes
+                Last value: {ITEM.LASTVALUE1}.
+      discovery_rules:
+        -
+          name: 'JunOS Interfaces'
+          type: SNMP_AGENT
+          snmp_oid: 'discovery[{#SNMPVALUE},IF-MIB::ifDescr]'
+          key: ifDescr
+          delay: '1800'
+          filter:
+            conditions:
+              -
+                macro: '{#SNMPVALUE}'
+                value: '^ge-1\/0\/[0-2]$|^ge-1\/1\/[0-2]$|^ge-1\/1\/1\.[0-9]{1,4}$|^(ae|reth|st)[0-9]$|^fxp[0-9]-[0-9]+$|^vlan.[0-9]+$|^irb.[0-9]+$'
+                formulaid: A
+          lifetime: 5d
+          item_prototypes:
+            -
+              name: '{#SNMPVALUE} - ifAdminStatus'
+              type: SNMP_AGENT
+              snmp_oid: 'IF-MIB::ifAdminStatus.{#SNMPINDEX}'
+              key: 'ifAdminStatus[{#SNMPVALUE}]'
+              delay: '180'
+              description: 'Estado administrador da interface'
+              applications:
+                -
+                  name: Interfaces
+              valuemap:
+                name: 'SNMP interface status (ifAdminStatus)'
+            -
+              name: '{#SNMPVALUE} - ifAlias'
+              type: SNMP_AGENT
+              snmp_oid: 'IF-MIB::ifAlias.{#SNMPINDEX}'
+              key: 'ifAlias[{#SNMPVALUE}]'
+              delay: '3600'
+              trends: '0'
+              value_type: CHAR
+              description: 'Apelido da interface'
+              applications:
+                -
+                  name: Interfaces
+            -
+              name: '{#SNMPVALUE} - ifHCInOctets'
+              type: SNMP_AGENT
+              snmp_oid: 'IF-MIB::ifHCInOctets.{#SNMPINDEX}'
+              key: 'ifHCInOctets[{#SNMPVALUE}]'
+              delay: '60'
+              history: 7d
+              units: bps
+              description: 'Tráfego de entrada na interface'
+              applications:
+                -
+                  name: Interfaces
+              preprocessing:
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '8'
+            -
+              name: '{#SNMPVALUE} - ifHCOutOctets'
+              type: SNMP_AGENT
+              snmp_oid: 'IF-MIB::ifHCOutOctets.{#SNMPINDEX}'
+              key: 'ifHCOutOctets[{#SNMPVALUE}]'
+              delay: '60'
+              history: 7d
+              units: bps
+              description: 'Tráfego de saída na interface'
+              applications:
+                -
+                  name: Interfaces
+              preprocessing:
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '8'
+            -
+              name: '{#SNMPVALUE} - ifInDiscards'
+              type: SNMP_AGENT
+              snmp_oid: 'IF-MIB::ifInDiscards.{#SNMPINDEX}'
+              key: 'ifInDiscards[{#SNMPVALUE}]'
+              delay: '180'
+              history: 7d
+              status: DISABLED
+              description: 'Tráfego de entrada de pacotes descartados'
+              applications:
+                -
+                  name: Interfaces
+              preprocessing:
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+            -
+              name: '{#SNMPVALUE} - ifInErrors'
+              type: SNMP_AGENT
+              snmp_oid: 'IF-MIB::ifInErrors.{#SNMPINDEX}'
+              key: 'ifInErrors[{#SNMPVALUE}]'
+              delay: '180'
+              history: 7d
+              status: DISABLED
+              description: 'Tráfego de entrada de pacotes com erros'
+              applications:
+                -
+                  name: Interfaces
+              preprocessing:
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+            -
+              name: '{#SNMPVALUE} - ifName'
+              type: SNMP_AGENT
+              snmp_oid: 'IF-MIB::ifName.{#SNMPINDEX}'
+              key: 'ifName[{#SNMPVALUE}]'
+              delay: '3600'
+              trends: '0'
+              value_type: CHAR
+              description: 'Nome da interface'
+              applications:
+                -
+                  name: Interfaces
+            -
+              name: '{#SNMPVALUE} - ifOperStatus'
+              type: SNMP_AGENT
+              snmp_oid: 'IF-MIB::ifOperStatus.{#SNMPINDEX}'
+              key: 'ifOperStatus[{#SNMPVALUE}]'
+              delay: '60'
+              history: 7d
+              description: 'Estado operacional da interface'
+              applications:
+                -
+                  name: Interfaces
+              valuemap:
+                name: 'SNMP interface status (ifOperStatus)'
+            -
+              name: '{#SNMPVALUE} - ifOutDiscards'
+              type: SNMP_AGENT
+              snmp_oid: 'IF-MIB::ifOutDiscards.{#SNMPINDEX}'
+              key: 'ifOutDiscards[{#SNMPVALUE}]'
+              delay: '180'
+              history: 7d
+              status: DISABLED
+              description: 'Tráfego de Saída de pacotes descartados'
+              applications:
+                -
+                  name: Interfaces
+              preprocessing:
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+            -
+              name: '{#SNMPVALUE} - ifOutErrors'
+              type: SNMP_AGENT
+              snmp_oid: 'IF-MIB::ifOutErrors.{#SNMPINDEX}'
+              key: 'ifOutErrors[{#SNMPVALUE}]'
+              delay: '180'
+              history: 7d
+              status: DISABLED
+              description: 'Tráfego de saída de pacotes com erros'
+              applications:
+                -
+                  name: Interfaces
+              preprocessing:
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+          trigger_prototypes:
+            -
+              expression: '{Template Juniper MX:ifOperStatus[{#SNMPVALUE}].avg(7200)}<2 and {Template Juniper MX:ifOperStatus[{#SNMPVALUE}].last()}=2 and {Template Juniper MX:ifAlias[{#SNMPVALUE}].str(this_does_not_exist)}=0'
+              name: 'Interface status on {HOST.HOST}: {#SNMPVALUE}, {ITEM.VALUE2} : {ITEM.VALUE3}'
+              priority: HIGH
+              description: |
+                Interface status went up to down !!!  
+                Interface : {#SNMPVALUE}, {ITEM.VALUE1} = {ITEM.VALUE3}
+          graph_prototypes:
+            -
+              name: 'Interface {#SNMPVALUE} - {{HOST.HOST}:ifAlias[{#SNMPVALUE}].last(0)}'
+              graph_items:
+                -
+                  drawtype: FILLED_REGION
+                  color: 2618B1
+                  yaxisside: RIGHT
+                  item:
+                    host: 'Template Juniper MX'
+                    key: 'ifHCInOctets[{#SNMPVALUE}]'
+                -
+                  sortorder: '1'
+                  color: 594CD8
+                  yaxisside: RIGHT
+                  item:
+                    host: 'Template Juniper MX'
+                    key: 'ifInDiscards[{#SNMPVALUE}]'
+                -
+                  sortorder: '2'
+                  color: 7B72D8
+                  yaxisside: RIGHT
+                  item:
+                    host: 'Template Juniper MX'
+                    key: 'ifInErrors[{#SNMPVALUE}]'
+                -
+                  sortorder: '3'
+                  drawtype: BOLD_LINE
+                  color: FFC600
+                  yaxisside: RIGHT
+                  item:
+                    host: 'Template Juniper MX'
+                    key: 'ifHCOutOctets[{#SNMPVALUE}]'
+                -
+                  sortorder: '4'
+                  color: FFD440
+                  yaxisside: RIGHT
+                  item:
+                    host: 'Template Juniper MX'
+                    key: 'ifOutDiscards[{#SNMPVALUE}]'
+                -
+                  sortorder: '5'
+                  color: FFE073
+                  yaxisside: RIGHT
+                  item:
+                    host: 'Template Juniper MX'
+                    key: 'ifOutErrors[{#SNMPVALUE}]'
+        -
+          name: 'JunOS Hardware'
+          type: SNMP_AGENT
+          snmp_oid: 'discovery[{#SNMPVALUE},.1.3.6.1.4.1.2636.3.1.14.1.2.9]'
+          key: jnxRedundancyL1Index
+          delay: '1800'
+          lifetime: 5d
+          item_prototypes:
+            -
+              name: '{#SNMPVALUE} - 5 min load avarage'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.2636.3.1.13.1.21.9.{#SNMPVALUE}.0.0'
+              key: 'jnxOperating5MinLoadAvg.[{#SNMPVALUE}]'
+              delay: '60'
+              history: 7d
+              description: 'Carga Média de 5 minutos'
+              applications:
+                -
+                  name: 'Device Health'
+            -
+              name: '{#SNMPVALUE} - Memory Usage'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.2636.3.1.13.1.11.9.{#SNMPVALUE}.0.0'
+              key: 'jnxOperatingBuffer.[{#SNMPVALUE}]'
+              delay: '60'
+              history: 7d
+              units: '%'
+              description: 'Utilização da memória em porcentagem'
+              applications:
+                -
+                  name: 'Device Health'
+              trigger_prototypes:
+                -
+                  expression: '{last(0)}>70 and {last(0)}<95'
+                  name: '{HOSTNAME} {#SNMPVALUE} - Memory Usage above 70%'
+                  priority: AVERAGE
+                  description: |
+                    Verify routing table size
+                    Verify System Processes in use
+                    Review system logs
+                -
+                  expression: '{last(0)}>95'
+                  name: '{HOSTNAME} {#SNMPVALUE} - Memory Usage above 95%'
+                  priority: HIGH
+                  description: |
+                    Verify routing table size
+                    Verify System Processes in use
+                    Review system logs
+            -
+              name: '{#SNMPVALUE} - CPU Usage'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.2636.3.1.13.1.8.9.{#SNMPVALUE}.0.0'
+              key: 'jnxOperatingCPU.[{#SNMPVALUE}]'
+              delay: '60'
+              history: 7d
+              units: '%'
+              description: 'Utilização da CPU em porcentagem'
+              applications:
+                -
+                  name: 'Device Health'
+            -
+              name: '{#SNMPVALUE} - Routing Engine temp'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.2636.3.1.13.1.7.9.{#SNMPVALUE}.0.0'
+              key: 'jnxOperatingTemp.[{#SNMPVALUE}]'
+              delay: '60'
+              history: 7d
+              units: °C
+              description: 'Temperatura de roteamento'
+              applications:
+                -
+                  name: 'Device Health'
+              trigger_prototypes:
+                -
+                  expression: '{min(180)}>60'
+                  name: '{HOSTNAME} {#SNMPVALUE} - Hight temperature'
+                  priority: HIGH
+                  description: |
+                    Check status of Fans 
+                    Check ambient temperature and device spacing requirements
+          trigger_prototypes:
+            -
+              expression: '{Template Juniper MX:jnxOperatingCPU.[{#SNMPVALUE}].min(180)}>80 and {Template Juniper MX:jnxOperatingCPU.[{#SNMPVALUE}].min(180)}<95 and {Template Juniper MX:jnxOperating5MinLoadAvg.[{#SNMPVALUE}].last()}>100'
+              name: '{HOSTNAME} {#SNMPVALUE} - CPU Usage above 80%'
+              priority: AVERAGE
+              description: |
+                Active Investigation recommended if increase is sudden or sustained on upper range and load average is also > 100
+                
+                Disable traceoptions
+                Clean up storage
+                Verify system processes
+            -
+              expression: '{Template Juniper MX:jnxOperating5MinLoadAvg.[{#SNMPVALUE}].last(0)}>300 and {Template Juniper MX:jnxOperatingCPU.[{#SNMPVALUE}].last(0)}>95'
+              name: '{HOSTNAME} {#SNMPVALUE} - High CPU Usage (95%)'
+              priority: HIGH
+              description: |
+                Device responsiveness for self traffic is likely to be impacted
+                
+                Disable traceoptions
+                Clean up storage
+                Verify system processes
+          graph_prototypes:
+            -
+              name: 'JunOS Health {#SNMPVALUE}'
+              graph_items:
+                -
+                  color: '005500'
+                  item:
+                    host: 'Template Juniper MX'
+                    key: 'jnxOperating5MinLoadAvg.[{#SNMPVALUE}]'
+                -
+                  sortorder: '1'
+                  drawtype: BOLD_LINE
+                  color: 33FF33
+                  item:
+                    host: 'Template Juniper MX'
+                    key: 'jnxOperatingCPU.[{#SNMPVALUE}]'
+                -
+                  sortorder: '2'
+                  drawtype: BOLD_LINE
+                  color: 0000EE
+                  item:
+                    host: 'Template Juniper MX'
+                    key: 'jnxOperatingBuffer.[{#SNMPVALUE}]'
+                -
+                  sortorder: '3'
+                  color: '990000'
+                  item:
+                    host: 'Template Juniper MX'
+                    key: 'jnxOperatingTemp.[{#SNMPVALUE}]'
+        -
+          name: 'JunOS BGP4'
+          type: EXTERNAL
+          key: 'LLD.py["-h", {HOST.CONN}, "-c", "{$SNMP_COMMUNITY}", "-mi", "{#PEERADDR}", "-m", "{#PREFXTBL}", "{#ADDRTYPE}", "{#ASNUM}"]'
+          delay: '1800'
+          lifetime: 5d
+          item_prototypes:
+            -
+              name: 'Established time $2'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.2636.5.1.1.2.4.1.1.1.{#SNMPINDEX}'
+              key: 'jnxBgpM2PeerFsmEstablishedTime[{#ASNUM}, {#PEERADDR}]'
+              delay: '300'
+              units: uptime
+              description: 'Tempo estabelecido'
+              applications:
+                -
+                  name: BGP4
+            -
+              name: 'Last recieved error $2'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.2636.5.1.1.2.2.1.1.1.{#SNMPINDEX}'
+              key: 'jnxBgpM2PeerLastErrorReceived[{#ASNUM}, {#PEERADDR}]'
+              delay: '300'
+              description: 'Ultimo recebimento de erros'
+              applications:
+                -
+                  name: BGP4
+              valuemap:
+                name: BgpPeerError
+              preprocessing:
+                -
+                  type: HEX_TO_DECIMAL
+                  parameters:
+                    - ''
+            -
+              name: 'Last sent error $2'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.2636.5.1.1.2.2.1.1.2.{#SNMPINDEX}'
+              key: 'jnxBgpM2PeerLastErrorSent[{#ASNUM}, {#PEERADDR}]'
+              delay: '300'
+              description: 'Ultimo Envio de Erros'
+              applications:
+                -
+                  name: BGP4
+              valuemap:
+                name: BgpPeerError
+              preprocessing:
+                -
+                  type: HEX_TO_DECIMAL
+                  parameters:
+                    - ''
+            -
+              name: 'Remote AS for peer $2'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.2636.5.1.1.2.1.1.1.13.{#SNMPINDEX}'
+              key: 'jnxBgpM2PeerRemoteAs[{#ASNUM}, {#PEERADDR}]'
+              delay: '120'
+              trends: '0'
+              value_type: CHAR
+              applications:
+                -
+                  name: BGP4
+            -
+              name: 'Operational status $2'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.2636.5.1.1.2.1.1.1.2.{#SNMPINDEX}'
+              key: 'jnxBgpM2PeerState[{#ASNUM}, {#PEERADDR}]'
+              delay: '120'
+              description: 'Estado operacional da interface'
+              applications:
+                -
+                  name: BGP4
+              valuemap:
+                name: BgpPeerState
+            -
+              name: 'Administrative status $2'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.2636.5.1.1.2.1.1.1.3.{#SNMPINDEX}'
+              key: 'jnxBgpM2PeerStatus[{#ASNUM}, {#PEERADDR}]'
+              delay: '300'
+              description: 'Estado Administrador'
+              applications:
+                -
+                  name: BGP4
+              valuemap:
+                name: BgpPeerAdminStatus
+            -
+              name: 'Accepted receiving prefixes $2'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.2636.5.1.1.2.6.2.1.8.{#PREFXTBL}.{#ADDRTYPE}.1'
+              key: 'jnxBgpM2PrefixInPrefixesAccepted[{#ASNUM}, {#PEERADDR}]'
+              delay: '120'
+              description: 'Prefixos recebidos aceitos'
+              applications:
+                -
+                  name: BGP4
+            -
+              name: 'Active receiving prefixes $2'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.2636.5.1.1.2.6.2.1.11.{#PREFXTBL}.{#ADDRTYPE}.1'
+              key: 'jnxBgpM2PrefixInPrefixesActive[{#ASNUM}, {#PEERADDR}]'
+              delay: '120'
+              description: 'Prefixos recebidos ativos'
+              applications:
+                -
+                  name: BGP4
+            -
+              name: 'Rejected receiving prefixes $2'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.2636.5.1.1.2.6.2.1.9.{#PREFXTBL}.{#ADDRTYPE}.1'
+              key: 'jnxBgpM2PrefixInPrefixesRejected[{#ASNUM}, {#PEERADDR}]'
+              delay: '120'
+              description: 'Prefixos recebidos rejeitados'
+              applications:
+                -
+                  name: BGP4
+            -
+              name: 'All receiving prefixes $2'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.2636.5.1.1.2.6.2.1.7.{#PREFXTBL}.{#ADDRTYPE}.1'
+              key: 'jnxBgpM2PrefixInPrefixes[{#ASNUM}, {#PEERADDR}]'
+              delay: '120'
+              description: 'Todos os prefixes recebidos'
+              applications:
+                -
+                  name: BGP4
+            -
+              name: 'All advertising prefixes $2'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.2636.5.1.1.2.6.2.1.10.{#PREFXTBL}.{#ADDRTYPE}.1'
+              key: 'jnxBgpM2PrefixOutPrefixes[{#ASNUM}, {#PEERADDR}]'
+              delay: '120'
+              description: 'Todos os Prefixos de anuncio'
+              applications:
+                -
+                  name: BGP4
+          trigger_prototypes:
+            -
+              expression: '{Template Juniper MX:jnxBgpM2PeerRemoteAs[{#ASNUM}, {#PEERADDR}].regexp({$BGP_PEER_AS})}=0 and {Template Juniper MX:jnxBgpM2PeerState[{#ASNUM}, {#PEERADDR}].last(#3)}<>6 and {Template Juniper MX:jnxBgpM2PeerStatus[{#ASNUM}, {#PEERADDR}].last(0)}=2'
+              name: '{HOSTNAME} BGP AS{#ASNUM} peer {#PEERADDR} is DOWN'
+              priority: WARNING
+              description: 'Trigger for peer that has a remote AS not matching {$BGP_PEER_AS} macro.'
+            -
+              expression: '{Template Juniper MX:jnxBgpM2PeerRemoteAs[{#ASNUM}, {#PEERADDR}].regexp({$BGP_PEER_AS})}=1 and {Template Juniper MX:jnxBgpM2PeerState[{#ASNUM}, {#PEERADDR}].last(#3)}<>6 and {Template Juniper MX:jnxBgpM2PeerStatus[{#ASNUM}, {#PEERADDR}].last(0)}=2'
+              name: '{HOSTNAME} BGP AS{#ASNUM} peer {#PEERADDR} is DOWN'
+              priority: AVERAGE
+              description: 'Trigger for peer that has a remote AS matching {$BGP_PEER_AS} macro.'
+          graph_prototypes:
+            -
+              name: 'AS{#ASNUM} prefix peer {#PEERADDR}'
+              graph_items:
+                -
+                  drawtype: BOLD_LINE
+                  color: CCCC00
+                  item:
+                    host: 'Template Juniper MX'
+                    key: 'jnxBgpM2PrefixInPrefixes[{#ASNUM}, {#PEERADDR}]'
+                -
+                  sortorder: '1'
+                  drawtype: BOLD_LINE
+                  color: 66FF66
+                  item:
+                    host: 'Template Juniper MX'
+                    key: 'jnxBgpM2PrefixInPrefixesAccepted[{#ASNUM}, {#PEERADDR}]'
+                -
+                  sortorder: '2'
+                  drawtype: BOLD_LINE
+                  color: FF3333
+                  item:
+                    host: 'Template Juniper MX'
+                    key: 'jnxBgpM2PrefixInPrefixesRejected[{#ASNUM}, {#PEERADDR}]'
+                -
+                  sortorder: '3'
+                  drawtype: BOLD_LINE
+                  color: 0000CC
+                  item:
+                    host: 'Template Juniper MX'
+                    key: 'jnxBgpM2PrefixOutPrefixes[{#ASNUM}, {#PEERADDR}]'
+                -
+                  sortorder: '4'
+                  drawtype: FILLED_REGION
+                  color: '006600'
+                  item:
+                    host: 'Template Juniper MX'
+                    key: 'jnxBgpM2PrefixInPrefixesActive[{#ASNUM}, {#PEERADDR}]'
+      dashboards:
+        -
+          name: MX
+          widgets:
+            -
+              type: GRAPH_PROTOTYPE
+              width: '24'
+              height: '5'
+              fields:
+                -
+                  type: INTEGER
+                  name: columns
+                  value: '1'
+                -
+                  type: INTEGER
+                  name: rows
+                  value: '1'
+                -
+                  type: INTEGER
+                  name: source_type
+                  value: '2'
+                -
+                  type: GRAPH_PROTOTYPE
+                  name: graphid
+                  value:
+                    name: 'JunOS Health {#SNMPVALUE}'
+                    host: 'Template Juniper MX'
+            -
+              type: GRAPH_PROTOTYPE
+              'y': '5'
+              width: '24'
+              height: '5'
+              fields:
+                -
+                  type: INTEGER
+                  name: columns
+                  value: '1'
+                -
+                  type: INTEGER
+                  name: rows
+                  value: '1'
+                -
+                  type: INTEGER
+                  name: source_type
+                  value: '2'
+                -
+                  type: GRAPH_PROTOTYPE
+                  name: graphid
+                  value:
+                    name: 'Interface {#SNMPVALUE} - {{HOST.HOST}:ifAlias[{#SNMPVALUE}].last(0)}'
+                    host: 'Template Juniper MX'
+            -
+              type: GRAPH_PROTOTYPE
+              'y': '10'
+              width: '24'
+              height: '5'
+              fields:
+                -
+                  type: INTEGER
+                  name: columns
+                  value: '1'
+                -
+                  type: INTEGER
+                  name: rows
+                  value: '1'
+                -
+                  type: INTEGER
+                  name: source_type
+                  value: '2'
+                -
+                  type: GRAPH_PROTOTYPE
+                  name: graphid
+                  value:
+                    name: 'AS{#ASNUM} prefix peer {#PEERADDR}'
+                    host: 'Template Juniper MX'
+  value_maps:
+    -
+      name: BgpPeerAdminStatus
+      mappings:
+        -
+          value: '1'
+          newvalue: stop
+        -
+          value: '2'
+          newvalue: start
+    -
+      name: BgpPeerError
+      mappings:
+        -
+          value: '0'
+          newvalue: None
+        -
+          value: '256'
+          newvalue: 'Message Header Error'
+        -
+          value: '257'
+          newvalue: 'Connection Not Synchronizad'
+        -
+          value: '258'
+          newvalue: 'Bad Message Length'
+        -
+          value: '259'
+          newvalue: 'Bad Message Type'
+        -
+          value: '512'
+          newvalue: 'Open Message Error'
+        -
+          value: '513'
+          newvalue: 'Unsupported Version Number'
+        -
+          value: '514'
+          newvalue: 'Bad Peer AS'
+        -
+          value: '515'
+          newvalue: 'Bad BGP Identifier'
+        -
+          value: '516'
+          newvalue: 'Unsupported Optional Parameter'
+        -
+          value: '517'
+          newvalue: 'Authentication Failure'
+        -
+          value: '518'
+          newvalue: 'Unacceptable Hold Time'
+        -
+          value: '768'
+          newvalue: 'Update Message Error'
+        -
+          value: '769'
+          newvalue: 'Malformed Attribute List'
+        -
+          value: '770'
+          newvalue: 'Unrecognized Well-Known Attribute'
+        -
+          value: '771'
+          newvalue: 'Missing Well-Known Attribute'
+        -
+          value: '772'
+          newvalue: 'Attribute Flags Error'
+        -
+          value: '773'
+          newvalue: 'Attribute Length Error'
+        -
+          value: '774'
+          newvalue: 'Invalid Origin Attribute'
+        -
+          value: '775'
+          newvalue: 'AS Routing Loop'
+        -
+          value: '776'
+          newvalue: 'Invalid Next_Hop Attribute'
+        -
+          value: '777'
+          newvalue: 'Optional Attribute Error'
+        -
+          value: '778'
+          newvalue: 'Invalid Network Field'
+        -
+          value: '779'
+          newvalue: 'Mailformed AS_Path'
+        -
+          value: '1024'
+          newvalue: 'Hold Timer Expired'
+        -
+          value: '1280'
+          newvalue: 'Finite State Machine Error '
+        -
+          value: '1281'
+          newvalue: 'Receive Unexpected Message in OpenSent State'
+        -
+          value: '1282'
+          newvalue: 'Receive Unexpected Message in OpenConfirm State'
+        -
+          value: '1283'
+          newvalue: 'Receive Unexpected Message in Established State'
+        -
+          value: '1536'
+          newvalue: Cease
+        -
+          value: '1537'
+          newvalue: 'Maximum Number of Prefixes Reached'
+        -
+          value: '1538'
+          newvalue: 'Administrative Shutdown'
+        -
+          value: '1539'
+          newvalue: 'Peer De-configured'
+        -
+          value: '1540'
+          newvalue: 'Administrative Reset'
+        -
+          value: '1541'
+          newvalue: 'Connection Rejected'
+        -
+          value: '1542'
+          newvalue: 'Other Configuration Change'
+        -
+          value: '1543'
+          newvalue: 'Connection Colision Resolution'
+        -
+          value: '1544'
+          newvalue: 'Out of Resources'
+    -
+      name: BgpPeerState
+      mappings:
+        -
+          value: '1'
+          newvalue: idle
+        -
+          value: '2'
+          newvalue: connect
+        -
+          value: '3'
+          newvalue: active
+        -
+          value: '4'
+          newvalue: opensent
+        -
+          value: '5'
+          newvalue: openconfirm
+        -
+          value: '6'
+          newvalue: established
+    -
+      name: 'SNMP interface status (ifAdminStatus)'
+      mappings:
+        -
+          value: '1'
+          newvalue: up
+        -
+          value: '2'
+          newvalue: down
+        -
+          value: '3'
+          newvalue: testing
+    -
+      name: 'SNMP interface status (ifOperStatus)'
+      mappings:
+        -
+          value: '1'
+          newvalue: up
+        -
+          value: '2'
+          newvalue: down
+        -
+          value: '3'
+          newvalue: testing
+        -
+          value: '4'
+          newvalue: unknown
+        -
+          value: '5'
+          newvalue: dormant
+        -
+          value: '6'
+          newvalue: notPresent
+        -
+          value: '7'
+          newvalue: lowerLayerDown

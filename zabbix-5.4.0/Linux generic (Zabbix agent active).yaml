@@ -1,0 +1,355 @@
+zabbix_export:
+  version: '5.4'
+  date: '2021-05-28T02:23:19Z'
+  groups:
+    -
+      uuid: 57b7ae836ca64446ba2c296389c009b7
+      name: Templates/Modules
+  templates:
+    -
+      uuid: 7e4dc41320fd48bd97549025f4c3bcc6
+      template: 'Linux generic by Zabbix agent active'
+      name: 'Linux generic by Zabbix agent active'
+      description: 'Template tooling version used: 0.38'
+      groups:
+        -
+          name: Templates/Modules
+      items:
+        -
+          uuid: 98a2a698cd784267a965d653fdbba456
+          name: 'Maximum number of open file descriptors'
+          type: ZABBIX_ACTIVE
+          key: kernel.maxfiles
+          delay: 1h
+          history: 7d
+          description: 'It could be increased by using sysctrl utility or modifying file /etc/sysctl.conf.'
+          preprocessing:
+            -
+              type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1d
+          tags:
+            -
+              tag: Application
+              value: General
+          triggers:
+            -
+              uuid: fd194c5435c74dbdbefb396550497580
+              expression: 'last(/Linux generic by Zabbix agent active/kernel.maxfiles)<{$KERNEL.MAXFILES.MIN}'
+              name: 'Configured max number of open filedescriptors is too low (< {$KERNEL.MAXFILES.MIN})'
+              priority: INFO
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: 7778ab98754146ecbfd2735d9c322c97
+          name: 'Maximum number of processes'
+          type: ZABBIX_ACTIVE
+          key: kernel.maxproc
+          delay: 1h
+          history: 7d
+          description: 'It could be increased by using sysctrl utility or modifying file /etc/sysctl.conf.'
+          preprocessing:
+            -
+              type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1d
+          tags:
+            -
+              tag: Application
+              value: General
+          triggers:
+            -
+              uuid: 1ddbc55594d540f7b30239a4e87a3b97
+              expression: 'last(/Linux generic by Zabbix agent active/kernel.maxproc)<{$KERNEL.MAXPROC.MIN}'
+              name: 'Configured max number of processes is too low (< {$KERNEL.MAXPROC.MIN})'
+              priority: INFO
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+              dependencies:
+                -
+                  name: 'Getting closer to process limit (over 80% used)'
+                  expression: 'last(/Linux generic by Zabbix agent active/proc.num)/last(/Linux generic by Zabbix agent active/kernel.maxproc)*100>80'
+        -
+          uuid: 64268d5004a64e0ba737dcf4dd213913
+          name: 'Number of processes'
+          type: ZABBIX_ACTIVE
+          key: proc.num
+          history: 7d
+          tags:
+            -
+              tag: Application
+              value: General
+        -
+          uuid: 06e306520579482b8105d7421ad16da1
+          name: 'Number of running processes'
+          type: ZABBIX_ACTIVE
+          key: 'proc.num[,,run]'
+          history: 7d
+          tags:
+            -
+              tag: Application
+              value: General
+        -
+          uuid: 04989d7ca98246ce93405b25bd86aeda
+          name: 'System boot time'
+          type: ZABBIX_ACTIVE
+          key: system.boottime
+          delay: 15m
+          history: 7d
+          units: unixtime
+          preprocessing:
+            -
+              type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+          tags:
+            -
+              tag: Application
+              value: General
+        -
+          uuid: 40de32e4124b456faba499e00b1c7174
+          name: 'System name'
+          type: ZABBIX_ACTIVE
+          key: system.hostname
+          delay: 1h
+          history: 2w
+          trends: '0'
+          value_type: CHAR
+          description: 'System host name.'
+          inventory_link: NAME
+          preprocessing:
+            -
+              type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+          tags:
+            -
+              tag: Application
+              value: General
+          triggers:
+            -
+              uuid: 071532526e8842f8935bf9373a85b7da
+              expression: '(last(/Linux generic by Zabbix agent active/system.hostname,#1)<>last(/Linux generic by Zabbix agent active/system.hostname,#2))=1 and length(last(/Linux generic by Zabbix agent active/system.hostname))>0'
+              name: 'System name has changed (new name: {ITEM.VALUE})'
+              priority: INFO
+              description: |
+                System name has changed. Ack to close.
+                Last value: {ITEM.LASTVALUE1}.
+              manual_close: 'YES'
+        -
+          uuid: 510ed427b1284906824df3123b94a0bc
+          name: 'System local time'
+          key: system.localtime
+          history: 7d
+          status: DISABLED
+          units: unixtime
+          description: 'System local time of the host.'
+          tags:
+            -
+              tag: Application
+              value: General
+          triggers:
+            -
+              uuid: 350ceb73bee84b21b1f5c559e6697879
+              expression: 'fuzzytime(/Linux generic by Zabbix agent active/system.localtime,{$SYSTEM.FUZZYTIME.MAX})=0'
+              name: 'System time is out of sync (diff with Zabbix server > {$SYSTEM.FUZZYTIME.MAX}s)'
+              priority: WARNING
+              description: |
+                The host system time is different from the Zabbix server time.
+                Last value: {ITEM.LASTVALUE1}.
+              manual_close: 'YES'
+        -
+          uuid: 6f37348c05fa409e9189af3731296095
+          name: 'Operating system architecture'
+          type: ZABBIX_ACTIVE
+          key: system.sw.arch
+          delay: 1h
+          history: 2w
+          trends: '0'
+          value_type: CHAR
+          description: 'Operating system architecture of the host.'
+          preprocessing:
+            -
+              type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1d
+          tags:
+            -
+              tag: Application
+              value: Inventory
+        -
+          uuid: 79d493ae03a64bdab89520c3dde0410c
+          name: 'Operating system'
+          type: ZABBIX_ACTIVE
+          key: system.sw.os
+          delay: 1h
+          history: 2w
+          trends: '0'
+          value_type: CHAR
+          inventory_link: OS
+          preprocessing:
+            -
+              type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1d
+          tags:
+            -
+              tag: Application
+              value: Inventory
+          triggers:
+            -
+              uuid: fc45ac0cfc7641f2a52b95830df3e880
+              expression: '(last(/Linux generic by Zabbix agent active/system.sw.os,#1)<>last(/Linux generic by Zabbix agent active/system.sw.os,#2))=1 and length(last(/Linux generic by Zabbix agent active/system.sw.os))>0'
+              name: 'Operating system description has changed'
+              priority: INFO
+              description: |
+                Operating system description has changed. Possible reasons that system has been updated or replaced. Ack to close.
+                Last value: {ITEM.LASTVALUE1}.
+              manual_close: 'YES'
+              dependencies:
+                -
+                  name: 'System name has changed (new name: {ITEM.VALUE})'
+                  expression: '(last(/Linux generic by Zabbix agent active/system.hostname,#1)<>last(/Linux generic by Zabbix agent active/system.hostname,#2))=1 and length(last(/Linux generic by Zabbix agent active/system.hostname))>0'
+        -
+          uuid: 42df39b3317a4bd6908686a491fd3d18
+          name: 'Software installed'
+          type: ZABBIX_ACTIVE
+          key: system.sw.packages
+          delay: 1h
+          history: 2w
+          trends: '0'
+          value_type: TEXT
+          preprocessing:
+            -
+              type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1d
+          tags:
+            -
+              tag: Application
+              value: Inventory
+        -
+          uuid: d875142b4ea0442db59768be58c9d026
+          name: 'System description'
+          type: ZABBIX_ACTIVE
+          key: system.uname
+          delay: 1h
+          history: 2w
+          trends: '0'
+          value_type: CHAR
+          description: 'The information as normally returned by ''uname -a''.'
+          preprocessing:
+            -
+              type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1d
+          tags:
+            -
+              tag: Application
+              value: General
+        -
+          uuid: 2e5b3c8596df4aaebce704f3904630a7
+          name: 'System uptime'
+          type: ZABBIX_ACTIVE
+          key: system.uptime
+          delay: 30s
+          history: 2w
+          trends: 0d
+          units: uptime
+          description: 'System uptime in ''N days, hh:mm:ss'' format.'
+          tags:
+            -
+              tag: Application
+              value: Status
+          triggers:
+            -
+              uuid: 7b13d56caa094a8d95c0f4e948078366
+              expression: 'last(/Linux generic by Zabbix agent active/system.uptime)<10m'
+              name: '{HOST.NAME} has been restarted (uptime < 10m)'
+              priority: WARNING
+              description: |
+                The host uptime is less than 10 minutes.
+                Last value: {ITEM.LASTVALUE1}.
+              manual_close: 'YES'
+        -
+          uuid: a58cfd080cfe44d9ae054754bbc69892
+          name: 'Number of logged in users'
+          type: ZABBIX_ACTIVE
+          key: system.users.num
+          history: 7d
+          description: 'Number of users who are currently logged in.'
+          tags:
+            -
+              tag: Application
+              value: General
+        -
+          uuid: 7cb47989debc4deba77394a5320a83e8
+          name: 'Checksum of /etc/passwd'
+          type: ZABBIX_ACTIVE
+          key: 'vfs.file.cksum[/etc/passwd]'
+          delay: 15m
+          history: 7d
+          trends: '0'
+          value_type: CHAR
+          preprocessing:
+            -
+              type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+          tags:
+            -
+              tag: Application
+              value: Security
+          triggers:
+            -
+              uuid: a49d7ca808c345ec8ef516fdc3b0d5ff
+              expression: '(last(/Linux generic by Zabbix agent active/vfs.file.cksum[/etc/passwd],#1)<>last(/Linux generic by Zabbix agent active/vfs.file.cksum[/etc/passwd],#2))>0'
+              name: '/etc/passwd has been changed'
+              priority: INFO
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+              manual_close: 'YES'
+              dependencies:
+                -
+                  name: 'Operating system description has changed'
+                  expression: '(last(/Linux generic by Zabbix agent active/system.sw.os,#1)<>last(/Linux generic by Zabbix agent active/system.sw.os,#2))=1 and length(last(/Linux generic by Zabbix agent active/system.sw.os))>0'
+                -
+                  name: 'System name has changed (new name: {ITEM.VALUE})'
+                  expression: '(last(/Linux generic by Zabbix agent active/system.hostname,#1)<>last(/Linux generic by Zabbix agent active/system.hostname,#2))=1 and length(last(/Linux generic by Zabbix agent active/system.hostname))>0'
+      macros:
+        -
+          macro: '{$KERNEL.MAXFILES.MIN}'
+          value: '256'
+        -
+          macro: '{$KERNEL.MAXPROC.MIN}'
+          value: '1024'
+        -
+          macro: '{$SYSTEM.FUZZYTIME.MAX}'
+          value: '60'
+  triggers:
+    -
+      uuid: e15f1c71f77b4c86b8ae71469b2f297e
+      expression: 'last(/Linux generic by Zabbix agent active/proc.num)/last(/Linux generic by Zabbix agent active/kernel.maxproc)*100>80'
+      name: 'Getting closer to process limit (over 80% used)'
+      opdata: '{ITEM.LASTVALUE1} active, {ITEM.LASTVALUE2} limit.'
+      priority: WARNING
+      description: 'Last value: {ITEM.LASTVALUE1}.'
+  graphs:
+    -
+      uuid: c96b7c45ae7c4ab3a544cbbd4a0e374c
+      name: Processes
+      graph_items:
+        -
+          color: 1A7C11
+          item:
+            host: 'Linux generic by Zabbix agent active'
+            key: proc.num
+        -
+          sortorder: '1'
+          color: 2774A4
+          item:
+            host: 'Linux generic by Zabbix agent active'
+            key: 'proc.num[,,run]'
+        -
+          sortorder: '2'
+          color: F63100
+          item:
+            host: 'Linux generic by Zabbix agent active'
+            key: kernel.maxproc

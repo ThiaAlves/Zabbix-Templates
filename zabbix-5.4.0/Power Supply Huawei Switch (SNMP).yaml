@@ -1,0 +1,50 @@
+zabbix_export:
+  version: '5.4'
+  date: '2021-05-28T03:04:40Z'
+  groups:
+    -
+      uuid: 0bfb6f1f60614073a7c57825645ade77
+      name: 'Switchs Huawei'
+  templates:
+    -
+      uuid: a1004edc72c1494da81c4bc45c74ac70
+      template: 'Power Supply S6700 SNMP'
+      name: 'Power Supply S6700 SNMP'
+      groups:
+        -
+          name: 'Swichs Huawei'
+      discovery_rules:
+        -
+          uuid: 69984267ee224c35b723fa98e8c3a411
+          name: 'Power Supply Status'
+          type: SNMP_AGENT
+          snmp_oid: 'discovery[{#ENT_NAME},1.3.6.1.2.1.47.1.1.1.1.7]'
+          key: hwPowerSupplyStatus
+          delay: 5m
+          filter:
+            conditions:
+              -
+                macro: '{#ENT_NAME}'
+                value: '.*PWR'
+                formulaid: A
+          item_prototypes:
+            -
+              uuid: fb32e611399841d79ac26d9b91319716
+              name: 'Status Power Supply'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.2011.5.25.31.1.1.1.1.2.{#SNMPINDEX}'
+              key: 'Status[hwPowerSupplyStatus.{#ENT_NAME}]'
+              delay: 3m
+              tags:
+                -
+                  tag: Application
+                  value: 'Power Supply'
+              trigger_prototypes:
+                -
+                  uuid: 76600f9967564e7cb50d297119450804
+                  expression: 'last(/Power Supply S6700 SNMP/Status[hwPowerSupplyStatus.{#ENT_NAME}])=2'
+                  recovery_mode: RECOVERY_EXPRESSION
+                  recovery_expression: 'last(/Power Supply S6700 SNMP/Status[hwPowerSupplyStatus.{#ENT_NAME}])=3'
+                  name: 'Problema no Slot {#ENT_NAME}'
+                  priority: HIGH
+                  description: 'Last value: {ITEM.LASTVALUE1}.'

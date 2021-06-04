@@ -1,0 +1,26 @@
+zabbix_export:
+  version: '5.4'
+  date: '2021-05-28T03:49:18Z'
+  groups:
+    -
+      uuid: a571c0d144b14fd4a87a9d9b2aa9fcd6
+      name: Templates/Applications
+  templates:
+    -
+      uuid: 214366d2deb14a0ca6d19d8a54a3b88e
+      template: 'VMware macros'
+      name: 'VMware macros'
+      description: 'Template tooling version used: 0.38'
+      groups:
+        -
+          name: Templates/Applications
+      macros:
+        -
+          macro: '{$VMWARE.PASSWORD}'
+          description: 'VMware service {$USERNAME} user password'
+        -
+          macro: '{$VMWARE.URL}'
+          description: 'VMware service (vCenter or ESX hypervisor) SDK URL (https://servername/sdk)'
+        -
+          macro: '{$VMWARE.USERNAME}'
+          description: 'VMware service user name'

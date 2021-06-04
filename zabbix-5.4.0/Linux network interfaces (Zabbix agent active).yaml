@@ -1,0 +1,591 @@
+zabbix_export:
+  version: '5.4'
+  date: '2021-05-28T02:30:20Z'
+  groups:
+    -
+      uuid: 57b7ae836ca64446ba2c296389c009b7
+      name: Templates/Modules
+  templates:
+    -
+      uuid: fac8b6986be24a8c91f7b0b15439bccf
+      template: 'Linux network interfaces by Zabbix agent active'
+      name: 'Linux network interfaces by Zabbix agent active'
+      description: |
+        Known Issues:
+        
+          Description: High interface utilization trigger is removed since currently it is not possible to retrieve interface speed to determine the max bandwidth.
+        
+        Template tooling version used: 0.38
+      groups:
+        -
+          name: Templates/Modules
+      discovery_rules:
+        -
+          uuid: 37a61365e2f34811a389f37aafc04169
+          name: 'Network interface discovery'
+          type: ZABBIX_ACTIVE
+          key: net.if.discovery
+          delay: 1h
+          filter:
+            evaltype: AND
+            conditions:
+              -
+                macro: '{#IFNAME}'
+                value: '{$NET.IF.IFNAME.MATCHES}'
+                formulaid: A
+              -
+                macro: '{#IFNAME}'
+                value: '{$NET.IF.IFNAME.NOT_MATCHES}'
+                operator: NOT_MATCHES_REGEX
+                formulaid: B
+          description: 'Discovery of network interfaces.'
+          item_prototypes:
+            -
+              uuid: 62c1ecd956cb496b9d5257dad026add5
+              name: 'Interface {#IFNAME}: Inbound packets discarded'
+              type: ZABBIX_ACTIVE
+              key: 'net.if.in["{#IFNAME}",dropped]'
+              delay: 3m
+              history: 7d
+              preprocessing:
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+              tags:
+                -
+                  tag: Application
+                  value: 'Interface {#IFNAME}'
+            -
+              uuid: 5b771b290bb847be89bd7729709b7277
+              name: 'Interface {#IFNAME}: Inbound packets with errors'
+              type: ZABBIX_ACTIVE
+              key: 'net.if.in["{#IFNAME}",errors]'
+              delay: 3m
+              history: 7d
+              preprocessing:
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+              tags:
+                -
+                  tag: Application
+                  value: 'Interface {#IFNAME}'
+            -
+              uuid: bd9652a4c1dd45eaa31807bdf9a84a79
+              name: 'Interface {#IFNAME}: Bits received'
+              type: ZABBIX_ACTIVE
+              key: 'net.if.in["{#IFNAME}"]'
+              delay: 3m
+              history: 7d
+              units: bps
+              preprocessing:
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '8'
+              tags:
+                -
+                  tag: Application
+                  value: 'Interface {#IFNAME}'
+            -
+              uuid: f5c36654948041bfb45878117781b02f
+              name: 'Interface {#IFNAME}: Outbound packets discarded'
+              type: ZABBIX_ACTIVE
+              key: 'net.if.out["{#IFNAME}",dropped]'
+              delay: 3m
+              history: 7d
+              preprocessing:
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+              tags:
+                -
+                  tag: Application
+                  value: 'Interface {#IFNAME}'
+            -
+              uuid: af4d99f8a7604fdfaaa3190469ddf9ec
+              name: 'Interface {#IFNAME}: Outbound packets with errors'
+              type: ZABBIX_ACTIVE
+              key: 'net.if.out["{#IFNAME}",errors]'
+              delay: 3m
+              history: 7d
+              preprocessing:
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+              tags:
+                -
+                  tag: Application
+                  value: 'Interface {#IFNAME}'
+            -
+              uuid: 9cd8c1068368472383c468145c5aecba
+              name: 'Interface {#IFNAME}: Bits sent'
+              type: ZABBIX_ACTIVE
+              key: 'net.if.out["{#IFNAME}"]'
+              delay: 3m
+              history: 7d
+              units: bps
+              preprocessing:
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '8'
+              tags:
+                -
+                  tag: Application
+                  value: 'Interface {#IFNAME}'
+            -
+              uuid: b38858cf52f945599ca475b635aab285
+              name: 'Interface {#IFNAME}: Operational status'
+              type: ZABBIX_ACTIVE
+              key: 'vfs.file.contents["/sys/class/net/{#IFNAME}/operstate"]'
+              history: 7d
+              trends: '0'
+              description: |
+                Indicates the interface RFC2863 operational state as a string.
+                Possible values are:"unknown", "notpresent", "down", "lowerlayerdown", "testing","dormant", "up".
+                Reference: https://www.kernel.org/doc/Documentation/ABI/testing/sysfs-class-net
+              valuemap:
+                name: 'IF-MIB::ifOperStatus'
+              preprocessing:
+                -
+                  type: JAVASCRIPT
+                  parameters:
+                    - |
+                      var newvalue;
+                      switch(value) {
+                        case "up":
+                          newvalue = 1;
+                          break;
+                        case "down":
+                          newvalue = 2;
+                          break;
+                        case "testing":
+                          newvalue = 4;
+                          break;
+                        case "unknown":
+                          newvalue = 5;
+                          break;
+                        case "dormant":
+                          newvalue = 6;
+                          break;
+                        case "notPresent":
+                          newvalue = 7;
+                          break;
+                        default:
+                          newvalue = "Problem parsing interface operstate in JS";
+                      }
+                      return newvalue;
+              tags:
+                -
+                  tag: Application
+                  value: 'Interface {#IFNAME}'
+              trigger_prototypes:
+                -
+                  uuid: acaf449feee44624995b9c3d0673cedc
+                  expression: '{$IFCONTROL:"{#IFNAME}"}=1 and (last(/Linux network interfaces by Zabbix agent active/vfs.file.contents["/sys/class/net/{#IFNAME}/operstate"])=2 and (last(/Linux network interfaces by Zabbix agent active/vfs.file.contents["/sys/class/net/{#IFNAME}/operstate"],#1)<>last(/Linux network interfaces by Zabbix agent active/vfs.file.contents["/sys/class/net/{#IFNAME}/operstate"],#2))=1)'
+                  recovery_mode: RECOVERY_EXPRESSION
+                  recovery_expression: 'last(/Linux network interfaces by Zabbix agent active/vfs.file.contents["/sys/class/net/{#IFNAME}/operstate"])<>2 or {$IFCONTROL:"{#IFNAME}"}=0'
+                  name: 'Interface {#IFNAME}: Link down'
+                  opdata: 'Current state: {ITEM.LASTVALUE1}'
+                  priority: AVERAGE
+                  description: |
+                    This trigger expression works as follows:
+                    1. Can be triggered if operations status is down.
+                    2. {$IFCONTROL:"{#IFNAME}"}=1 - user can redefine Context macro to value - 0. That marks this interface as not important. No new trigger will be fired if this interface is down.
+                    3. {TEMPLATE_NAME:METRIC.diff()}=1) - trigger fires only if operational status was up(1) sometime before. (So, do not fire 'ethernal off' interfaces.)
+                    
+                    WARNING: if closed manually - won't fire again on next poll, because of .diff.
+                    Last value: {ITEM.LASTVALUE1}.
+                  manual_close: 'YES'
+            -
+              uuid: 1506d09010fc48378b35b434e0eb18c1
+              name: 'Interface {#IFNAME}: Interface type'
+              type: ZABBIX_ACTIVE
+              key: 'vfs.file.contents["/sys/class/net/{#IFNAME}/type"]'
+              delay: 1h
+              history: 7d
+              trends: 0d
+              description: |
+                Indicates the interface protocol type as a decimal value.
+                See include/uapi/linux/if_arp.h for all possible values.
+                Reference: https://www.kernel.org/doc/Documentation/ABI/testing/sysfs-class-net
+              valuemap:
+                name: 'Linux::Interface protocol types'
+              preprocessing:
+                -
+                  type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - 1d
+              tags:
+                -
+                  tag: Application
+                  value: 'Interface {#IFNAME}'
+          trigger_prototypes:
+            -
+              uuid: 6ce7c1f3b54641bb87684f9c5336d1da
+              expression: |
+                change(/Linux network interfaces by Zabbix agent active/vfs.file.contents["/sys/class/net/{#IFNAME}/type"])<0 and last(/Linux network interfaces by Zabbix agent active/vfs.file.contents["/sys/class/net/{#IFNAME}/type"])>0
+                and
+                (last(/Linux network interfaces by Zabbix agent active/vfs.file.contents["/sys/class/net/{#IFNAME}/type"])=6
+                or last(/Linux network interfaces by Zabbix agent active/vfs.file.contents["/sys/class/net/{#IFNAME}/type"])=1)
+                and
+                (last(/Linux network interfaces by Zabbix agent active/vfs.file.contents["/sys/class/net/{#IFNAME}/operstate"])<>2)
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: |
+                (change(/Linux network interfaces by Zabbix agent active/vfs.file.contents["/sys/class/net/{#IFNAME}/type"])>0 and last(/Linux network interfaces by Zabbix agent active/vfs.file.contents["/sys/class/net/{#IFNAME}/type"],#2)>0) or
+                (last(/Linux network interfaces by Zabbix agent active/vfs.file.contents["/sys/class/net/{#IFNAME}/operstate"])=2)
+              name: 'Interface {#IFNAME}: Ethernet has changed to lower speed than it was before'
+              opdata: 'Current reported speed: {ITEM.LASTVALUE1}'
+              priority: INFO
+              description: |
+                This Ethernet connection has transitioned down from its known maximum speed. This might be a sign of autonegotiation issues. Ack to close.
+                Last value: {ITEM.LASTVALUE1}.
+              manual_close: 'YES'
+              dependencies:
+                -
+                  name: 'Interface {#IFNAME}: Link down'
+                  expression: '{$IFCONTROL:"{#IFNAME}"}=1 and (last(/Linux network interfaces by Zabbix agent active/vfs.file.contents["/sys/class/net/{#IFNAME}/operstate"])=2 and (last(/Linux network interfaces by Zabbix agent active/vfs.file.contents["/sys/class/net/{#IFNAME}/operstate"],#1)<>last(/Linux network interfaces by Zabbix agent active/vfs.file.contents["/sys/class/net/{#IFNAME}/operstate"],#2))=1)'
+                  recovery_expression: 'last(/Linux network interfaces by Zabbix agent active/vfs.file.contents["/sys/class/net/{#IFNAME}/operstate"])<>2 or {$IFCONTROL:"{#IFNAME}"}=0'
+            -
+              uuid: 33a3c860162c4675963f75d02aea025a
+              expression: |
+                min(/Linux network interfaces by Zabbix agent active/net.if.in["{#IFNAME}",errors],5m)>{$IF.ERRORS.WARN:"{#IFNAME}"}
+                or min(/Linux network interfaces by Zabbix agent active/net.if.out["{#IFNAME}",errors],5m)>{$IF.ERRORS.WARN:"{#IFNAME}"}
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: |
+                max(/Linux network interfaces by Zabbix agent active/net.if.in["{#IFNAME}",errors],5m)<{$IF.ERRORS.WARN:"{#IFNAME}"}*0.8
+                and max(/Linux network interfaces by Zabbix agent active/net.if.out["{#IFNAME}",errors],5m)<{$IF.ERRORS.WARN:"{#IFNAME}"}*0.8
+              name: 'Interface {#IFNAME}: High error rate ( > {$IF.ERRORS.WARN:"{#IFNAME}"} for 5m)'
+              opdata: 'errors in: {ITEM.LASTVALUE1}, errors out: {ITEM.LASTVALUE2}'
+              priority: WARNING
+              description: |
+                Recovers when below 80% of {$IF.ERRORS.WARN:"{#IFNAME}"} threshold.
+                Last value: {ITEM.LASTVALUE1}.
+              manual_close: 'YES'
+              dependencies:
+                -
+                  name: 'Interface {#IFNAME}: Link down'
+                  expression: '{$IFCONTROL:"{#IFNAME}"}=1 and (last(/Linux network interfaces by Zabbix agent active/vfs.file.contents["/sys/class/net/{#IFNAME}/operstate"])=2 and (last(/Linux network interfaces by Zabbix agent active/vfs.file.contents["/sys/class/net/{#IFNAME}/operstate"],#1)<>last(/Linux network interfaces by Zabbix agent active/vfs.file.contents["/sys/class/net/{#IFNAME}/operstate"],#2))=1)'
+                  recovery_expression: 'last(/Linux network interfaces by Zabbix agent active/vfs.file.contents["/sys/class/net/{#IFNAME}/operstate"])<>2 or {$IFCONTROL:"{#IFNAME}"}=0'
+          graph_prototypes:
+            -
+              uuid: 97e93dc9e93f4e299dee1d1424180c6a
+              name: 'Interface {#IFNAME}: Network traffic'
+              graph_items:
+                -
+                  drawtype: GRADIENT_LINE
+                  color: 1A7C11
+                  item:
+                    host: 'Linux network interfaces by Zabbix agent active'
+                    key: 'net.if.in["{#IFNAME}"]'
+                -
+                  sortorder: '1'
+                  drawtype: BOLD_LINE
+                  color: 2774A4
+                  item:
+                    host: 'Linux network interfaces by Zabbix agent active'
+                    key: 'net.if.out["{#IFNAME}"]'
+                -
+                  sortorder: '2'
+                  color: F63100
+                  yaxisside: RIGHT
+                  item:
+                    host: 'Linux network interfaces by Zabbix agent active'
+                    key: 'net.if.out["{#IFNAME}",errors]'
+                -
+                  sortorder: '3'
+                  color: A54F10
+                  yaxisside: RIGHT
+                  item:
+                    host: 'Linux network interfaces by Zabbix agent active'
+                    key: 'net.if.in["{#IFNAME}",errors]'
+                -
+                  sortorder: '4'
+                  color: FC6EA3
+                  yaxisside: RIGHT
+                  item:
+                    host: 'Linux network interfaces by Zabbix agent active'
+                    key: 'net.if.out["{#IFNAME}",dropped]'
+                -
+                  sortorder: '5'
+                  color: 6C59DC
+                  yaxisside: RIGHT
+                  item:
+                    host: 'Linux network interfaces by Zabbix agent active'
+                    key: 'net.if.in["{#IFNAME}",dropped]'
+      macros:
+        -
+          macro: '{$IF.ERRORS.WARN}'
+          value: '2'
+        -
+          macro: '{$IFCONTROL}'
+          value: '1'
+        -
+          macro: '{$NET.IF.IFNAME.MATCHES}'
+          value: '^.*$'
+        -
+          macro: '{$NET.IF.IFNAME.NOT_MATCHES}'
+          value: '(^Software Loopback Interface|^NULL[0-9.]*$|^[Ll]o[0-9.]*$|^[Ss]ystem$|^Nu[0-9.]*$|^veth[0-9a-z]+$|docker[0-9]+|br-[a-z0-9]{12})'
+          description: 'Filter out loopbacks, nulls, docker veth links and docker0 bridge by default'
+      dashboards:
+        -
+          uuid: 4c72409900b84a29bfcfd02648535a2b
+          name: 'Network interfaces'
+          pages:
+            -
+              widgets:
+                -
+                  type: GRAPH_PROTOTYPE
+                  width: '24'
+                  height: '5'
+                  fields:
+                    -
+                      type: INTEGER
+                      name: columns
+                      value: '1'
+                    -
+                      type: INTEGER
+                      name: rows
+                      value: '1'
+                    -
+                      type: INTEGER
+                      name: source_type
+                      value: '2'
+                    -
+                      type: GRAPH_PROTOTYPE
+                      name: graphid
+                      value:
+                        name: 'Interface {#IFNAME}: Network traffic'
+                        host: 'Linux network interfaces by Zabbix agent active'
+      valuemaps:
+        -
+          uuid: 9bc9524635a349409e244ad5215c80c1
+          name: 'IF-MIB::ifOperStatus'
+          mappings:
+            -
+              value: '1'
+              newvalue: up
+            -
+              value: '2'
+              newvalue: down
+            -
+              value: '4'
+              newvalue: unknown
+            -
+              value: '5'
+              newvalue: dormant
+            -
+              value: '6'
+              newvalue: notPresent
+            -
+              value: '7'
+              newvalue: lowerLayerDown
+        -
+          uuid: 8f709b791d1342a48615632e86969c92
+          name: 'Linux::Interface protocol types'
+          mappings:
+            -
+              value: '0'
+              newvalue: 'from KA9Q: NET/ROM pseudo'
+            -
+              value: '1'
+              newvalue: Ethernet
+            -
+              value: '2'
+              newvalue: 'Experimental Ethernet'
+            -
+              value: '3'
+              newvalue: 'AX.25 Level 2'
+            -
+              value: '4'
+              newvalue: 'PROnet token ring'
+            -
+              value: '5'
+              newvalue: Chaosnet
+            -
+              value: '6'
+              newvalue: 'IEEE 802.2 Ethernet/TR/TB'
+            -
+              value: '7'
+              newvalue: ARCnet
+            -
+              value: '8'
+              newvalue: APPLEtalk
+            -
+              value: '15'
+              newvalue: 'Frame Relay DLCI'
+            -
+              value: '19'
+              newvalue: ATM
+            -
+              value: '23'
+              newvalue: 'Metricom STRIP (new IANA id)'
+            -
+              value: '24'
+              newvalue: 'IEEE 1394 IPv4 - RFC 2734'
+            -
+              value: '27'
+              newvalue: EUI-64
+            -
+              value: '32'
+              newvalue: InfiniBand
+            -
+              value: '256'
+              newvalue: ARPHRD_SLIP
+            -
+              value: '257'
+              newvalue: ARPHRD_CSLIP
+            -
+              value: '258'
+              newvalue: ARPHRD_SLIP6
+            -
+              value: '259'
+              newvalue: ARPHRD_CSLIP6
+            -
+              value: '260'
+              newvalue: 'Notional KISS type'
+            -
+              value: '264'
+              newvalue: ARPHRD_ADAPT
+            -
+              value: '270'
+              newvalue: ARPHRD_ROSE
+            -
+              value: '271'
+              newvalue: 'CCITT X.25'
+            -
+              value: '272'
+              newvalue: 'Boards with X.25 in firmware'
+            -
+              value: '280'
+              newvalue: 'Controller Area Network'
+            -
+              value: '512'
+              newvalue: ARPHRD_PPP
+            -
+              value: '513'
+              newvalue: 'Cisco HDLC'
+            -
+              value: '516'
+              newvalue: LAPB
+            -
+              value: '517'
+              newvalue: 'Digital''s DDCMP protocol'
+            -
+              value: '518'
+              newvalue: 'Raw HDLC'
+            -
+              value: '519'
+              newvalue: 'Raw IP'
+            -
+              value: '768'
+              newvalue: 'IPIP tunnel'
+            -
+              value: '769'
+              newvalue: 'IP6IP6 tunnel'
+            -
+              value: '770'
+              newvalue: 'Frame Relay Access Device'
+            -
+              value: '771'
+              newvalue: 'SKIP vif'
+            -
+              value: '772'
+              newvalue: 'Loopback device'
+            -
+              value: '773'
+              newvalue: 'Localtalk device'
+            -
+              value: '774'
+              newvalue: 'Fiber Distributed Data Interface'
+            -
+              value: '775'
+              newvalue: 'AP1000 BIF'
+            -
+              value: '776'
+              newvalue: 'sit0 device - IPv6-in-IPv4'
+            -
+              value: '777'
+              newvalue: 'IP over DDP tunneller'
+            -
+              value: '778'
+              newvalue: 'GRE over IP'
+            -
+              value: '779'
+              newvalue: 'PIMSM register interface'
+            -
+              value: '780'
+              newvalue: 'High Performance Parallel Interface'
+            -
+              value: '781'
+              newvalue: 'Nexus 64Mbps Ash'
+            -
+              value: '782'
+              newvalue: 'Acorn Econet'
+            -
+              value: '783'
+              newvalue: Linux-IrDA
+            -
+              value: '784'
+              newvalue: 'Point to point fibrechannel'
+            -
+              value: '785'
+              newvalue: 'Fibrechannel arbitrated loop'
+            -
+              value: '786'
+              newvalue: 'Fibrechannel public loop'
+            -
+              value: '787'
+              newvalue: 'Fibrechannel fabric'
+            -
+              value: '800'
+              newvalue: 'Magic type ident for TR'
+            -
+              value: '801'
+              newvalue: 'IEEE 802.11'
+            -
+              value: '802'
+              newvalue: 'IEEE 802.11 + Prism2 header'
+            -
+              value: '803'
+              newvalue: 'IEEE 802.11 + radiotap header'
+            -
+              value: '804'
+              newvalue: ARPHRD_IEEE802154
+            -
+              value: '805'
+              newvalue: 'IEEE 802.15.4 network monitor'
+            -
+              value: '820'
+              newvalue: 'PhoNet media type'
+            -
+              value: '821'
+              newvalue: 'PhoNet pipe header'
+            -
+              value: '822'
+              newvalue: 'CAIF media type'
+            -
+              value: '823'
+              newvalue: 'GRE over IPv6'
+            -
+              value: '824'
+              newvalue: 'Netlink header'
+            -
+              value: '825'
+              newvalue: 'IPv6 over LoWPAN'
+            -
+              value: '826'
+              newvalue: 'Vsock monitor header'

@@ -1,0 +1,616 @@
+zabbix_export:
+  version: '5.4'
+  date: '2021-05-28T03:42:10Z'
+  groups:
+    -
+      uuid: 7df96b18c230490a9a0a9e2307226338
+      name: Templates
+  templates:
+    -
+      uuid: 33c5e9768eed4ed29029a88ac7f7a849
+      template: 'Template UPS - NHS 3 FASICO'
+      name: 'Template UPS - NHS 3 FASICO'
+      templates:
+        -
+          name: 'Template Module ICMP Ping'
+      groups:
+        -
+          name: Templates
+      items:
+        -
+          uuid: 81f57a90a2f34935aa7b641450eb8021
+          name: Contact
+          type: SNMP_AGENT
+          snmp_oid: sysContact.0
+          key: sysContact
+          delay: 1h
+          trends: '0'
+          value_type: CHAR
+          tags:
+            -
+              tag: Application
+              value: Information(s)
+        -
+          uuid: 5220fd352cb34c9483fb9e5eae624c0e
+          name: 'Device Location'
+          type: SNMP_AGENT
+          snmp_oid: sysLocation.0
+          key: sysLocation
+          delay: 1h
+          trends: '0'
+          value_type: CHAR
+          tags:
+            -
+              tag: Application
+              value: Information(s)
+        -
+          uuid: d4db3deb64be467c9c0ad7c5f05b6e65
+          name: 'Device Name'
+          type: SNMP_AGENT
+          snmp_oid: sysName.0
+          key: sysName
+          delay: 1h
+          trends: '0'
+          value_type: CHAR
+          tags:
+            -
+              tag: Application
+              value: Information(s)
+        -
+          uuid: f25236afd4b94eaba7b26fa0077cd0d9
+          name: Uptime
+          type: SNMP_AGENT
+          snmp_oid: sysUpTime.0
+          key: sysUpTime
+          units: uptime
+          preprocessing:
+            -
+              type: MULTIPLIER
+              parameters:
+                - '0.01'
+          tags:
+            -
+              tag: Application
+              value: Information(s)
+        -
+          uuid: 866caee40729423e8c4f737fb3af42d4
+          name: 'UPS battery capacity (%)'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.33.1.2.4.0
+          key: upsAdvBatteryCapacity
+          value_type: FLOAT
+          units: '%'
+          tags:
+            -
+              tag: Application
+              value: Operational
+        -
+          uuid: bc2f8c1d23b64eecbc91768ad9398196
+          name: 'UPS battery current'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.2.1.33.1.2.6.0
+          key: upsAdvBatteryCurrent
+          preprocessing:
+            -
+              type: MULTIPLIER
+              parameters:
+                - '0.1'
+          tags:
+            -
+              tag: Application
+              value: Operational
+        -
+          uuid: 63f5398b98fe45b2b5034eeacbb886da
+          name: 'UPS battery temperature'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.33.1.2.7.0
+          key: upsAdvBatteryTemperature
+          units: °C
+          tags:
+            -
+              tag: Application
+              value: Operational
+          triggers:
+            -
+              uuid: 25a79e42409c4b3a83fc22d725b32650
+              expression: 'last(/Template UPS - NHS 3 FASICO/upsAdvBatteryTemperature)>50'
+              name: 'High battery temperature on {HOST.HOST}'
+              priority: HIGH
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: a72d84fa3b9545a6bc361575a6545919
+          name: 'UPS battery voltage'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.33.1.2.5.0
+          key: upsAdvBatteryVoltage
+          units: VDC
+          preprocessing:
+            -
+              type: MULTIPLIER
+              parameters:
+                - '0.1'
+          tags:
+            -
+              tag: Application
+              value: Operational
+        -
+          uuid: 99cb77aa5d8c458e87995248566e4cd7
+          name: 'UPS input current'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.33.1.3.3.1.4.1
+          key: upsAdvInputCurrent
+          value_type: FLOAT
+          units: A
+          preprocessing:
+            -
+              type: MULTIPLIER
+              parameters:
+                - '0.1'
+          tags:
+            -
+              tag: Application
+              value: Operational
+        -
+          uuid: f8ad06e2ab294c5380eb82f43f28a7ee
+          name: 'UPS input frequency L1'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.33.1.3.3.1.2.1
+          key: upsAdvInputFrequency_1
+          value_type: FLOAT
+          units: Hz
+          preprocessing:
+            -
+              type: MULTIPLIER
+              parameters:
+                - '0.1'
+          tags:
+            -
+              tag: Application
+              value: Operational
+        -
+          uuid: 1126d24bf3b04e35bf224820da87e79a
+          name: 'UPS input frequency L2'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.33.1.3.3.1.2.2
+          key: upsAdvInputFrequency_2
+          value_type: FLOAT
+          units: Hz
+          preprocessing:
+            -
+              type: MULTIPLIER
+              parameters:
+                - '0.1'
+          tags:
+            -
+              tag: Application
+              value: Operational
+        -
+          uuid: d527c236b43c40c89ab1d0ddc0ab08c3
+          name: 'UPS input frequency L3'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.33.1.3.3.1.2.3
+          key: upsAdvInputFrequency_3
+          value_type: FLOAT
+          units: Hz
+          preprocessing:
+            -
+              type: MULTIPLIER
+              parameters:
+                - '0.1'
+          tags:
+            -
+              tag: Application
+              value: Operational
+        -
+          uuid: 62266ea0054c414bbe18ea63dc4e917b
+          name: 'UPS input power'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.33.1.3.3.1.5.1
+          key: upsAdvInputPower
+          value_type: FLOAT
+          units: W
+          tags:
+            -
+              tag: Application
+              value: Operational
+        -
+          uuid: 09d58495b9ec453289b50eb0880d4a9e
+          name: 'UPS input voltage L1'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.33.1.3.3.1.3.1
+          key: upsAdvInputVoltage_1
+          value_type: FLOAT
+          units: VAC
+          tags:
+            -
+              tag: Application
+              value: Operational
+          triggers:
+            -
+              uuid: 555cf51e99264b6b8b2a7afefc0828d7
+              expression: 'last(/Template UPS - NHS 3 FASICO/upsAdvInputVoltage_1)<=110'
+              name: 'Tensao entrada a baixo 110 V FASE.1 {HOST.HOST}'
+              priority: HIGH
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+            -
+              uuid: e43ba997924a4ce8b555fb8b83ab5d01
+              expression: 'last(/Template UPS - NHS 3 FASICO/upsAdvInputVoltage_1)>131'
+              name: 'Tensao Entrada Maior 127 V Fase.1 {HOST.HOST}'
+              priority: HIGH
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: 5337d7d982934b52b8d9bd5d8494b387
+          name: 'UPS input voltage L2'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.33.1.3.3.1.3.2
+          key: upsAdvInputVoltage_2
+          value_type: FLOAT
+          units: VAC
+          tags:
+            -
+              tag: Application
+              value: Operational
+          triggers:
+            -
+              uuid: 7e6ce4bfdaec463fbb88ab9ff3429165
+              expression: 'last(/Template UPS - NHS 3 FASICO/upsAdvInputVoltage_2)<=110'
+              name: 'Tensao entrada a baixo 110 V FASE.2 {HOST.HOST}'
+              priority: HIGH
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+            -
+              uuid: 8a23e04a863a48e7b2660057cf065b9e
+              expression: 'last(/Template UPS - NHS 3 FASICO/upsAdvInputVoltage_2)>131'
+              name: 'Tensao Entrada Maior 127 V Fase.2 {HOST.HOST}'
+              priority: HIGH
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: 4cf3c0d34e9f45eea809a6e648e0d0ba
+          name: 'UPS input voltage L3'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.33.1.3.3.1.3.3
+          key: upsAdvInputVoltage_3
+          value_type: FLOAT
+          units: VAC
+          tags:
+            -
+              tag: Application
+              value: Operational
+          triggers:
+            -
+              uuid: 0f4f545aa55b480eb1efe5ef90adad39
+              expression: 'last(/Template UPS - NHS 3 FASICO/upsAdvInputVoltage_3)<=110'
+              name: 'Tensao entrada a baixo 110 V FASE.3 {HOST.HOST}'
+              priority: HIGH
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+            -
+              uuid: 04b01f9e199f4f1bbd81e4d5ed056ca7
+              expression: 'last(/Template UPS - NHS 3 FASICO/upsAdvInputVoltage_3)>131'
+              name: 'Tensao Entrada Maior 127 V Fase.3 {HOST.HOST}'
+              priority: HIGH
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: b7d32690ed11428aa3fb445aaac7caf9
+          name: 'UPS output current L1'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.33.1.4.4.1.3.1
+          key: upsAdvOutputCurrent_1
+          value_type: FLOAT
+          units: A
+          preprocessing:
+            -
+              type: MULTIPLIER
+              parameters:
+                - '0.1'
+        -
+          uuid: 9361bdddb6a940b5abfc6629d628eeb3
+          name: 'UPS output current L2'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.33.1.4.4.1.3.2
+          key: upsAdvOutputCurrent_2
+          value_type: FLOAT
+          units: A
+          preprocessing:
+            -
+              type: MULTIPLIER
+              parameters:
+                - '0.1'
+          tags:
+            -
+              tag: Application
+              value: Operational
+        -
+          uuid: 7e219a23eecb4db7818f3b62010725a3
+          name: 'UPS output current L3'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.33.1.4.4.1.3.3
+          key: upsAdvOutputCurrent_3
+          value_type: FLOAT
+          units: A
+          preprocessing:
+            -
+              type: MULTIPLIER
+              parameters:
+                - '0.1'
+          tags:
+            -
+              tag: Application
+              value: Operational
+        -
+          uuid: 6e93a00cf4424a699aa116ef9170efd2
+          name: 'UPS output frequency'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.33.1.4.2.0
+          key: upsAdvOutputFrequency
+          value_type: FLOAT
+          units: Hz
+          preprocessing:
+            -
+              type: MULTIPLIER
+              parameters:
+                - '0.1'
+          tags:
+            -
+              tag: Application
+              value: Operational
+        -
+          uuid: d6cf892226f9495a978f975d40d32ea1
+          name: 'UPS output load L1 (%)'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.33.1.4.4.1.5.1
+          key: upsAdvOutputLoad_1
+          value_type: FLOAT
+          units: '%'
+          tags:
+            -
+              tag: Application
+              value: Operational
+          triggers:
+            -
+              uuid: b4f38a623c7c4d64be86adc1899108da
+              expression: 'last(/Template UPS - NHS 3 FASICO/upsAdvOutputLoad_1)>=75'
+              name: 'Output load Critical 75% fase_1 on {HOST.HOST}'
+              priority: AVERAGE
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+            -
+              uuid: aaa6c142ecfc4f3890502c078f3d601e
+              expression: 'last(/Template UPS - NHS 3 FASICO/upsAdvOutputLoad_1)>=90'
+              name: 'Output load Critical 90% fase_1 on {HOST.HOST}'
+              priority: HIGH
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: b4f383f4150c41a4b88eb4532d242e43
+          name: 'UPS output load L2 (%)'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.33.1.4.4.1.5.2
+          key: upsAdvOutputLoad_2
+          value_type: FLOAT
+          units: '%'
+          tags:
+            -
+              tag: Application
+              value: Operational
+          triggers:
+            -
+              uuid: 7591bf8da3a442d0a72f735b2aaa9335
+              expression: 'last(/Template UPS - NHS 3 FASICO/upsAdvOutputLoad_2)>=75'
+              name: 'Output load critical 75% fase_2 on {HOST.HOST}'
+              priority: AVERAGE
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+            -
+              uuid: 6878c74438f1458fbdb4f1670042afc9
+              expression: 'last(/Template UPS - NHS 3 FASICO/upsAdvOutputLoad_2)>=90'
+              name: 'Output load critical 90% fase_2 on {HOST.HOST}'
+              priority: HIGH
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: 745aad3ce3d24f368fde5192babcd452
+          name: 'UPS output load L3 (%)'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.33.1.4.4.1.5.3
+          key: upsAdvOutputLoad_3
+          value_type: FLOAT
+          units: '%'
+          tags:
+            -
+              tag: Application
+              value: Operational
+          triggers:
+            -
+              uuid: f96a49ffba8b44f8b3d43367e1691651
+              expression: 'last(/Template UPS - NHS 3 FASICO/upsAdvOutputLoad_3)>=75'
+              name: 'Output load critical 75% fase_3 on {HOST.HOST}'
+              priority: AVERAGE
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+            -
+              uuid: 0f318c4c38bd4f8aadc70eda1f1eed42
+              expression: 'last(/Template UPS - NHS 3 FASICO/upsAdvOutputLoad_3)>=90'
+              name: 'Output load Critical 90% fase_3 on {HOST.HOST}'
+              priority: HIGH
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: 66924a9f10e44f52be7147fd4c682c53
+          name: 'UPS output power L1'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.33.1.4.4.1.4.1
+          key: upsAdvOutputPower_1
+          value_type: FLOAT
+          units: W
+          tags:
+            -
+              tag: Application
+              value: Operational
+        -
+          uuid: edd487d0753c483fb6fee0bc40ade251
+          name: 'UPS output power L2'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.33.1.4.4.1.4.2
+          key: upsAdvOutputPower_2
+          value_type: FLOAT
+          units: W
+          tags:
+            -
+              tag: Application
+              value: Operational
+        -
+          uuid: c893288af48142f7b59a384350b3fd65
+          name: 'UPS output power L3'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.33.1.4.4.1.4.3
+          key: upsAdvOutputPower_3
+          value_type: FLOAT
+          units: W
+          tags:
+            -
+              tag: Application
+              value: Operational
+        -
+          uuid: b95a6a3893af49b7baf23a66dc4ef4a8
+          name: 'UPS output voltage L1'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.33.1.4.4.1.2.1
+          key: upsAdvOutputVoltage_1
+          value_type: FLOAT
+          units: VAC
+          tags:
+            -
+              tag: Application
+              value: Operational
+          triggers:
+            -
+              uuid: 4c5d3fc287144d1fa6666f92788bad5a
+              expression: 'last(/Template UPS - NHS 3 FASICO/upsAdvOutputVoltage_1)<=120'
+              name: 'TENSAO SAIDA A BAIXO 120 V  FASE.1 {HOSTNAME}'
+              priority: HIGH
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+            -
+              uuid: 2165e169216b4a48913ac4e239e19482
+              expression: 'last(/Template UPS - NHS 3 FASICO/upsAdvOutputVoltage_1)>127'
+              name: 'Tensao Saida Maior 127 V Fase.1 {HOST.HOST}'
+              priority: HIGH
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: c03bdb3beec741558973bd6b97788656
+          name: 'UPS output voltage L2'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.33.1.4.4.1.2.2
+          key: upsAdvOutputVoltage_2
+          value_type: FLOAT
+          units: VAC
+          tags:
+            -
+              tag: Application
+              value: Operational
+          triggers:
+            -
+              uuid: f41ba55224ac4a16862ccc85d490d2e2
+              expression: 'last(/Template UPS - NHS 3 FASICO/upsAdvOutputVoltage_2)<=120'
+              name: 'TENSAO SAIDA A BAIXO 120 V  FASE.2 {HOSTNAME}'
+              priority: HIGH
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+            -
+              uuid: 86633ed5df954c468a3bdb4e2ca5beef
+              expression: 'last(/Template UPS - NHS 3 FASICO/upsAdvOutputVoltage_2)>127'
+              name: 'Tensao Saida Maior 127 V Fase.2 {HOST.HOST}'
+              priority: HIGH
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: 18c7a7ff3e994f3482fc71928c5a204c
+          name: 'UPS output voltage L3'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.33.1.4.4.1.2.3
+          key: upsAdvOutputVoltage_3
+          value_type: FLOAT
+          units: VAC
+          tags:
+            -
+              tag: Application
+              value: Operational
+          triggers:
+            -
+              uuid: 98df18fec85d41a08dcff7f8b9420d81
+              expression: 'last(/Template UPS - NHS 3 FASICO/upsAdvOutputVoltage_3)<=120'
+              name: 'TENSAO SAIDA A BAIXO 120 V  FASE.3 {HOSTNAME}'
+              priority: HIGH
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+            -
+              uuid: cccc12da307e4d84b80aa8991fb0dbf0
+              expression: 'last(/Template UPS - NHS 3 FASICO/upsAdvOutputVoltage_3)>127'
+              name: 'Tensao Saida Maior 127 V Fase.3 {HOST.HOST}'
+              priority: HIGH
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: f4f1a0e1976a446396ac8dc8648cbcb1
+          name: 'UPS run time remaining'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.33.1.2.3.0
+          key: upsAdvRunTimeRemaining
+          units: Min
+          tags:
+            -
+              tag: Application
+              value: Operational
+          triggers:
+            -
+              uuid: 39ae734005c04dcdbaed2095417e65d7
+              expression: 'last(/Template UPS - NHS 3 FASICO/upsAdvRunTimeRemaining)<=10'
+              name: 'Tempo Bateria 10 Min. {HOST.HOST}'
+              priority: DISASTER
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+            -
+              uuid: ba0d78ed961941fe87ec478c293df8ab
+              expression: 'last(/Template UPS - NHS 3 FASICO/upsAdvRunTimeRemaining)<=20'
+              name: 'Tempo Bateria 20 Min. {HOST.HOST}'
+              priority: HIGH
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+            -
+              uuid: 932c8e254d7b462eb6ae56cc44ef1f0b
+              expression: 'last(/Template UPS - NHS 3 FASICO/upsAdvRunTimeRemaining)<30'
+              name: 'Tempo Bateria 30 Min. {HOST.NAME}'
+              priority: HIGH
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: 5bfcbd3e81de4269bd6b4f43b992e937
+          name: 'UPS battery status'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.33.1.2.1.0
+          key: upsBasicBatteryStatus
+          tags:
+            -
+              tag: Application
+              value: Operational
+          triggers:
+            -
+              uuid: d6ecd4f7d37e4de5bbc7f15e886fd9cf
+              expression: 'last(/Template UPS - NHS 3 FASICO/upsBasicBatteryStatus)=3'
+              name: 'The battery power is too low to support the load on {HOST.HOST}'
+              priority: DISASTER
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: e5c4eb0018f4448a831cf75cbc701325
+          name: 'UPS time on battery'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.2.1.33.1.2.2.0
+          key: upsBasicBatteryTimeOnBattery
+          units: s
+          preprocessing:
+            -
+              type: MULTIPLIER
+              parameters:
+                - '0.01'
+          tags:
+            -
+              tag: Application
+              value: Operational
+        -
+          uuid: 136313466012486381e30d7b43d8870f
+          name: 'SOFTWARE VERSION'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.33.1.4.4.1.4.63
+          key: upsIdentUPSSoftwareVersion
+          delay: 1h
+          trends: '0'
+          value_type: CHAR
+          tags:
+            -
+              tag: Application
+              value: Information(s)

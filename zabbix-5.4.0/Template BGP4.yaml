@@ -1,0 +1,43 @@
+zabbix_export:
+  version: '5.4'
+  date: '2021-05-28T03:19:44Z'
+  groups:
+    -
+      uuid: a30fd7a73f3645cf825d56df6955ce0e
+      name: Roteadores_QNET_R1
+  templates:
+    -
+      uuid: 10d97cada9e6420db0c978a54c687225
+      template: 'Template BGP4'
+      name: 'Template BGP4'
+      groups:
+        -
+          name: Roteadores_QNET_R1
+      items:
+        -
+          uuid: 4068019a6fbb49a6ac693b5ae02aa047
+          name: 'Operational status $2'
+          type: CALCULATED
+          key: 'jnxBgpM2PeerState[{$ASNUM}, {$PEERADDR}]'
+          params: 'last(/R2/jnxBgpM2PeerState[{$ASNUM}, {$PEERADDR}])'
+          tags:
+            -
+              tag: Application
+              value: BGP4
+        -
+          uuid: c1e1c110d45c404ba491731537f1db32
+          name: 'Administrative status $2'
+          type: CALCULATED
+          key: 'jnxBgpM2PeerStatus[{$ASNUM}, {$PEERADDR}]'
+          params: 'last(/R2/jnxBgpM2PeerStatus[{$ASNUM}, {$PEERADDR}])'
+          tags:
+            -
+              tag: Application
+              value: BGP4
+  triggers:
+    -
+      uuid: 5ad5ec40f24d4a0e8dd126a69fd632db
+      expression: 'last(/Template BGP4/jnxBgpM2PeerState[{$ASNUM}, {$PEERADDR}],#3)<>6 and last(/Template BGP4/jnxBgpM2PeerStatus[{$ASNUM}, {$PEERADDR}])=2'
+      name: '{HOST.HOST} BGP AS{$ASNUM} peer {$PEERADDR} is DOWN'
+      priority: AVERAGE
+      description: 'Last value: {ITEM.LASTVALUE1}.'

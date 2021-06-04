@@ -1,0 +1,258 @@
+zabbix_export:
+  version: '5.4'
+  date: '2021-05-28T03:59:42Z'
+  groups:
+    -
+      uuid: 57b7ae836ca64446ba2c296389c009b7
+      name: Templates/Modules
+  templates:
+    -
+      uuid: 4026647be95a47de98b0f09dc36ce72f
+      template: 'Windows physical disks by Zabbix agent'
+      name: 'Windows physical disks by Zabbix agent'
+      description: 'Template tooling version used: 0.38'
+      groups:
+        -
+          name: Templates/Modules
+      discovery_rules:
+        -
+          uuid: d03f20ec394e4725a5dfdceecb79c8bd
+          name: 'Physical disks discovery'
+          key: 'perf_instance_en.discovery[PhysicalDisk]'
+          delay: 1h
+          filter:
+            evaltype: AND
+            conditions:
+              -
+                macro: '{#DEVNAME}'
+                value: '{$VFS.DEV.DEVNAME.MATCHES}'
+                formulaid: A
+              -
+                macro: '{#DEVNAME}'
+                value: '{$VFS.DEV.DEVNAME.NOT_MATCHES}'
+                operator: NOT_MATCHES_REGEX
+                formulaid: B
+          description: 'Discovery of installed physical disks.'
+          item_prototypes:
+            -
+              uuid: 44d9353d47274309bb3edaa34b7b3470
+              name: '{#DEVNAME}: Disk utilization'
+              key: 'perf_counter_en["\PhysicalDisk({#DEVNAME})\% Disk Time",60]'
+              history: 7d
+              value_type: FLOAT
+              units: '%'
+              description: 'This item is the percentage of elapsed time that the selected disk drive was busy servicing read or writes requests.'
+              tags:
+                -
+                  tag: Application
+                  value: 'Disk {#DEVNAME}'
+              trigger_prototypes:
+                -
+                  uuid: c194f813f0c5417aaac56875b955637a
+                  expression: 'min(/Windows physical disks by Zabbix agent/perf_counter_en["\PhysicalDisk({#DEVNAME})\% Disk Time",60],15m)>{$VFS.DEV.UTIL.MAX.WARN}'
+                  name: '{#DEVNAME}: Disk is overloaded (util > {$VFS.DEV.UTIL.MAX.WARN}% for 15m)'
+                  priority: WARNING
+                  description: |
+                    The disk appears to be under heavy load.
+                    Last value: {ITEM.LASTVALUE1}.
+                  manual_close: 'YES'
+                  dependencies:
+                    -
+                      name: '{#DEVNAME}: Disk read request responses are too high (read > {$VFS.DEV.READ.AWAIT.WARN:"{#DEVNAME}"}s for 15m'
+                      expression: 'min(/Windows physical disks by Zabbix agent/perf_counter_en["\PhysicalDisk({#DEVNAME})\Avg. Disk sec/Read",60],15m) > {$VFS.DEV.READ.AWAIT.WARN:"{#DEVNAME}"}'
+                    -
+                      name: '{#DEVNAME}: Disk write request responses are too high (write > {$VFS.DEV.WRITE.AWAIT.WARN:"{#DEVNAME}"}s for 15m)'
+                      expression: 'min(/Windows physical disks by Zabbix agent/perf_counter_en["\PhysicalDisk({#DEVNAME})\Avg. Disk sec/Write",60],15m) > {$VFS.DEV.WRITE.AWAIT.WARN:"{#DEVNAME}"}'
+            -
+              uuid: 8122d6fd46a54d5f8b23c4b21a333959
+              name: '{#DEVNAME}: Average disk read queue length'
+              key: 'perf_counter_en["\PhysicalDisk({#DEVNAME})\Avg. Disk Read Queue Length",60]'
+              history: 7d
+              value_type: FLOAT
+              description: 'Average disk read queue, the number of requests outstanding on the disk at the time the performance data is collected.'
+              tags:
+                -
+                  tag: Application
+                  value: 'Disk {#DEVNAME}'
+            -
+              uuid: f6896b69665d4a9bb160b23a322919d4
+              name: '{#DEVNAME}: Disk read request avg waiting time'
+              key: 'perf_counter_en["\PhysicalDisk({#DEVNAME})\Avg. Disk sec/Read",60]'
+              history: 7d
+              value_type: FLOAT
+              units: s
+              description: 'The average time for read requests issued to the device to be served. This includes the time spent by the requests in queue and the time spent servicing them.'
+              tags:
+                -
+                  tag: Application
+                  value: 'Disk {#DEVNAME}'
+              trigger_prototypes:
+                -
+                  uuid: d96338f9104a4eb4bc7725a5736c96d0
+                  expression: 'min(/Windows physical disks by Zabbix agent/perf_counter_en["\PhysicalDisk({#DEVNAME})\Avg. Disk sec/Read",60],15m) > {$VFS.DEV.READ.AWAIT.WARN:"{#DEVNAME}"}'
+                  name: '{#DEVNAME}: Disk read request responses are too high (read > {$VFS.DEV.READ.AWAIT.WARN:"{#DEVNAME}"}s for 15m'
+                  priority: WARNING
+                  description: |
+                    This trigger might indicate disk {#DEVNAME} saturation.
+                    Last value: {ITEM.LASTVALUE1}.
+                  manual_close: 'YES'
+            -
+              uuid: 704680610f6a42dc9373db929a3d0d53
+              name: '{#DEVNAME}: Disk write request avg waiting time'
+              key: 'perf_counter_en["\PhysicalDisk({#DEVNAME})\Avg. Disk sec/Write",60]'
+              history: 7d
+              value_type: FLOAT
+              units: s
+              description: 'The average time for write requests issued to the device to be served. This includes the time spent by the requests in queue and the time spent servicing them.'
+              tags:
+                -
+                  tag: Application
+                  value: 'Disk {#DEVNAME}'
+              trigger_prototypes:
+                -
+                  uuid: 205acd9a37424bd78618ebdc197f251f
+                  expression: 'min(/Windows physical disks by Zabbix agent/perf_counter_en["\PhysicalDisk({#DEVNAME})\Avg. Disk sec/Write",60],15m) > {$VFS.DEV.WRITE.AWAIT.WARN:"{#DEVNAME}"}'
+                  name: '{#DEVNAME}: Disk write request responses are too high (write > {$VFS.DEV.WRITE.AWAIT.WARN:"{#DEVNAME}"}s for 15m)'
+                  priority: WARNING
+                  description: |
+                    This trigger might indicate disk {#DEVNAME} saturation.
+                    Last value: {ITEM.LASTVALUE1}.
+                  manual_close: 'YES'
+            -
+              uuid: 9f5d1cdb629847ad97e0fa0804883e91
+              name: '{#DEVNAME}: Average disk write queue length'
+              key: 'perf_counter_en["\PhysicalDisk({#DEVNAME})\Avg. Disk Write Queue Length",60]'
+              history: 7d
+              value_type: FLOAT
+              description: 'Average disk write queue, the number of requests outstanding on the disk at the time the performance data is collected.'
+              tags:
+                -
+                  tag: Application
+                  value: 'Disk {#DEVNAME}'
+            -
+              uuid: 3565ad70600d4c8aa5ebbbebd3f67270
+              name: '{#DEVNAME}: Disk average queue size (avgqu-sz)'
+              key: 'perf_counter_en["\PhysicalDisk({#DEVNAME})\Current Disk Queue Length",60]'
+              history: 7d
+              value_type: FLOAT
+              description: 'Current average disk queue, the number of requests outstanding on the disk at the time the performance data is collected.'
+              tags:
+                -
+                  tag: Application
+                  value: 'Disk {#DEVNAME}'
+            -
+              uuid: 3485202f1e6b42ce8099ce6d6347a994
+              name: '{#DEVNAME}: Disk read rate'
+              key: 'perf_counter_en["\PhysicalDisk({#DEVNAME})\Disk Reads/sec",60]'
+              history: 7d
+              value_type: FLOAT
+              units: '!r/s'
+              description: 'Rate of read operations on the disk.'
+              tags:
+                -
+                  tag: Application
+                  value: 'Disk {#DEVNAME}'
+            -
+              uuid: 66e312629db1460c8b215d34d29f7418
+              name: '{#DEVNAME}: Disk write rate'
+              key: 'perf_counter_en["\PhysicalDisk({#DEVNAME})\Disk Writes/sec",60]'
+              history: 7d
+              value_type: FLOAT
+              units: '!w/s'
+              description: 'Rate of write operations on the disk.'
+              tags:
+                -
+                  tag: Application
+                  value: 'Disk {#DEVNAME}'
+          graph_prototypes:
+            -
+              uuid: 5fcd9dc53cd34e4981bf5e48a88951a0
+              name: '{#DEVNAME}: Disk average queue length'
+              graph_items:
+                -
+                  color: 1A7C11
+                  item:
+                    host: 'Windows physical disks by Zabbix agent'
+                    key: 'perf_counter_en["\PhysicalDisk({#DEVNAME})\Avg. Disk Read Queue Length",60]'
+                -
+                  sortorder: '1'
+                  color: 2774A4
+                  item:
+                    host: 'Windows physical disks by Zabbix agent'
+                    key: 'perf_counter_en["\PhysicalDisk({#DEVNAME})\Avg. Disk Write Queue Length",60]'
+            -
+              uuid: 6561058a9cd748728bb46d8d04a5b74b
+              name: '{#DEVNAME}: Disk average waiting time'
+              graph_items:
+                -
+                  color: 1A7C11
+                  item:
+                    host: 'Windows physical disks by Zabbix agent'
+                    key: 'perf_counter_en["\PhysicalDisk({#DEVNAME})\Avg. Disk sec/Read",60]'
+                -
+                  sortorder: '1'
+                  drawtype: GRADIENT_LINE
+                  color: 2774A4
+                  item:
+                    host: 'Windows physical disks by Zabbix agent'
+                    key: 'perf_counter_en["\PhysicalDisk({#DEVNAME})\Avg. Disk sec/Write",60]'
+            -
+              uuid: 83dee3e21b2f4b3c8c7552f87ebec81c
+              name: '{#DEVNAME}: Disk read/write rates'
+              graph_items:
+                -
+                  color: 1A7C11
+                  item:
+                    host: 'Windows physical disks by Zabbix agent'
+                    key: 'perf_counter_en["\PhysicalDisk({#DEVNAME})\Disk Reads/sec",60]'
+                -
+                  sortorder: '1'
+                  drawtype: GRADIENT_LINE
+                  color: 2774A4
+                  item:
+                    host: 'Windows physical disks by Zabbix agent'
+                    key: 'perf_counter_en["\PhysicalDisk({#DEVNAME})\Disk Writes/sec",60]'
+            -
+              uuid: d3b5ccf4530447c2aee84fb23a6934d0
+              name: '{#DEVNAME}: Disk utilization and queue'
+              graph_items:
+                -
+                  color: 1A7C11
+                  yaxisside: RIGHT
+                  item:
+                    host: 'Windows physical disks by Zabbix agent'
+                    key: 'perf_counter_en["\PhysicalDisk({#DEVNAME})\Current Disk Queue Length",60]'
+                -
+                  sortorder: '1'
+                  drawtype: GRADIENT_LINE
+                  color: 2774A4
+                  item:
+                    host: 'Windows physical disks by Zabbix agent'
+                    key: 'perf_counter_en["\PhysicalDisk({#DEVNAME})\% Disk Time",60]'
+          preprocessing:
+            -
+              type: STR_REPLACE
+              parameters:
+                - '{#INSTANCE}'
+                - '{#DEVNAME}'
+      macros:
+        -
+          macro: '{$VFS.DEV.DEVNAME.MATCHES}'
+          value: '.*'
+          description: 'This macro is used in physical disks discovery. Can be overridden on the host or linked template level.'
+        -
+          macro: '{$VFS.DEV.DEVNAME.NOT_MATCHES}'
+          value: _Total
+          description: 'This macro is used in physical disks discovery. Can be overridden on the host or linked template level.'
+        -
+          macro: '{$VFS.DEV.READ.AWAIT.WARN}'
+          value: '0.02'
+          description: 'Disk read average response time (in s) before the trigger would fire.'
+        -
+          macro: '{$VFS.DEV.UTIL.MAX.WARN}'
+          value: '95'
+          description: 'The warning threshold of disk time utilization in percent.'
+        -
+          macro: '{$VFS.DEV.WRITE.AWAIT.WARN}'
+          value: '0.02'
+          description: 'Disk write average response time (in s) before the trigger would fire.'

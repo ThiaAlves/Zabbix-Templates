@@ -1,0 +1,131 @@
+zabbix_export:
+  version: '5.4'
+  date: '2021-05-28T03:43:21Z'
+  groups:
+    -
+      uuid: 7df96b18c230490a9a0a9e2307226338
+      name: Templates
+  templates:
+    -
+      uuid: 6fd0df492de34e54a125edb59e83c976
+      template: 'Template Weathermap'
+      name: 'Template Weathermap'
+      groups:
+        -
+          name: Templates
+      items:
+        -
+          uuid: e4dea4e686fa4968953064fa5fc05430
+          name: 'weather scan file'
+          key: 'weathermap.scan.file[{$SCANFILE}]'
+          delay: '3600'
+          value_type: FLOAT
+          units: sec
+          description: 'Scan map, config file exist. Zabbix auth from config file.'
+          tags:
+            -
+              tag: Application
+              value: Weathermap
+        -
+          uuid: ff00a6e0a73c4e4ba10edbca9bc1ccf5
+          name: 'weather scan map'
+          key: 'weathermap.scan.map[{$SCANMAP}]'
+          delay: '3600'
+          status: DISABLED
+          value_type: FLOAT
+          units: sec
+          description: 'First scan map, config file not exist. Zabbix auth from cli (-z http://zabbix.example.ru -l admin -p admin)'
+          tags:
+            -
+              tag: Application
+              value: Weathermap
+        -
+          uuid: 7c868bc5cb2342f9a54f5cc4330369a0
+          name: 'weather update'
+          key: 'weathermap.update.only[{$UPDATE}]'
+          delay: '60'
+          value_type: FLOAT
+          units: sec
+          description: 'Create image path (-i /var/www/weather).'
+          tags:
+            -
+              tag: Application
+              value: Weathermap
+        -
+          uuid: ae0da7f14148466ab96656da15d284a3
+          name: 'weather upload'
+          key: 'weathermap.update.upload[{$UPLOAD}]'
+          delay: '60'
+          value_type: FLOAT
+          units: sec
+          description: 'Create and upload image in Zabbix'
+          tags:
+            -
+              tag: Application
+              value: Weathermap
+      httptests:
+        -
+          uuid: 119e7ef285534f948d949b37ad96157c
+          name: 'Teste Qnet'
+          attempts: '2'
+          agent: 'Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0)'
+          variables:
+            -
+              name: '{login_password}'
+              value: qnet@telecom
+            -
+              name: '{login_username}'
+              value: thiago.alves
+          steps:
+            -
+              name: Login
+              url: 'http://graficos.qnet.com.br/'
+              posts:
+                -
+                  name: login_username
+                  value: '{login_username}'
+                -
+                  name: login_password
+                  value: '{login_password}'
+            -
+              name: 'View Host Umu'
+              url: 'http://graficos.qnet.com.br/cacti/host.php'
+              query_fields:
+                -
+                  name: action
+                  value: edit
+                -
+                  name: id
+                  value: '12'
+              follow_redirects: 'NO'
+      macros:
+        -
+          macro: '{$SCANFILE}'
+          value: '-s mapname1 mapnameN -f'
+        -
+          macro: '{$SCANMAP}'
+          value: '-s mapname1 mapnameN -z http://zabbix.example.ru -l admin -p admin'
+        -
+          macro: '{$UPDATE}'
+          value: '-m mapname1.yaml mapnameN.yaml -i /var/www/weather'
+        -
+          macro: '{$UPLOAD}'
+          value: '-m mapname1.yaml mapnameN.yaml -u'
+  graphs:
+    -
+      uuid: 6dce1f370d9145d386d79e30135e618c
+      name: 'Weather load'
+      graph_items:
+        -
+          drawtype: FILLED_REGION
+          color: 00CC00
+          item:
+            host: 'Template Weathermap'
+            key: 'weathermap.update.upload[{$UPLOAD}]'
+        -
+          sortorder: '1'
+          drawtype: FILLED_REGION
+          color: 0000DD
+          item:
+            host: 'Template Weathermap'
+            key: 'weathermap.scan.file[{$SCANFILE}]'

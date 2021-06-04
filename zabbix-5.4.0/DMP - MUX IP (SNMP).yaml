@@ -1,0 +1,222 @@
+zabbix_export:
+  version: '5.4'
+  date: '2021-05-28T01:18:25Z'
+  groups:
+    -
+      uuid: e6ae2b7da4564291b6abcba333d7be4d
+      name: A-OVR-TPLGPR
+  templates:
+    -
+      uuid: 67d80ca6efdb46a68c07fa061902a144
+      template: 'DMP - MUX IP'
+      name: 'DMP - MUX IP'
+      groups:
+        -
+          name: A-OVR-TPLGPR
+      items:
+        -
+          uuid: f12bae2c106d4d59acd39632c3be24a1
+          name: slot_01_input
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.8201.5.11.1.1.1.3.0
+          key: slot_01_input
+          value_type: FLOAT
+          units: mbps
+          description: 'Entrada no slot 1'
+          tags:
+            -
+              tag: Application
+              value: Interfaces
+        -
+          uuid: 0f26765090ec4334809d25365d949707
+          name: slot_01_output
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.8201.5.11.1.1.1.4.0
+          key: slot_01_output
+          value_type: FLOAT
+          units: mbps
+          description: 'Saída no slot 1'
+          tags:
+            -
+              tag: Application
+              value: Interfaces
+        -
+          uuid: d97f7905881c4709abea3360c3da16c6
+          name: slot_01_status
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.8201.5.11.1.1.1.1.0
+          key: slot_01_status
+          description: 'Status do Slot 1'
+          tags:
+            -
+              tag: Application
+              value: Interfaces
+        -
+          uuid: d2920eeffddc46ac92cb0da07f1f0eb8
+          name: slot_02_input
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.8201.5.11.1.1.2.3.0
+          key: slot_02_input
+          value_type: FLOAT
+          units: mbps
+          description: 'Entrada no Slot 2'
+          tags:
+            -
+              tag: Application
+              value: Interfaces
+        -
+          uuid: ed004760d3a5462fa6da1ae471fa957b
+          name: slot_02_output
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.8201.5.11.1.1.2.4.0
+          key: slot_02_output
+          value_type: FLOAT
+          units: mbps
+          description: 'Saída no Slot 2'
+        -
+          uuid: 8a561482536941c48a9ef93a580541fb
+          name: slot_02_status
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.8201.5.11.1.1.2.1.0
+          key: slot_02_status
+          description: 'Status do Slot 2'
+          tags:
+            -
+              tag: Application
+              value: Interfaces
+        -
+          uuid: 53c1877ac34f4e7a95620e280b53b591
+          name: slot_03_input
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.8201.5.11.1.1.3.3.0
+          key: slot_03_input
+          value_type: FLOAT
+          description: 'Entrada no Slot 3'
+          tags:
+            -
+              tag: Application
+              value: Interfaces
+        -
+          uuid: 9a47dde885cf40cab67850836971afe9
+          name: slot_03_output
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.8201.5.11.1.1.3.4.0
+          key: slot_03_output
+          value_type: FLOAT
+          units: mbps
+          description: 'Saída no Slot 3'
+          tags:
+            -
+              tag: Application
+              value: Interfaces
+        -
+          uuid: 0b70ea921b744f1ab02948987a777c85
+          name: slot_03_status
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.8201.5.11.1.1.3.1.0
+          key: slot_03_status
+          description: 'Status do Slot 3'
+          tags:
+            -
+              tag: Application
+              value: Interfaces
+        -
+          uuid: 15d68f80f236440092eef818e388c2b6
+          name: sysDesc
+          type: SNMP_AGENT
+          snmp_oid: sysDescr.0
+          key: sysDescr
+          delay: 1h
+          trends: '0'
+          value_type: TEXT
+          description: 'Descrição do Sistema'
+          tags:
+            -
+              tag: Application
+              value: System
+        -
+          uuid: c7b222c6d78a47df973d0b4a53805eaa
+          name: sysLocation
+          type: SNMP_AGENT
+          snmp_oid: sysLocation.0
+          key: sysLocation
+          trends: '0'
+          value_type: TEXT
+          description: 'Localização do Sistema'
+          tags:
+            -
+              tag: Application
+              value: System
+        -
+          uuid: 0a1bee3c72924a21afad0f73b11cc01f
+          name: sysName
+          type: SNMP_AGENT
+          snmp_oid: sysName.0
+          key: sysName
+          delay: 1h
+          trends: '0'
+          value_type: TEXT
+          description: 'Nome do Sistema'
+          tags:
+            -
+              tag: Application
+              value: System
+        -
+          uuid: b645d0ff44ce477ea184679e5b705c7a
+          name: sysServices
+          type: SNMP_AGENT
+          snmp_oid: sysServices.0
+          key: sysServices
+          description: 'Serviços do Sistema'
+          tags:
+            -
+              tag: Application
+              value: System
+        -
+          uuid: f2c987cca4654fe4a508b68ec35006a0
+          name: sysUpTime
+          type: SNMP_AGENT
+          snmp_oid: sysUpTime.0
+          key: sysUpTime
+          units: uptime
+          description: 'Tempo do Sistema ligado'
+          tags:
+            -
+              tag: Application
+              value: System
+        -
+          uuid: 370369ce7012444094e8f8d7fc676257
+          name: transport_available_slot_01
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.8201.5.11.1.1.1.2.0
+          key: transport_available_slot_01
+          units: 'TS IP'
+          description: 'Transporte disponivel no Slot 01'
+          tags:
+            -
+              tag: Application
+              value: Interfaces
+        -
+          uuid: c9127cbaf12a4542873657925292d11e
+          name: transport_available_slot_02
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.8201.5.11.1.1.2.2.0
+          key: transport_available_slot_02
+          units: 'TS IP'
+          description: 'Transporte Disponivel no Slot 02'
+          tags:
+            -
+              tag: Application
+              value: Interfaces
+        -
+          uuid: 958971d15a354ae79ab4a681ef8d4df5
+          name: transport_available_slot_03
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.8201.5.11.1.1.3.2.0
+          key: transport_available_slot_03
+          units: 'TS IP'
+          description: 'Transporte disponivel no Slot 03'
+          tags:
+            -
+              tag: Application
+              value: Interfaces

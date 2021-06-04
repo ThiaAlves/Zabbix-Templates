@@ -1,0 +1,1206 @@
+zabbix_export:
+  version: '5.4'
+  date: '2021-05-28T03:07:38Z'
+  groups:
+    -
+      uuid: a571c0d144b14fd4a87a9d9b2aa9fcd6
+      name: Templates/Applications
+  templates:
+    -
+      uuid: 5fa761bc51e4432a90c6c9eece930c4a
+      template: 'RabbitMQ cluster by Zabbix agent'
+      name: 'RabbitMQ cluster by Zabbix agent'
+      description: |
+        Get cluster metrics from RabbitMQ management plugin provided an HTTP-based API using Zabbix agent.
+        
+        You can discuss this template or leave feedback on our forum https://www.zabbix.com/forum/zabbix-suggestions-and-feedback/387226-discussion-thread-for-official-zabbix-template-rabbitmq
+        
+        Template tooling version used: 0.38
+      groups:
+        -
+          name: Templates/Applications
+      items:
+        -
+          uuid: 31908a8287be442681a0ded564977ff2
+          name: 'RabbitMQ: Messages acknowledged'
+          type: DEPENDENT
+          key: rabbitmq.overview.messages.ack
+          delay: '0'
+          history: 7d
+          description: 'Number of messages delivered to clients and acknowledged'
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.message_stats.ack
+              error_handler: CUSTOM_VALUE
+              error_handler_params: '0'
+          master_item:
+            key: 'web.page.get["http://{$RABBITMQ.API.USER}:{$RABBITMQ.API.PASSWORD}@{$RABBITMQ.API.CLUSTER_HOST}:{$RABBITMQ.API.PORT}/api/overview"]'
+          tags:
+            -
+              tag: Application
+              value: RabbitMQ
+        -
+          uuid: f78fabbd7e3f44dc81b1cf9c90b26f2e
+          name: 'RabbitMQ: Messages acknowledged per second'
+          type: DEPENDENT
+          key: rabbitmq.overview.messages.ack.rate
+          delay: '0'
+          history: 7d
+          value_type: FLOAT
+          description: 'Rate of messages delivered to clients and acknowledged per second'
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.message_stats.ack_details.rate
+              error_handler: CUSTOM_VALUE
+              error_handler_params: '0'
+          master_item:
+            key: 'web.page.get["http://{$RABBITMQ.API.USER}:{$RABBITMQ.API.PASSWORD}@{$RABBITMQ.API.CLUSTER_HOST}:{$RABBITMQ.API.PORT}/api/overview"]'
+          tags:
+            -
+              tag: Application
+              value: RabbitMQ
+        -
+          uuid: 45cf9b5cf5cd4b13b0e140383233799f
+          name: 'RabbitMQ: Messages confirmed'
+          type: DEPENDENT
+          key: rabbitmq.overview.messages.confirm
+          delay: '0'
+          history: 7d
+          description: 'Count of messages confirmed'
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.message_stats.confirm
+              error_handler: CUSTOM_VALUE
+              error_handler_params: '0'
+          master_item:
+            key: 'web.page.get["http://{$RABBITMQ.API.USER}:{$RABBITMQ.API.PASSWORD}@{$RABBITMQ.API.CLUSTER_HOST}:{$RABBITMQ.API.PORT}/api/overview"]'
+          tags:
+            -
+              tag: Application
+              value: RabbitMQ
+        -
+          uuid: bc85a070e1e9451b953d85bb519ed63d
+          name: 'RabbitMQ: Messages confirmed per second'
+          type: DEPENDENT
+          key: rabbitmq.overview.messages.confirm.rate
+          delay: '0'
+          history: 7d
+          value_type: FLOAT
+          description: 'Rate of messages confirmed per second'
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.message_stats.confirm_details.rate
+              error_handler: CUSTOM_VALUE
+              error_handler_params: '0'
+          master_item:
+            key: 'web.page.get["http://{$RABBITMQ.API.USER}:{$RABBITMQ.API.PASSWORD}@{$RABBITMQ.API.CLUSTER_HOST}:{$RABBITMQ.API.PORT}/api/overview"]'
+          tags:
+            -
+              tag: Application
+              value: RabbitMQ
+        -
+          uuid: 004da545af4a4f61bd2167281bb9a02b
+          name: 'RabbitMQ: Messages delivered'
+          type: DEPENDENT
+          key: rabbitmq.overview.messages.deliver_get
+          delay: '0'
+          history: 7d
+          description: 'Sum of messages delivered in acknowledgement mode to consumers, in no-acknowledgement mode to consumers, in acknowledgement mode in response to basic.get, and in no-acknowledgement mode in response to basic.get'
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.message_stats.deliver_get
+              error_handler: CUSTOM_VALUE
+              error_handler_params: '0'
+          master_item:
+            key: 'web.page.get["http://{$RABBITMQ.API.USER}:{$RABBITMQ.API.PASSWORD}@{$RABBITMQ.API.CLUSTER_HOST}:{$RABBITMQ.API.PORT}/api/overview"]'
+          tags:
+            -
+              tag: Application
+              value: RabbitMQ
+        -
+          uuid: c00a84c8676544dcbdd74fec13881063
+          name: 'RabbitMQ: Messages delivered per second'
+          type: DEPENDENT
+          key: rabbitmq.overview.messages.deliver_get.rate
+          delay: '0'
+          history: 7d
+          value_type: FLOAT
+          description: 'Rate per second of the sum of messages delivered in acknowledgement mode to consumers, in no-acknowledgement mode to consumers, in acknowledgement mode in response to basic.get, and in no-acknowledgement mode in response to basic.get'
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.message_stats.deliver_get_details.rate
+              error_handler: CUSTOM_VALUE
+              error_handler_params: '0'
+          master_item:
+            key: 'web.page.get["http://{$RABBITMQ.API.USER}:{$RABBITMQ.API.PASSWORD}@{$RABBITMQ.API.CLUSTER_HOST}:{$RABBITMQ.API.PORT}/api/overview"]'
+          tags:
+            -
+              tag: Application
+              value: RabbitMQ
+        -
+          uuid: 4215bdf87f0e426f85bd79434a0fb0bb
+          name: 'RabbitMQ: Messages published'
+          type: DEPENDENT
+          key: rabbitmq.overview.messages.publish
+          delay: '0'
+          history: 7d
+          description: 'Count of messages published'
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.message_stats.publish
+              error_handler: CUSTOM_VALUE
+              error_handler_params: '0'
+          master_item:
+            key: 'web.page.get["http://{$RABBITMQ.API.USER}:{$RABBITMQ.API.PASSWORD}@{$RABBITMQ.API.CLUSTER_HOST}:{$RABBITMQ.API.PORT}/api/overview"]'
+          tags:
+            -
+              tag: Application
+              value: RabbitMQ
+        -
+          uuid: cfadadb681474c7eb0512d1f4d223ff6
+          name: 'RabbitMQ: Messages published per second'
+          type: DEPENDENT
+          key: rabbitmq.overview.messages.publish.rate
+          delay: '0'
+          history: 7d
+          value_type: FLOAT
+          description: 'Rate of messages published per second'
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.message_stats.publish_details.rate
+              error_handler: CUSTOM_VALUE
+              error_handler_params: '0'
+          master_item:
+            key: 'web.page.get["http://{$RABBITMQ.API.USER}:{$RABBITMQ.API.PASSWORD}@{$RABBITMQ.API.CLUSTER_HOST}:{$RABBITMQ.API.PORT}/api/overview"]'
+          tags:
+            -
+              tag: Application
+              value: RabbitMQ
+        -
+          uuid: bb068ac7c6094fb8a59cd1a003e88c39
+          name: 'RabbitMQ: Messages publish_in'
+          type: DEPENDENT
+          key: rabbitmq.overview.messages.publish_in
+          delay: '0'
+          history: 7d
+          description: 'Count of messages published from channels into this overview'
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.message_stats.publish_in
+              error_handler: CUSTOM_VALUE
+              error_handler_params: '0'
+          master_item:
+            key: 'web.page.get["http://{$RABBITMQ.API.USER}:{$RABBITMQ.API.PASSWORD}@{$RABBITMQ.API.CLUSTER_HOST}:{$RABBITMQ.API.PORT}/api/overview"]'
+          tags:
+            -
+              tag: Application
+              value: RabbitMQ
+        -
+          uuid: db511bf1cd6c465f8fe1ae6b5fa08660
+          name: 'RabbitMQ: Messages publish_in per second'
+          type: DEPENDENT
+          key: rabbitmq.overview.messages.publish_in.rate
+          delay: '0'
+          history: 7d
+          value_type: FLOAT
+          description: 'Rate of messages published from channels into this overview per sec'
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.message_stats.publish_in_details.rate
+              error_handler: CUSTOM_VALUE
+              error_handler_params: '0'
+          master_item:
+            key: 'web.page.get["http://{$RABBITMQ.API.USER}:{$RABBITMQ.API.PASSWORD}@{$RABBITMQ.API.CLUSTER_HOST}:{$RABBITMQ.API.PORT}/api/overview"]'
+          tags:
+            -
+              tag: Application
+              value: RabbitMQ
+        -
+          uuid: 23dcb85dd9bc4fefb1a9682956181c2e
+          name: 'RabbitMQ: Messages publish_out'
+          type: DEPENDENT
+          key: rabbitmq.overview.messages.publish_out
+          delay: '0'
+          history: 7d
+          description: 'Count of messages published from this overview into queues'
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.message_stats.publish_out
+              error_handler: CUSTOM_VALUE
+              error_handler_params: '0'
+          master_item:
+            key: 'web.page.get["http://{$RABBITMQ.API.USER}:{$RABBITMQ.API.PASSWORD}@{$RABBITMQ.API.CLUSTER_HOST}:{$RABBITMQ.API.PORT}/api/overview"]'
+          tags:
+            -
+              tag: Application
+              value: RabbitMQ
+        -
+          uuid: 05e4c745be95412995749c352ec0f925
+          name: 'RabbitMQ: Messages publish_out per second'
+          type: DEPENDENT
+          key: rabbitmq.overview.messages.publish_out.rate
+          delay: '0'
+          history: 7d
+          value_type: FLOAT
+          description: 'Rate of messages published from this overview into queues per second,0,rabbitmq,total msgs pub out rate'
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.message_stats.publish_out_details.rate
+              error_handler: CUSTOM_VALUE
+              error_handler_params: '0'
+          master_item:
+            key: 'web.page.get["http://{$RABBITMQ.API.USER}:{$RABBITMQ.API.PASSWORD}@{$RABBITMQ.API.CLUSTER_HOST}:{$RABBITMQ.API.PORT}/api/overview"]'
+          tags:
+            -
+              tag: Application
+              value: RabbitMQ
+        -
+          uuid: 650d6a94e381477299c62cfb2a2252cf
+          name: 'RabbitMQ: Messages returned redeliver'
+          type: DEPENDENT
+          key: rabbitmq.overview.messages.redeliver
+          delay: '0'
+          history: 7d
+          description: 'Count of subset of messages in deliver_get which had the redelivered flag set'
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.message_stats.redeliver
+              error_handler: CUSTOM_VALUE
+              error_handler_params: '0'
+          master_item:
+            key: 'web.page.get["http://{$RABBITMQ.API.USER}:{$RABBITMQ.API.PASSWORD}@{$RABBITMQ.API.CLUSTER_HOST}:{$RABBITMQ.API.PORT}/api/overview"]'
+          tags:
+            -
+              tag: Application
+              value: RabbitMQ
+        -
+          uuid: 6d7eb8880bca4c6e92f65f8a32911599
+          name: 'RabbitMQ: Messages returned redeliver per second'
+          type: DEPENDENT
+          key: rabbitmq.overview.messages.redeliver.rate
+          delay: '0'
+          history: 7d
+          value_type: FLOAT
+          description: 'Rate of subset of messages in deliver_get which had the redelivered flag set per second'
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.message_stats.redeliver_details.rate
+              error_handler: CUSTOM_VALUE
+              error_handler_params: '0'
+          master_item:
+            key: 'web.page.get["http://{$RABBITMQ.API.USER}:{$RABBITMQ.API.PASSWORD}@{$RABBITMQ.API.CLUSTER_HOST}:{$RABBITMQ.API.PORT}/api/overview"]'
+          tags:
+            -
+              tag: Application
+              value: RabbitMQ
+        -
+          uuid: e3faec09ae0a4d7aa8aab50d71de7bb3
+          name: 'RabbitMQ: Messages returned unroutable'
+          type: DEPENDENT
+          key: rabbitmq.overview.messages.return_unroutable
+          delay: '0'
+          history: 7d
+          description: 'Count of messages returned to publisher as unroutable'
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.message_stats.return_unroutable
+              error_handler: CUSTOM_VALUE
+              error_handler_params: '0'
+          master_item:
+            key: 'web.page.get["http://{$RABBITMQ.API.USER}:{$RABBITMQ.API.PASSWORD}@{$RABBITMQ.API.CLUSTER_HOST}:{$RABBITMQ.API.PORT}/api/overview"]'
+          tags:
+            -
+              tag: Application
+              value: RabbitMQ
+        -
+          uuid: 72267cce69cf490ea626ff3ae17b6362
+          name: 'RabbitMQ: Messages returned unroutable per second'
+          type: DEPENDENT
+          key: rabbitmq.overview.messages.return_unroutable.rate
+          delay: '0'
+          history: 7d
+          value_type: FLOAT
+          description: 'Rate of messages returned to publisher as unroutable per second'
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.message_stats.return_unroutable_details.rate
+              error_handler: CUSTOM_VALUE
+              error_handler_params: '0'
+          master_item:
+            key: 'web.page.get["http://{$RABBITMQ.API.USER}:{$RABBITMQ.API.PASSWORD}@{$RABBITMQ.API.CLUSTER_HOST}:{$RABBITMQ.API.PORT}/api/overview"]'
+          tags:
+            -
+              tag: Application
+              value: RabbitMQ
+        -
+          uuid: 2b03117e863348ee84d94acfe877ef7f
+          name: 'RabbitMQ: Channels total'
+          type: DEPENDENT
+          key: rabbitmq.overview.object_totals.channels
+          delay: '0'
+          history: 7d
+          description: 'Total number of channels'
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.object_totals.channels
+          master_item:
+            key: 'web.page.get["http://{$RABBITMQ.API.USER}:{$RABBITMQ.API.PASSWORD}@{$RABBITMQ.API.CLUSTER_HOST}:{$RABBITMQ.API.PORT}/api/overview"]'
+          tags:
+            -
+              tag: Application
+              value: RabbitMQ
+        -
+          uuid: b3cdd6739a964447b524df4fdd726434
+          name: 'RabbitMQ: Connections total'
+          type: DEPENDENT
+          key: rabbitmq.overview.object_totals.connections
+          delay: '0'
+          history: 7d
+          description: 'Total number of connections'
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.object_totals.connections
+          master_item:
+            key: 'web.page.get["http://{$RABBITMQ.API.USER}:{$RABBITMQ.API.PASSWORD}@{$RABBITMQ.API.CLUSTER_HOST}:{$RABBITMQ.API.PORT}/api/overview"]'
+          tags:
+            -
+              tag: Application
+              value: RabbitMQ
+        -
+          uuid: c39007dbd4374bee943d61b7e90c0f01
+          name: 'RabbitMQ: Consumers total'
+          type: DEPENDENT
+          key: rabbitmq.overview.object_totals.consumers
+          delay: '0'
+          history: 7d
+          description: 'Total number of consumers'
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.object_totals.consumers
+          master_item:
+            key: 'web.page.get["http://{$RABBITMQ.API.USER}:{$RABBITMQ.API.PASSWORD}@{$RABBITMQ.API.CLUSTER_HOST}:{$RABBITMQ.API.PORT}/api/overview"]'
+          tags:
+            -
+              tag: Application
+              value: RabbitMQ
+        -
+          uuid: be0b952e5d08409aa2c65fe143a9193c
+          name: 'RabbitMQ: Exchanges total'
+          type: DEPENDENT
+          key: rabbitmq.overview.object_totals.exchanges
+          delay: '0'
+          history: 7d
+          description: 'Total number of exchanges'
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.object_totals.exchanges
+          master_item:
+            key: 'web.page.get["http://{$RABBITMQ.API.USER}:{$RABBITMQ.API.PASSWORD}@{$RABBITMQ.API.CLUSTER_HOST}:{$RABBITMQ.API.PORT}/api/overview"]'
+          tags:
+            -
+              tag: Application
+              value: RabbitMQ
+        -
+          uuid: d7c86b4921f54924af1b72cd2493da1c
+          name: 'RabbitMQ: Queues total'
+          type: DEPENDENT
+          key: rabbitmq.overview.object_totals.queues
+          delay: '0'
+          history: 7d
+          description: 'Total number of queues'
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.object_totals.queues
+          master_item:
+            key: 'web.page.get["http://{$RABBITMQ.API.USER}:{$RABBITMQ.API.PASSWORD}@{$RABBITMQ.API.CLUSTER_HOST}:{$RABBITMQ.API.PORT}/api/overview"]'
+          tags:
+            -
+              tag: Application
+              value: RabbitMQ
+        -
+          uuid: c98b2b3dd2bd4fec9e7c571bc631167b
+          name: 'RabbitMQ: Messages total'
+          type: DEPENDENT
+          key: rabbitmq.overview.queue_totals.messages
+          delay: '0'
+          history: 7d
+          description: 'Total number of messages (ready plus unacknowledged)'
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.queue_totals.messages
+          master_item:
+            key: 'web.page.get["http://{$RABBITMQ.API.USER}:{$RABBITMQ.API.PASSWORD}@{$RABBITMQ.API.CLUSTER_HOST}:{$RABBITMQ.API.PORT}/api/overview"]'
+          tags:
+            -
+              tag: Application
+              value: RabbitMQ
+        -
+          uuid: efaabe175e5f4fffa8a810ea35753475
+          name: 'RabbitMQ: Messages ready for delivery'
+          type: DEPENDENT
+          key: rabbitmq.overview.queue_totals.messages.ready
+          delay: '0'
+          history: 7d
+          description: 'Number of messages ready for deliver'
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.queue_totals.messages_ready
+          master_item:
+            key: 'web.page.get["http://{$RABBITMQ.API.USER}:{$RABBITMQ.API.PASSWORD}@{$RABBITMQ.API.CLUSTER_HOST}:{$RABBITMQ.API.PORT}/api/overview"]'
+          tags:
+            -
+              tag: Application
+              value: RabbitMQ
+        -
+          uuid: 6cf09ed9d244464288c8050b10622e3a
+          name: 'RabbitMQ: Messages unacknowledged'
+          type: DEPENDENT
+          key: rabbitmq.overview.queue_totals.messages.unacknowledged
+          delay: '0'
+          history: 7d
+          description: 'Number of unacknowledged messages'
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.queue_totals.messages_unacknowledged
+          master_item:
+            key: 'web.page.get["http://{$RABBITMQ.API.USER}:{$RABBITMQ.API.PASSWORD}@{$RABBITMQ.API.CLUSTER_HOST}:{$RABBITMQ.API.PORT}/api/overview"]'
+          tags:
+            -
+              tag: Application
+              value: RabbitMQ
+        -
+          uuid: f015f991bcea4c4dbf83dfb013300010
+          name: 'RabbitMQ: Get exchanges'
+          key: 'web.page.get["http://{$RABBITMQ.API.USER}:{$RABBITMQ.API.PASSWORD}@{$RABBITMQ.API.CLUSTER_HOST}:{$RABBITMQ.API.PORT}/api/exchanges"]'
+          history: 1h
+          trends: '0'
+          value_type: TEXT
+          description: 'The HTTP API endpoint that returns exchanges metrics'
+          preprocessing:
+            -
+              type: REGEX
+              parameters:
+                - '\n\s?\n(.*)'
+                - \1
+          tags:
+            -
+              tag: Application
+              value: 'Zabbix raw items'
+        -
+          uuid: 943eabfb44164908b9135aa4d6478bea
+          name: 'RabbitMQ: Get overview'
+          key: 'web.page.get["http://{$RABBITMQ.API.USER}:{$RABBITMQ.API.PASSWORD}@{$RABBITMQ.API.CLUSTER_HOST}:{$RABBITMQ.API.PORT}/api/overview"]'
+          history: 1h
+          trends: '0'
+          value_type: TEXT
+          description: 'The HTTP API endpoint that returns cluster-wide metrics'
+          preprocessing:
+            -
+              type: REGEX
+              parameters:
+                - '\n\s?\n(.*)'
+                - \1
+          tags:
+            -
+              tag: Application
+              value: 'Zabbix raw items'
+          triggers:
+            -
+              uuid: 000d3e773f6e4ebf89f16daa2ce8c168
+              expression: 'nodata(/RabbitMQ cluster by Zabbix agent/web.page.get["http://{$RABBITMQ.API.USER}:{$RABBITMQ.API.PASSWORD}@{$RABBITMQ.API.CLUSTER_HOST}:{$RABBITMQ.API.PORT}/api/overview"],30m)=1'
+              name: 'RabbitMQ: Failed to fetch overview data (or no data for 30m)'
+              priority: WARNING
+              description: |
+                Zabbix has not received data for items for the last 30 minutes.
+                Last value: {ITEM.LASTVALUE1}.
+              manual_close: 'YES'
+      discovery_rules:
+        -
+          uuid: e28b4491721d4dbf8eded86a5caeabc2
+          name: 'Exchanges discovery'
+          type: DEPENDENT
+          key: rabbitmq.exchanges.discovery
+          delay: '0'
+          filter:
+            evaltype: AND
+            conditions:
+              -
+                macro: '{#EXCHANGE}'
+                value: '{$RABBITMQ.LLD.FILTER.EXCHANGE.MATCHES}'
+                formulaid: A
+              -
+                macro: '{#EXCHANGE}'
+                value: '{$RABBITMQ.LLD.FILTER.EXCHANGE.NOT_MATCHES}'
+                operator: NOT_MATCHES_REGEX
+                formulaid: B
+          description: 'Individual exchange metrics'
+          item_prototypes:
+            -
+              uuid: 68892e56e0074516b5d052dd7178955f
+              name: 'RabbitMQ: Exchange {#VHOST}/{#EXCHANGE}/{#TYPE}: Messages acknowledged per second'
+              type: DEPENDENT
+              key: 'rabbitmq.exchange.messages.ack.rate["{#VHOST}/{#EXCHANGE}/{#TYPE}"]'
+              delay: '0'
+              history: 7d
+              value_type: FLOAT
+              description: 'Rate of messages delivered to clients and acknowledged per second'
+              preprocessing:
+                -
+                  type: JSONPATH
+                  parameters:
+                    - '$[?(@.name == "{#EXCHANGE}" && @.vhost == "{#VHOST}" && @.type =="{#TYPE}")].message_stats.ack_details.rate.first()'
+                  error_handler: CUSTOM_VALUE
+                  error_handler_params: '0'
+              master_item:
+                key: 'web.page.get["http://{$RABBITMQ.API.USER}:{$RABBITMQ.API.PASSWORD}@{$RABBITMQ.API.CLUSTER_HOST}:{$RABBITMQ.API.PORT}/api/exchanges"]'
+              tags:
+                -
+                  tag: Application
+                  value: 'RabbitMQ: Exchange "{#VHOST}/{#EXCHANGE}/{#TYPE}"'
+            -
+              uuid: fcf7807f096d4cddb8fa2b3671814dfa
+              name: 'RabbitMQ: Exchange {#VHOST}/{#EXCHANGE}/{#TYPE}: Messages acknowledged'
+              type: DEPENDENT
+              key: 'rabbitmq.exchange.messages.ack["{#VHOST}/{#EXCHANGE}/{#TYPE}"]'
+              delay: '0'
+              history: 7d
+              description: 'Number of messages delivered to clients and acknowledged'
+              preprocessing:
+                -
+                  type: JSONPATH
+                  parameters:
+                    - '$[?(@.name == "{#EXCHANGE}" && @.vhost == "{#VHOST}" && @.type =="{#TYPE}")].message_stats.ack.first()'
+                  error_handler: CUSTOM_VALUE
+                  error_handler_params: '0'
+              master_item:
+                key: 'web.page.get["http://{$RABBITMQ.API.USER}:{$RABBITMQ.API.PASSWORD}@{$RABBITMQ.API.CLUSTER_HOST}:{$RABBITMQ.API.PORT}/api/exchanges"]'
+              tags:
+                -
+                  tag: Application
+                  value: 'RabbitMQ: Exchange "{#VHOST}/{#EXCHANGE}/{#TYPE}"'
+            -
+              uuid: 858f8ce62fa04a31902569a712e58234
+              name: 'RabbitMQ: Exchange {#VHOST}/{#EXCHANGE}/{#TYPE}: Messages confirmed per second'
+              type: DEPENDENT
+              key: 'rabbitmq.exchange.messages.confirm.rate["{#VHOST}/{#EXCHANGE}/{#TYPE}"]'
+              delay: '0'
+              history: 7d
+              value_type: FLOAT
+              description: 'Rate of messages confirmed per second'
+              preprocessing:
+                -
+                  type: JSONPATH
+                  parameters:
+                    - '$[?(@.name == "{#EXCHANGE}" && @.vhost == "{#VHOST}" && @.type =="{#TYPE}")].message_stats.confirm_details.rate.first()'
+                  error_handler: CUSTOM_VALUE
+                  error_handler_params: '0'
+              master_item:
+                key: 'web.page.get["http://{$RABBITMQ.API.USER}:{$RABBITMQ.API.PASSWORD}@{$RABBITMQ.API.CLUSTER_HOST}:{$RABBITMQ.API.PORT}/api/exchanges"]'
+              tags:
+                -
+                  tag: Application
+                  value: 'RabbitMQ: Exchange "{#VHOST}/{#EXCHANGE}/{#TYPE}"'
+            -
+              uuid: 38d41b5d815a40ff816f6fad2395b61a
+              name: 'RabbitMQ: Exchange {#VHOST}/{#EXCHANGE}/{#TYPE}: Messages confirmed'
+              type: DEPENDENT
+              key: 'rabbitmq.exchange.messages.confirm["{#VHOST}/{#EXCHANGE}/{#TYPE}"]'
+              delay: '0'
+              history: 7d
+              description: 'Count of messages confirmed'
+              preprocessing:
+                -
+                  type: JSONPATH
+                  parameters:
+                    - '$[?(@.name == "{#EXCHANGE}" && @.vhost == "{#VHOST}" && @.type =="{#TYPE}")].message_stats.confirm.first()'
+                  error_handler: CUSTOM_VALUE
+                  error_handler_params: '0'
+              master_item:
+                key: 'web.page.get["http://{$RABBITMQ.API.USER}:{$RABBITMQ.API.PASSWORD}@{$RABBITMQ.API.CLUSTER_HOST}:{$RABBITMQ.API.PORT}/api/exchanges"]'
+              tags:
+                -
+                  tag: Application
+                  value: 'RabbitMQ: Exchange "{#VHOST}/{#EXCHANGE}/{#TYPE}"'
+            -
+              uuid: ab53a6957ea641fe8b2a7f26c4bcc743
+              name: 'RabbitMQ: Exchange {#VHOST}/{#EXCHANGE}/{#TYPE}: Messages delivered per second'
+              type: DEPENDENT
+              key: 'rabbitmq.exchange.messages.deliver_get.rate["{#VHOST}/{#EXCHANGE}/{#TYPE}"]'
+              delay: '0'
+              history: 7d
+              value_type: FLOAT
+              description: 'Rate per second of the sum of messages delivered in acknowledgement mode to consumers, in no-acknowledgement mode to consumers, in acknowledgement mode in response to basic.get, and in no-acknowledgement mode in response to basic.get'
+              preprocessing:
+                -
+                  type: JSONPATH
+                  parameters:
+                    - '$[?(@.name == "{#EXCHANGE}" && @.vhost == "{#VHOST}" && @.type =="{#TYPE}")].message_stats.deliver_get_details.rate.first()'
+                  error_handler: CUSTOM_VALUE
+                  error_handler_params: '0'
+              master_item:
+                key: 'web.page.get["http://{$RABBITMQ.API.USER}:{$RABBITMQ.API.PASSWORD}@{$RABBITMQ.API.CLUSTER_HOST}:{$RABBITMQ.API.PORT}/api/exchanges"]'
+              tags:
+                -
+                  tag: Application
+                  value: 'RabbitMQ: Exchange "{#VHOST}/{#EXCHANGE}/{#TYPE}"'
+            -
+              uuid: 412e5003ad2d4e80832ee0551a596791
+              name: 'RabbitMQ: Exchange {#VHOST}/{#EXCHANGE}/{#TYPE}: Messages delivered'
+              type: DEPENDENT
+              key: 'rabbitmq.exchange.messages.deliver_get["{#VHOST}/{#EXCHANGE}/{#TYPE}"]'
+              delay: '0'
+              history: 7d
+              description: 'Sum of messages delivered in acknowledgement mode to consumers, in no-acknowledgement mode to consumers, in acknowledgement mode in response to basic.get, and in no-acknowledgement mode in response to basic.get'
+              preprocessing:
+                -
+                  type: JSONPATH
+                  parameters:
+                    - '$[?(@.name == "{#EXCHANGE}" && @.vhost == "{#VHOST}" && @.type =="{#TYPE}")].message_stats.deliver_get.first()'
+                  error_handler: CUSTOM_VALUE
+                  error_handler_params: '0'
+              master_item:
+                key: 'web.page.get["http://{$RABBITMQ.API.USER}:{$RABBITMQ.API.PASSWORD}@{$RABBITMQ.API.CLUSTER_HOST}:{$RABBITMQ.API.PORT}/api/exchanges"]'
+              tags:
+                -
+                  tag: Application
+                  value: 'RabbitMQ: Exchange "{#VHOST}/{#EXCHANGE}/{#TYPE}"'
+            -
+              uuid: 32a0c7af8b9940a482a3a1d63ee90940
+              name: 'RabbitMQ: Exchange {#VHOST}/{#EXCHANGE}/{#TYPE}: Messages published per second'
+              type: DEPENDENT
+              key: 'rabbitmq.exchange.messages.publish.rate["{#VHOST}/{#EXCHANGE}/{#TYPE}"]'
+              delay: '0'
+              history: 7d
+              value_type: FLOAT
+              description: 'Rate of messages published per second'
+              preprocessing:
+                -
+                  type: JSONPATH
+                  parameters:
+                    - '$[?(@.name == "{#EXCHANGE}" && @.vhost == "{#VHOST}" && @.type =="{#TYPE}")].message_stats.publish_details.rate.first()'
+                  error_handler: CUSTOM_VALUE
+                  error_handler_params: '0'
+              master_item:
+                key: 'web.page.get["http://{$RABBITMQ.API.USER}:{$RABBITMQ.API.PASSWORD}@{$RABBITMQ.API.CLUSTER_HOST}:{$RABBITMQ.API.PORT}/api/exchanges"]'
+              tags:
+                -
+                  tag: Application
+                  value: 'RabbitMQ: Exchange "{#VHOST}/{#EXCHANGE}/{#TYPE}"'
+            -
+              uuid: 1eccbe4450d74d5f9c5b8f7e6279b214
+              name: 'RabbitMQ: Exchange {#VHOST}/{#EXCHANGE}/{#TYPE}: Messages published'
+              type: DEPENDENT
+              key: 'rabbitmq.exchange.messages.publish["{#VHOST}/{#EXCHANGE}/{#TYPE}"]'
+              delay: '0'
+              history: 7d
+              description: 'Count of messages published'
+              preprocessing:
+                -
+                  type: JSONPATH
+                  parameters:
+                    - '$[?(@.name == "{#EXCHANGE}" && @.vhost == "{#VHOST}" && @.type =="{#TYPE}")].message_stats.publish.first()'
+                  error_handler: CUSTOM_VALUE
+                  error_handler_params: '0'
+              master_item:
+                key: 'web.page.get["http://{$RABBITMQ.API.USER}:{$RABBITMQ.API.PASSWORD}@{$RABBITMQ.API.CLUSTER_HOST}:{$RABBITMQ.API.PORT}/api/exchanges"]'
+              tags:
+                -
+                  tag: Application
+                  value: 'RabbitMQ: Exchange "{#VHOST}/{#EXCHANGE}/{#TYPE}"'
+            -
+              uuid: 3520a523abd1413f88c1c19978e6d562
+              name: 'RabbitMQ: Exchange {#VHOST}/{#EXCHANGE}/{#TYPE}: Messages publish_in per second'
+              type: DEPENDENT
+              key: 'rabbitmq.exchange.messages.publish_in.rate["{#VHOST}/{#EXCHANGE}/{#TYPE}"]'
+              delay: '0'
+              history: 7d
+              value_type: FLOAT
+              description: 'Rate of messages published from channels into this overview per sec'
+              preprocessing:
+                -
+                  type: JSONPATH
+                  parameters:
+                    - '$[?(@.name == "{#EXCHANGE}" && @.vhost == "{#VHOST}" && @.type =="{#TYPE}")].message_stats.publish_in_details.rate.first()'
+                  error_handler: CUSTOM_VALUE
+                  error_handler_params: '0'
+              master_item:
+                key: 'web.page.get["http://{$RABBITMQ.API.USER}:{$RABBITMQ.API.PASSWORD}@{$RABBITMQ.API.CLUSTER_HOST}:{$RABBITMQ.API.PORT}/api/exchanges"]'
+              tags:
+                -
+                  tag: Application
+                  value: 'RabbitMQ: Exchange "{#VHOST}/{#EXCHANGE}/{#TYPE}"'
+            -
+              uuid: 520d8301e48540679472bf508a6e293b
+              name: 'RabbitMQ: Exchange {#VHOST}/{#EXCHANGE}/{#TYPE}: Messages publish_in'
+              type: DEPENDENT
+              key: 'rabbitmq.exchange.messages.publish_in["{#VHOST}/{#EXCHANGE}/{#TYPE}"]'
+              delay: '0'
+              history: 7d
+              description: 'Count of messages published from channels into this overview'
+              preprocessing:
+                -
+                  type: JSONPATH
+                  parameters:
+                    - '$[?(@.name == "{#EXCHANGE}" && @.vhost == "{#VHOST}" && @.type =="{#TYPE}")].message_stats.publish_in.first()'
+                  error_handler: CUSTOM_VALUE
+                  error_handler_params: '0'
+              master_item:
+                key: 'web.page.get["http://{$RABBITMQ.API.USER}:{$RABBITMQ.API.PASSWORD}@{$RABBITMQ.API.CLUSTER_HOST}:{$RABBITMQ.API.PORT}/api/exchanges"]'
+              tags:
+                -
+                  tag: Application
+                  value: 'RabbitMQ: Exchange "{#VHOST}/{#EXCHANGE}/{#TYPE}"'
+            -
+              uuid: 6beb5e40cb8b416a8722ea77abb7355d
+              name: 'RabbitMQ: Exchange {#VHOST}/{#EXCHANGE}/{#TYPE}: Messages publish_out per second'
+              type: DEPENDENT
+              key: 'rabbitmq.exchange.messages.publish_out.rate["{#VHOST}/{#EXCHANGE}/{#TYPE}"]'
+              delay: '0'
+              history: 7d
+              value_type: FLOAT
+              description: 'Rate of messages published from this overview into queues per second,0,rabbitmq,total msgs pub out rate'
+              preprocessing:
+                -
+                  type: JSONPATH
+                  parameters:
+                    - '$[?(@.name == "{#EXCHANGE}" && @.vhost == "{#VHOST}" && @.type =="{#TYPE}")].message_stats.publish_out_details.rate.first()'
+                  error_handler: CUSTOM_VALUE
+                  error_handler_params: '0'
+              master_item:
+                key: 'web.page.get["http://{$RABBITMQ.API.USER}:{$RABBITMQ.API.PASSWORD}@{$RABBITMQ.API.CLUSTER_HOST}:{$RABBITMQ.API.PORT}/api/exchanges"]'
+              tags:
+                -
+                  tag: Application
+                  value: 'RabbitMQ: Exchange "{#VHOST}/{#EXCHANGE}/{#TYPE}"'
+            -
+              uuid: beb929ee395e4caba73f3063c24a1d60
+              name: 'RabbitMQ: Exchange {#VHOST}/{#EXCHANGE}/{#TYPE}: Messages publish_out'
+              type: DEPENDENT
+              key: 'rabbitmq.exchange.messages.publish_out["{#VHOST}/{#EXCHANGE}/{#TYPE}"]'
+              delay: '0'
+              history: 7d
+              description: 'Count of messages published from this overview into queues'
+              preprocessing:
+                -
+                  type: JSONPATH
+                  parameters:
+                    - '$[?(@.name == "{#EXCHANGE}" && @.vhost == "{#VHOST}" && @.type =="{#TYPE}")].message_stats.publish_out.first()'
+                  error_handler: CUSTOM_VALUE
+                  error_handler_params: '0'
+              master_item:
+                key: 'web.page.get["http://{$RABBITMQ.API.USER}:{$RABBITMQ.API.PASSWORD}@{$RABBITMQ.API.CLUSTER_HOST}:{$RABBITMQ.API.PORT}/api/exchanges"]'
+              tags:
+                -
+                  tag: Application
+                  value: 'RabbitMQ: Exchange "{#VHOST}/{#EXCHANGE}/{#TYPE}"'
+            -
+              uuid: 7485d5a12fb04a13810ea54b9cc598e1
+              name: 'RabbitMQ: Exchange {#VHOST}/{#EXCHANGE}/{#TYPE}: Messages redelivered per second'
+              type: DEPENDENT
+              key: 'rabbitmq.exchange.messages.redeliver.rate["{#VHOST}/{#EXCHANGE}/{#TYPE}"]'
+              delay: '0'
+              history: 7d
+              value_type: FLOAT
+              description: 'Rate of subset of messages in deliver_get which had the redelivered flag set per second'
+              preprocessing:
+                -
+                  type: JSONPATH
+                  parameters:
+                    - '$[?(@.name == "{#EXCHANGE}" && @.vhost == "{#VHOST}" && @.type =="{#TYPE}")].message_stats.redeliver_details.rate.first()'
+                  error_handler: CUSTOM_VALUE
+                  error_handler_params: '0'
+              master_item:
+                key: 'web.page.get["http://{$RABBITMQ.API.USER}:{$RABBITMQ.API.PASSWORD}@{$RABBITMQ.API.CLUSTER_HOST}:{$RABBITMQ.API.PORT}/api/exchanges"]'
+              tags:
+                -
+                  tag: Application
+                  value: 'RabbitMQ: Exchange "{#VHOST}/{#EXCHANGE}/{#TYPE}"'
+            -
+              uuid: 58a06005659943429122d451acb521e0
+              name: 'RabbitMQ: Exchange {#VHOST}/{#EXCHANGE}/{#TYPE}: Messages redelivered'
+              type: DEPENDENT
+              key: 'rabbitmq.exchange.messages.redeliver["{#VHOST}/{#EXCHANGE}/{#TYPE}"]'
+              delay: '0'
+              history: 7d
+              description: 'Count of subset of messages in deliver_get which had the redelivered flag set'
+              preprocessing:
+                -
+                  type: JSONPATH
+                  parameters:
+                    - '$[?(@.name == "{#EXCHANGE}" && @.vhost == "{#VHOST}" && @.type =="{#TYPE}")].message_stats.redeliver.first()'
+                  error_handler: CUSTOM_VALUE
+                  error_handler_params: '0'
+              master_item:
+                key: 'web.page.get["http://{$RABBITMQ.API.USER}:{$RABBITMQ.API.PASSWORD}@{$RABBITMQ.API.CLUSTER_HOST}:{$RABBITMQ.API.PORT}/api/exchanges"]'
+              tags:
+                -
+                  tag: Application
+                  value: 'RabbitMQ: Exchange "{#VHOST}/{#EXCHANGE}/{#TYPE}"'
+            -
+              uuid: 295eeb3bd071400d921efe1f5a924a3e
+              name: 'RabbitMQ: Exchange {#VHOST}/{#EXCHANGE}/{#TYPE}: Messages returned unroutable per second'
+              type: DEPENDENT
+              key: 'rabbitmq.exchange.messages.return_unroutable.rate["{#VHOST}/{#EXCHANGE}/{#TYPE}"]'
+              delay: '0'
+              history: 7d
+              value_type: FLOAT
+              description: 'Rate of messages returned to publisher as unroutable per second'
+              preprocessing:
+                -
+                  type: JSONPATH
+                  parameters:
+                    - '$[?(@.name == "{#EXCHANGE}" && @.vhost == "{#VHOST}" && @.type =="{#TYPE}")].message_stats.return_unroutable_details.rate.first()'
+                  error_handler: CUSTOM_VALUE
+                  error_handler_params: '0'
+              master_item:
+                key: 'web.page.get["http://{$RABBITMQ.API.USER}:{$RABBITMQ.API.PASSWORD}@{$RABBITMQ.API.CLUSTER_HOST}:{$RABBITMQ.API.PORT}/api/exchanges"]'
+              tags:
+                -
+                  tag: Application
+                  value: 'RabbitMQ: Exchange "{#VHOST}/{#EXCHANGE}/{#TYPE}"'
+            -
+              uuid: 2901eccbd8ef483ba63c5522755155e7
+              name: 'RabbitMQ: Exchange {#VHOST}/{#EXCHANGE}/{#TYPE}: Messages returned unroutable'
+              type: DEPENDENT
+              key: 'rabbitmq.exchange.messages.return_unroutable["{#VHOST}/{#EXCHANGE}/{#TYPE}"]'
+              delay: '0'
+              history: 7d
+              description: 'Count of messages returned to publisher as unroutable'
+              preprocessing:
+                -
+                  type: JSONPATH
+                  parameters:
+                    - '$[?(@.name == "{#EXCHANGE}" && @.vhost == "{#VHOST}" && @.type =="{#TYPE}")].message_stats.return_unroutable.first()'
+                  error_handler: CUSTOM_VALUE
+                  error_handler_params: '0'
+              master_item:
+                key: 'web.page.get["http://{$RABBITMQ.API.USER}:{$RABBITMQ.API.PASSWORD}@{$RABBITMQ.API.CLUSTER_HOST}:{$RABBITMQ.API.PORT}/api/exchanges"]'
+              tags:
+                -
+                  tag: Application
+                  value: 'RabbitMQ: Exchange "{#VHOST}/{#EXCHANGE}/{#TYPE}"'
+          master_item:
+            key: 'web.page.get["http://{$RABBITMQ.API.USER}:{$RABBITMQ.API.PASSWORD}@{$RABBITMQ.API.CLUSTER_HOST}:{$RABBITMQ.API.PORT}/api/exchanges"]'
+          lld_macro_paths:
+            -
+              lld_macro: '{#EXCHANGE}'
+              path: $.name
+            -
+              lld_macro: '{#TYPE}'
+              path: $.type
+            -
+              lld_macro: '{#VHOST}'
+              path: $.vhost
+      macros:
+        -
+          macro: '{$RABBITMQ.API.CLUSTER_HOST}'
+          value: 127.0.0.1
+          description: 'The hostname or IP of RabbitMQ cluster API endpoint'
+        -
+          macro: '{$RABBITMQ.API.PASSWORD}'
+          value: zabbix
+        -
+          macro: '{$RABBITMQ.API.PORT}'
+          value: '15672'
+          description: 'The port of RabbitMQ API endpoint'
+        -
+          macro: '{$RABBITMQ.API.USER}'
+          value: zbx_monitor
+        -
+          macro: '{$RABBITMQ.LLD.FILTER.EXCHANGE.MATCHES}'
+          value: '.*'
+          description: 'Filter of discoverable exchanges'
+        -
+          macro: '{$RABBITMQ.LLD.FILTER.EXCHANGE.NOT_MATCHES}'
+          value: CHANGE_IF_NEEDED
+          description: 'Filter to exclude discovered exchanges'
+      dashboards:
+        -
+          uuid: a886a871a00d47e28b8648cadae3bc99
+          name: 'RabbitMQ overview'
+          pages:
+            -
+              widgets:
+                -
+                  type: GRAPH_CLASSIC
+                  width: '12'
+                  height: '5'
+                  fields:
+                    -
+                      type: INTEGER
+                      name: source_type
+                      value: '0'
+                    -
+                      type: GRAPH
+                      name: graphid
+                      value:
+                        name: 'RabbitMQ: Messages'
+                        host: 'RabbitMQ cluster by Zabbix agent'
+                -
+                  type: GRAPH_CLASSIC
+                  x: '12'
+                  width: '12'
+                  height: '5'
+                  fields:
+                    -
+                      type: INTEGER
+                      name: source_type
+                      value: '0'
+                    -
+                      type: GRAPH
+                      name: graphid
+                      value:
+                        name: 'RabbitMQ: Connections'
+                        host: 'RabbitMQ cluster by Zabbix agent'
+                -
+                  type: GRAPH_CLASSIC
+                  'y': '5'
+                  width: '12'
+                  height: '5'
+                  fields:
+                    -
+                      type: INTEGER
+                      name: source_type
+                      value: '0'
+                    -
+                      type: GRAPH
+                      name: graphid
+                      value:
+                        name: 'RabbitMQ: Messages status'
+                        host: 'RabbitMQ cluster by Zabbix agent'
+                -
+                  type: GRAPH_CLASSIC
+                  x: '12'
+                  'y': '5'
+                  width: '12'
+                  height: '5'
+                  fields:
+                    -
+                      type: INTEGER
+                      name: source_type
+                      value: '0'
+                    -
+                      type: GRAPH
+                      name: graphid
+                      value:
+                        name: 'RabbitMQ: Queues'
+                        host: 'RabbitMQ cluster by Zabbix agent'
+                -
+                  type: GRAPH_CLASSIC
+                  'y': '10'
+                  width: '12'
+                  height: '5'
+                  fields:
+                    -
+                      type: INTEGER
+                      name: source_type
+                      value: '0'
+                    -
+                      type: GRAPH
+                      name: graphid
+                      value:
+                        name: 'RabbitMQ: Messages per second'
+                        host: 'RabbitMQ cluster by Zabbix agent'
+  graphs:
+    -
+      uuid: 2dbd4f9285a34786a210c6e16d87ed85
+      name: 'RabbitMQ: Connections'
+      graph_items:
+        -
+          color: 1A7C11
+          item:
+            host: 'RabbitMQ cluster by Zabbix agent'
+            key: rabbitmq.overview.object_totals.connections
+        -
+          sortorder: '1'
+          color: 2774A4
+          item:
+            host: 'RabbitMQ cluster by Zabbix agent'
+            key: rabbitmq.overview.object_totals.channels
+        -
+          sortorder: '2'
+          color: F63100
+          item:
+            host: 'RabbitMQ cluster by Zabbix agent'
+            key: rabbitmq.overview.object_totals.consumers
+    -
+      uuid: dca08567e6ce4dcbb60f72a431de5ddf
+      name: 'RabbitMQ: Messages'
+      graph_items:
+        -
+          color: 1A7C11
+          item:
+            host: 'RabbitMQ cluster by Zabbix agent'
+            key: rabbitmq.overview.queue_totals.messages
+        -
+          sortorder: '1'
+          color: 2774A4
+          item:
+            host: 'RabbitMQ cluster by Zabbix agent'
+            key: rabbitmq.overview.queue_totals.messages.ready
+        -
+          sortorder: '2'
+          color: F63100
+          item:
+            host: 'RabbitMQ cluster by Zabbix agent'
+            key: rabbitmq.overview.queue_totals.messages.unacknowledged
+    -
+      uuid: ad303b1816a84248a347ef4773bf2c44
+      name: 'RabbitMQ: Messages per second'
+      graph_items:
+        -
+          color: 1A7C11
+          item:
+            host: 'RabbitMQ cluster by Zabbix agent'
+            key: rabbitmq.overview.messages.publish.rate
+        -
+          sortorder: '1'
+          color: 2774A4
+          item:
+            host: 'RabbitMQ cluster by Zabbix agent'
+            key: rabbitmq.overview.messages.ack.rate
+        -
+          sortorder: '2'
+          color: F63100
+          item:
+            host: 'RabbitMQ cluster by Zabbix agent'
+            key: rabbitmq.overview.messages.confirm.rate
+        -
+          sortorder: '3'
+          color: A54F10
+          item:
+            host: 'RabbitMQ cluster by Zabbix agent'
+            key: rabbitmq.overview.messages.deliver_get.rate
+        -
+          sortorder: '4'
+          color: FC6EA3
+          item:
+            host: 'RabbitMQ cluster by Zabbix agent'
+            key: rabbitmq.overview.messages.publish_in.rate
+        -
+          sortorder: '5'
+          color: 6C59DC
+          item:
+            host: 'RabbitMQ cluster by Zabbix agent'
+            key: rabbitmq.overview.messages.publish_out.rate
+        -
+          sortorder: '6'
+          color: AC8C14
+          item:
+            host: 'RabbitMQ cluster by Zabbix agent'
+            key: rabbitmq.overview.messages.redeliver.rate
+        -
+          sortorder: '7'
+          color: 611F27
+          item:
+            host: 'RabbitMQ cluster by Zabbix agent'
+            key: rabbitmq.overview.messages.return_unroutable.rate
+    -
+      uuid: 94fa39136a0d42b2997dd3b9a7581621
+      name: 'RabbitMQ: Messages status'
+      graph_items:
+        -
+          color: 1A7C11
+          item:
+            host: 'RabbitMQ cluster by Zabbix agent'
+            key: rabbitmq.overview.messages.publish
+        -
+          sortorder: '1'
+          color: 2774A4
+          item:
+            host: 'RabbitMQ cluster by Zabbix agent'
+            key: rabbitmq.overview.messages.ack
+        -
+          sortorder: '2'
+          color: F63100
+          item:
+            host: 'RabbitMQ cluster by Zabbix agent'
+            key: rabbitmq.overview.messages.confirm
+        -
+          sortorder: '3'
+          color: A54F10
+          item:
+            host: 'RabbitMQ cluster by Zabbix agent'
+            key: rabbitmq.overview.messages.deliver_get
+        -
+          sortorder: '4'
+          color: FC6EA3
+          item:
+            host: 'RabbitMQ cluster by Zabbix agent'
+            key: rabbitmq.overview.messages.publish_in
+        -
+          sortorder: '5'
+          color: 6C59DC
+          item:
+            host: 'RabbitMQ cluster by Zabbix agent'
+            key: rabbitmq.overview.messages.publish_out
+        -
+          sortorder: '6'
+          color: AC8C14
+          item:
+            host: 'RabbitMQ cluster by Zabbix agent'
+            key: rabbitmq.overview.messages.redeliver
+        -
+          sortorder: '7'
+          color: 611F27
+          item:
+            host: 'RabbitMQ cluster by Zabbix agent'
+            key: rabbitmq.overview.messages.return_unroutable
+    -
+      uuid: 3205b991eb5443e680b571b23b4a1721
+      name: 'RabbitMQ: Queues'
+      graph_items:
+        -
+          drawtype: GRADIENT_LINE
+          color: 1A7C11
+          item:
+            host: 'RabbitMQ cluster by Zabbix agent'
+            key: rabbitmq.overview.object_totals.queues

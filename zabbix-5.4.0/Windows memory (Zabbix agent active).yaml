@@ -1,0 +1,284 @@
+zabbix_export:
+  version: '5.4'
+  date: '2021-05-28T03:57:46Z'
+  groups:
+    -
+      uuid: 57b7ae836ca64446ba2c296389c009b7
+      name: Templates/Modules
+  templates:
+    -
+      uuid: e6535f54a0554463889fb8c65db11250
+      template: 'Windows memory by Zabbix agent active'
+      name: 'Windows memory by Zabbix agent active'
+      description: 'Template tooling version used: 0.38'
+      groups:
+        -
+          name: Templates/Modules
+      items:
+        -
+          uuid: 50610f9c46a848bdbdc08ed5b9c2a156
+          name: 'Cache bytes'
+          type: ZABBIX_ACTIVE
+          key: 'perf_counter_en["\Memory\Cache Bytes"]'
+          history: 7d
+          units: B
+          description: |
+            Cache Bytes is the sum of the Memory\\System Cache Resident Bytes, Memory\\System Driver Resident Bytes, 
+            Memory\\System Code Resident Bytes, and Memory\\Pool Paged Resident Bytes counters. This counter displays 
+            the last observed value only; it is not an average.
+          tags:
+            -
+              tag: Application
+              value: Memory
+        -
+          uuid: 6faf395b5bb14456a33e6689b7618613
+          name: 'Free system page table entries'
+          type: ZABBIX_ACTIVE
+          key: 'perf_counter_en["\Memory\Free System Page Table Entries"]'
+          history: 7d
+          description: |
+            This indicates the number of page table entries not currently in use by the system. If the number is less 
+            than 5,000, there may well be a memory leak or you running out of memory.
+          tags:
+            -
+              tag: Application
+              value: Memory
+          triggers:
+            -
+              uuid: 24fd9695799846b3ba812f8ec6148972
+              expression: 'max(/Windows memory by Zabbix agent active/perf_counter_en["\Memory\Free System Page Table Entries"],5m)<{$MEM.PAGE_TABLE_CRIT.MIN}'
+              name: 'Number of free system page table entries is too low (less {$MEM.PAGE_TABLE_CRIT.MIN} for 5m)'
+              priority: WARNING
+              description: |
+                The Memory Free System Page Table Entries is less than {$MEM.PAGE_TABLE_CRIT.MIN} for 5 minutes. If the number is less than 5,000, there may well be a memory leak.
+                Last value: {ITEM.LASTVALUE1}.
+              dependencies:
+                -
+                  name: 'High memory utilization ( >{$MEMORY.UTIL.MAX}% for 5m)'
+                  expression: 'min(/Windows memory by Zabbix agent active/vm.memory.util,5m)>{$MEMORY.UTIL.MAX}'
+        -
+          uuid: 9529c721229841f78362b4759cf2a910
+          name: 'Memory page faults per second'
+          type: ZABBIX_ACTIVE
+          key: 'perf_counter_en["\Memory\Page Faults/sec"]'
+          history: 7d
+          value_type: FLOAT
+          description: |
+            Page Faults/sec is the average number of pages faulted per second. It is measured in number of pages 
+            faulted per second because only one page is faulted in each fault operation, hence this is also equal 
+            to the number of page fault operations. This counter includes both hard faults (those that require 
+            disk access) and soft faults (where the faulted page is found elsewhere in physical memory.) Most 
+            processors can handle large numbers of soft faults without significant consequence. However, hard faults, 
+            which require disk access, can cause significant delays.
+          tags:
+            -
+              tag: Application
+              value: Memory
+        -
+          uuid: f6c50f669f59467e9c5dca1c54f11ba6
+          name: 'Memory pages per second'
+          type: ZABBIX_ACTIVE
+          key: 'perf_counter_en["\Memory\Pages/sec"]'
+          history: 7d
+          value_type: FLOAT
+          description: |
+            This measures the rate at which pages are read from or written to disk to resolve hard page faults. 
+            If the value is greater than 1,000, as a result of excessive paging, there may be a memory leak.
+          tags:
+            -
+              tag: Application
+              value: Memory
+          triggers:
+            -
+              uuid: 655191afccad4673a641808be5500b46
+              expression: 'min(/Windows memory by Zabbix agent active/perf_counter_en["\Memory\Pages/sec"],5m)>{$MEM.PAGE_SEC.CRIT.MAX}'
+              name: 'The Memory Pages/sec is too high (over {$MEM.PAGE_SEC.CRIT.MAX} for 5m)'
+              priority: WARNING
+              description: |
+                The Memory Pages/sec in the last 5 minutes exceeds {$MEM.PAGE_SEC.CRIT.MAX}. If the value is greater than 1,000, as a result of excessive paging, there may be a memory leak.
+                Last value: {ITEM.LASTVALUE1}.
+              dependencies:
+                -
+                  name: 'High memory utilization ( >{$MEMORY.UTIL.MAX}% for 5m)'
+                  expression: 'min(/Windows memory by Zabbix agent active/vm.memory.util,5m)>{$MEMORY.UTIL.MAX}'
+        -
+          uuid: 46dbc910c830421f9a95e0da1e467b39
+          name: 'Memory pool non-paged'
+          type: ZABBIX_ACTIVE
+          key: 'perf_counter_en["\Memory\Pool Nonpaged Bytes"]'
+          history: 7d
+          units: B
+          description: |
+            This measures the size, in bytes, of the non-paged pool. This is an area of system memory for objects 
+            that cannot be written to disk but instead must remain in physical memory as long as they are allocated. 
+            There is a possible memory leak if the value is greater than 175MB (or 100MB with the /3GB switch). 
+            A typical Event ID 2019 is recorded in the system event log.
+          tags:
+            -
+              tag: Application
+              value: Memory
+        -
+          uuid: 81b54eadc3c546858982dc8cf9228dd4
+          name: 'Used swap space in %'
+          type: ZABBIX_ACTIVE
+          key: 'perf_counter_en["\Paging file(_Total)\% Usage"]'
+          history: 7d
+          value_type: FLOAT
+          units: '%'
+          description: 'The used space of swap volume/file in percent.'
+          tags:
+            -
+              tag: Application
+              value: Memory
+        -
+          uuid: 2eec55a22cf74c16b06eb6f9028637f8
+          name: 'Free swap space'
+          type: CALCULATED
+          key: system.swap.free
+          history: 7d
+          units: B
+          params: 'last(//system.swap.size[,total]) - last(//system.swap.size[,total]) / 100 * last(//perf_counter_en["\Paging file(_Total)\% Usage"])'
+          description: 'The free space of swap volume/file in bytes.'
+          tags:
+            -
+              tag: Application
+              value: Memory
+        -
+          uuid: 5f86e2a308a342769cb5bf91da3976ef
+          name: 'Free swap space in %'
+          type: DEPENDENT
+          key: system.swap.pfree
+          delay: '0'
+          history: 7d
+          value_type: FLOAT
+          units: '%'
+          description: 'The free space of swap volume/file in percent.'
+          preprocessing:
+            -
+              type: JAVASCRIPT
+              parameters:
+                - 'return (100 - value)'
+          master_item:
+            key: 'perf_counter_en["\Paging file(_Total)\% Usage"]'
+          tags:
+            -
+              tag: Application
+              value: Memory
+        -
+          uuid: 9a73bfe24f884eea9bb9a13042b6dbfd
+          name: 'Total swap space'
+          type: ZABBIX_ACTIVE
+          key: 'system.swap.size[,total]'
+          history: 7d
+          units: B
+          description: 'The total space of swap volume/file in bytes.'
+          tags:
+            -
+              tag: Application
+              value: Memory
+        -
+          uuid: b6b897e08b0f4dd1b858304d5456ab86
+          name: 'Total memory'
+          type: ZABBIX_ACTIVE
+          key: 'vm.memory.size[total]'
+          history: 7d
+          units: B
+          description: 'Total memory in Bytes'
+          tags:
+            -
+              tag: Application
+              value: Memory
+        -
+          uuid: 7b6b29a6d984476785e77b9604874ed5
+          name: 'Used memory'
+          type: ZABBIX_ACTIVE
+          key: 'vm.memory.size[used]'
+          history: 7d
+          units: B
+          description: 'Used memory in Bytes'
+          tags:
+            -
+              tag: Application
+              value: Memory
+        -
+          uuid: 5731f496327c422e8fb33a1db6412d74
+          name: 'Memory utilization'
+          type: CALCULATED
+          key: vm.memory.util
+          history: 7d
+          value_type: FLOAT
+          units: '%'
+          params: 'last(//vm.memory.size[used]) / last(//vm.memory.size[total]) * 100'
+          description: 'Memory utilization in %'
+          tags:
+            -
+              tag: Application
+              value: Memory
+          triggers:
+            -
+              uuid: 44a172037c4344ce8d9df4dd85ff1b61
+              expression: 'min(/Windows memory by Zabbix agent active/vm.memory.util,5m)>{$MEMORY.UTIL.MAX}'
+              name: 'High memory utilization ( >{$MEMORY.UTIL.MAX}% for 5m)'
+              priority: AVERAGE
+              description: |
+                The system is running out of free memory.
+                Last value: {ITEM.LASTVALUE1}.
+      macros:
+        -
+          macro: '{$MEM.PAGE_SEC.CRIT.MAX}'
+          value: '1000'
+          description: 'The warning threshold of the Memory Pages/sec counter.'
+        -
+          macro: '{$MEM.PAGE_TABLE_CRIT.MIN}'
+          value: '5000'
+          description: 'The warning threshold of the Free System Page Table Entries counter.'
+        -
+          macro: '{$MEMORY.UTIL.MAX}'
+          value: '90'
+          description: 'The warning threshold of the Memory util item.'
+        -
+          macro: '{$SWAP.PFREE.MIN.WARN}'
+          value: '20'
+          description: 'The warning threshold of the minimum free swap.'
+  triggers:
+    -
+      uuid: 921894c446d646b7886769f018f87df0
+      expression: 'min(/Windows memory by Zabbix agent active/system.swap.pfree,5m)<{$SWAP.PFREE.MIN.WARN} and last(/Windows memory by Zabbix agent active/system.swap.size[,total])>0'
+      name: 'High swap space usage ( less than {$SWAP.PFREE.MIN.WARN}% free)'
+      opdata: 'Free: {ITEM.LASTVALUE1}, total: {ITEM.LASTVALUE2}'
+      priority: WARNING
+      description: |
+        This trigger is ignored, if there is no swap configured.
+        Last value: {ITEM.LASTVALUE1}.
+      dependencies:
+        -
+          name: 'High memory utilization ( >{$MEMORY.UTIL.MAX}% for 5m)'
+          expression: 'min(/Windows memory by Zabbix agent active/vm.memory.util,5m)>{$MEMORY.UTIL.MAX}'
+  graphs:
+    -
+      uuid: 3c50693dde6c4f6fa1487e3969a1c87d
+      name: 'Memory utilization'
+      ymin_type_1: FIXED
+      ymax_type_1: FIXED
+      graph_items:
+        -
+          drawtype: GRADIENT_LINE
+          color: 1A7C11
+          item:
+            host: 'Windows memory by Zabbix agent active'
+            key: vm.memory.util
+    -
+      uuid: 1d27499155b04933a51e4e0f419ea9e8
+      name: 'Swap usage'
+      graph_items:
+        -
+          color: 1A7C11
+          item:
+            host: 'Windows memory by Zabbix agent active'
+            key: system.swap.free
+        -
+          sortorder: '1'
+          color: 2774A4
+          item:
+            host: 'Windows memory by Zabbix agent active'
+            key: 'system.swap.size[,total]'

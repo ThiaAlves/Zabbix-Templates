@@ -1,0 +1,410 @@
+zabbix_export:
+  version: '5.4'
+  date: '2021-05-28T03:23:03Z'
+  groups:
+    -
+      uuid: 7df96b18c230490a9a0a9e2307226338
+      name: Templates
+  templates:
+    -
+      uuid: cb3d4f4c9dd34d74ba51d10bbca71702
+      template: 'Template Mikrotik CCR-1036 SNMP'
+      name: 'Template Mikrotik CCR-1036 SNMP'
+      groups:
+        -
+          name: Templates
+      items:
+        -
+          uuid: 91d581d1eaa844babea09bbcbf91f612
+          name: 'System name'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.1.5.0
+          key: mikrotik.identity.name
+          delay: 10m
+          trends: '0'
+          value_type: CHAR
+        -
+          uuid: 730bbb75c7764fa889e7b4b5121eefc0
+          name: 'Software ID'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.14988.1.1.4.1.0
+          key: mikrotik.software.id
+          delay: 10m
+          trends: '0'
+          value_type: CHAR
+        -
+          uuid: 27b49b84f08d4e43bdbb9646f6dd8e11
+          name: 'Espaço Total em Disco'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.25.2.3.1.5.131073
+          key: mikrotik.total.disk.space
+          delay: 10m
+          units: B
+          preprocessing:
+            -
+              type: MULTIPLIER
+              parameters:
+                - '1024'
+        -
+          uuid: bf0cb9655d6440438c35612cefd31530
+          name: 'Memoria Total'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.25.2.3.1.5.65536
+          key: mikrotik.total.memory
+          delay: 1h
+          units: B
+          preprocessing:
+            -
+              type: MULTIPLIER
+              parameters:
+                - '1024'
+        -
+          uuid: 1cf611a04a7044fb9fccd57b82c20803
+          name: 'System uptime'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.1.3.0
+          key: mikrotik.uptime
+          delay: 5m
+          units: uptime
+          preprocessing:
+            -
+              type: MULTIPLIER
+              parameters:
+                - '0.01'
+        -
+          uuid: cf61f2d831fd4ea887d4acddcb74d70f
+          name: 'Espaço Usado em Disco'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.25.2.3.1.6.131073
+          key: mikrotik.used.disk.space
+          delay: 5m
+          units: B
+          preprocessing:
+            -
+              type: MULTIPLIER
+              parameters:
+                - '1024'
+        -
+          uuid: 1f48b6e64aff42c09d97817fdc7ccaff
+          name: 'Memoria em Uso'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.25.2.3.1.6.65536
+          key: mikrotik.used.memory
+          units: B
+          preprocessing:
+            -
+              type: MULTIPLIER
+              parameters:
+                - '1024'
+        -
+          uuid: 95d322bac454404e89c5e3c99b1528b1
+          name: 'System version and hw'
+          type: SNMP_AGENT
+          snmp_oid: iso.3.6.1.2.1.47.1.1.1.1.2.65536
+          key: mikrotik.version.and.hw
+          delay: 1h
+          trends: '0'
+          value_type: CHAR
+        -
+          uuid: ed06cde029ee46a99fe61d245844eef6
+          name: 'CPU  Load'
+          type: SNMP_AGENT
+          snmp_oid: 'IF-MIB::ifHCOutOctets.{#SNMPINDEX}'
+          key: mtxCPULoad
+          units: '%'
+        -
+          uuid: 772bc57d31be4713928a8748afb1cfeb
+          name: 'Rede - DHCP Leases'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.14988.1.1.6.1.0
+          key: mtxrDHCPLeaseCount
+        -
+          uuid: 1a7cee3478d2410a81c3f94e59383b12
+          name: 'Firmare Aguardando Upgrade'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.14988.1.1.7.7.0
+          key: mtxrFirmwareUpgradeVersion
+          delay: 10m
+          trends: '0'
+          value_type: CHAR
+        -
+          uuid: e4f96b47329b429285cb07bcbd643d42
+          name: 'Firmware Ativo'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.14988.1.1.7.4.0
+          key: mtxrFirmwareVersion
+          delay: 10m
+          trends: '0'
+          value_type: CHAR
+        -
+          uuid: 63b412e3d5bb4c99ac40a5bdf7af328b
+          name: 'Frequencia Processador'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.14988.1.1.3.14.0
+          key: mtxrHlProcessorFrequency
+          delay: 10m
+          units: Mhz
+        -
+          uuid: 099476847f924610a6cb3e53bb7d7f1c
+          name: Temperatura
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.14988.1.1.3.10.0
+          key: mtxrHlTemperature
+          delay: 2m
+          units: °C
+          preprocessing:
+            -
+              type: MULTIPLIER
+              parameters:
+                - '0.1'
+          triggers:
+            -
+              uuid: 84dec82472b54fafb00bd27069524bcd
+              expression: 'last(/Template Mikrotik CCR-1036 SNMP/mtxrHlTemperature)>45'
+              name: 'Temperatura Ambiente Alta >50°'
+              priority: AVERAGE
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+            -
+              uuid: d7f269afd2cd48c8b28f3370493507b3
+              expression: 'last(/Template Mikrotik CCR-1036 SNMP/mtxrHlTemperature)<25'
+              name: 'Temperatura Ambiente Baixa <10°'
+              priority: WARNING
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: 4d3d166294d748969f82945ad7105aac
+          name: Voltagem
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.14988.1.1.3.8.0
+          key: mtxrHlVoltage
+          units: V
+          preprocessing:
+            -
+              type: MULTIPLIER
+              parameters:
+                - '0.1'
+        -
+          uuid: 381a43f23eaf4e46a9612b402ed1d843
+          name: 'Serial Number'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.14988.1.1.7.3.0
+          key: mtxrSerialNumber
+          trends: '0'
+          value_type: CHAR
+      discovery_rules:
+        -
+          uuid: bbdd1068f3294be5b1b0bd73318258ef
+          name: 'Network Interfaces Discovery'
+          type: SNMP_AGENT
+          snmp_oid: 'discovery[{#SNMPVALUE},1.3.6.1.2.1.2.2.1.8,{#IFADMINSTATUS},1.3.6.1.2.1.2.2.1.7,{#IFALIAS},1.3.6.1.2.1.31.1.1.1.18,{#IFNAME},1.3.6.1.2.1.31.1.1.1.1,{#IFDESCR},1.3.6.1.2.1.2.2.1.2,{#IFTYPE},1.3.6.1.2.1.2.2.1.3]'
+          key: net.if.discovery
+          delay: 5m
+          filter:
+            conditions:
+              -
+                macro: '{#IFADMINSTATUS}'
+                value: (1|3)
+                formulaid: A
+              -
+                macro: '{#IFNAME}'
+                value: '@Network interfaces for discovery'
+                formulaid: B
+              -
+                macro: '{#IFTYPE}'
+                value: (6|135|209)
+                formulaid: C
+          lifetime: 2h
+          item_prototypes:
+            -
+              uuid: 3112f3cf38064715b4702a830acff4c2
+              name: 'Interface {#IFNAME}({#IFALIAS}): Discards In'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.2.1.2.2.1.13.{#SNMPINDEX}'
+              key: 'net.if.in.discards[ifInDiscards.{#SNMPINDEX}]'
+              delay: 3m
+              preprocessing:
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+            -
+              uuid: a360bdf0ab9546e0bf433dd2ffcabd62
+              name: 'Interface {#IFNAME}({#IFALIAS}): Erros In'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.2.1.2.2.1.14.{#SNMPINDEX}'
+              key: 'net.if.in.errors[ifInErrors.{#SNMPINDEX}]'
+              delay: 3m
+              preprocessing:
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+            -
+              uuid: e349a1bd9c104510a0e282f862990978
+              name: 'Interface {#IFNAME}({#IFALIAS}): Bytes In'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.2.1.31.1.1.1.6.{#SNMPINDEX}'
+              key: 'net.if.in[ifHCInOctets.{#SNMPINDEX}]'
+              delay: 3m
+              units: bps
+              preprocessing:
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '8'
+            -
+              uuid: cd7409ba807942f686f12f405ba2053d
+              name: 'Interface {#IFNAME}({#IFALIAS}): Discards Out'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.2.1.2.2.1.19.{#SNMPINDEX}'
+              key: 'net.if.out.discards[ifOutDiscards.{#SNMPINDEX}]'
+              delay: 3m
+              preprocessing:
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+            -
+              uuid: 9ac6fd1346184d00b6dd8b0e36f5075b
+              name: 'Interface {#IFNAME}({#IFALIAS}): Erros Out'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.2.1.2.2.1.20.{#SNMPINDEX}'
+              key: 'net.if.out.errors[ifOutErrors.{#SNMPINDEX}]'
+              delay: 3m
+              preprocessing:
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+            -
+              uuid: 7de011a115a34ecf9eb60e15f6004fae
+              name: 'Interface {#IFNAME}({#IFALIAS}): Bytes Out'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.2.1.31.1.1.1.10.{#SNMPINDEX}'
+              key: 'net.if.out[ifHCOutOctets.{#SNMPINDEX}]'
+              delay: 3m
+              units: bps
+              preprocessing:
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '8'
+            -
+              uuid: 44169a6dbfdb4f3aa41c2976e39ca7da
+              name: 'Interface {#IFNAME}({#IFALIAS}): Speed'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.2.1.31.1.1.1.15.{#SNMPINDEX}'
+              key: 'net.if.speed[ifHighSpeed.{#SNMPINDEX}]'
+              delay: 3m
+              units: Mbps
+              preprocessing:
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '1000000'
+            -
+              uuid: 9e96fb1df2994e4cbe2494fdc63265fa
+              name: 'Interface {#IFNAME}({#IFALIAS}): Operational status'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.2.1.2.2.1.8.{#SNMPINDEX}'
+              key: 'net.if.status[ifOperStatus.{#SNMPINDEX}]'
+              delay: 3m
+              trigger_prototypes:
+                -
+                  uuid: 508cc28310af4457913ba4c7cb7ba253
+                  expression: '(last(/Template Mikrotik CCR-1036 SNMP/net.if.status[ifOperStatus.{#SNMPINDEX}])=2 and (last(/Template Mikrotik CCR-1036 SNMP/net.if.status[ifOperStatus.{#SNMPINDEX}],#1)<>last(/Template Mikrotik CCR-1036 SNMP/net.if.status[ifOperStatus.{#SNMPINDEX}],#2))=1)'
+                  name: 'Interface {#IFNAME}({#IFALIAS}): Link down'
+                  priority: AVERAGE
+                  description: 'Last value: {ITEM.LASTVALUE1}.'
+          graph_prototypes:
+            -
+              uuid: 52b92433366f490787c0ac62f932b26a
+              name: 'Interface {#IFNAME}({#IFALIAS}): Network traffic'
+              graph_items:
+                -
+                  sortorder: '1'
+                  color: 199C0D
+                  item:
+                    host: 'Template Mikrotik CCR-1036 SNMP'
+                    key: 'net.if.in[ifHCInOctets.{#SNMPINDEX}]'
+                -
+                  sortorder: '2'
+                  color: F63100
+                  item:
+                    host: 'Template Mikrotik CCR-1036 SNMP'
+                    key: 'net.if.out[ifHCOutOctets.{#SNMPINDEX}]'
+                -
+                  sortorder: '3'
+                  color: 2774A4
+                  item:
+                    host: 'Template Mikrotik CCR-1036 SNMP'
+                    key: 'net.if.in.discards[ifInDiscards.{#SNMPINDEX}]'
+                -
+                  sortorder: '4'
+                  color: F7941D
+                  item:
+                    host: 'Template Mikrotik CCR-1036 SNMP'
+                    key: 'net.if.out.discards[ifOutDiscards.{#SNMPINDEX}]'
+                -
+                  sortorder: '5'
+                  color: FC6EA3
+                  item:
+                    host: 'Template Mikrotik CCR-1036 SNMP'
+                    key: 'net.if.in.errors[ifInErrors.{#SNMPINDEX}]'
+                -
+                  sortorder: '6'
+                  color: 6C59DC
+                  item:
+                    host: 'Template Mikrotik CCR-1036 SNMP'
+                    key: 'net.if.out.errors[ifOutErrors.{#SNMPINDEX}]'
+  triggers:
+    -
+      uuid: 12b31543497940e8a01b3f64c0e682ad
+      expression: 'last(/Template Mikrotik CCR-1036 SNMP/mtxrFirmwareUpgradeVersion,#2)<>last(/Template Mikrotik CCR-1036 SNMP/mtxrFirmwareVersion,#2)'
+      name: 'Firmware Aguardando Upgrade'
+      priority: INFO
+      description: 'Last value: {ITEM.LASTVALUE1}.'
+  graphs:
+    -
+      uuid: 719179d5a2d64e6287a656d11dfd815b
+      name: 'CPU Load'
+      graph_items:
+        -
+          sortorder: '1'
+          color: 199C0D
+          item:
+            host: 'Template Mikrotik CCR-1036 SNMP'
+            key: mtxCPULoad
+    -
+      uuid: a78b1b057569408588aa95bdf631ca87
+      name: 'Temperatura Ambiente'
+      graph_items:
+        -
+          sortorder: '1'
+          color: 199C0D
+          item:
+            host: 'Template Mikrotik CCR-1036 SNMP'
+            key: mtxrHlTemperature
+    -
+      uuid: ff328a04e106482ca767c996b163d0ce
+      name: 'Uso de Memoria'
+      graph_items:
+        -
+          sortorder: '1'
+          color: 199C0D
+          item:
+            host: 'Template Mikrotik CCR-1036 SNMP'
+            key: mikrotik.used.memory
+        -
+          sortorder: '2'
+          color: F63100
+          item:
+            host: 'Template Mikrotik CCR-1036 SNMP'
+            key: mikrotik.total.memory

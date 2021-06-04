@@ -1,0 +1,659 @@
+zabbix_export:
+  version: '5.2'
+  date: '2021-06-04T11:17:41Z'
+  groups:
+    -
+      name: NOBREAK
+  templates:
+    -
+      template: 'Template Energy APC'
+      name: 'Template Energy APC'
+      groups:
+        -
+          name: NOBREAK
+      applications:
+        -
+          name: Battery
+        -
+          name: Devices
+        -
+          name: Input
+        -
+          name: Output
+        -
+          name: Status
+        -
+          name: System
+      items:
+        -
+          name: 'ICMP Ping'
+          type: SIMPLE
+          key: icmpping
+          description: Ping
+          applications:
+            -
+              name: Status
+          triggers:
+            -
+              expression: '{max(#2)}=0'
+              name: 'Unavailable by ICMP ping'
+              priority: HIGH
+              description: |
+                Check this device.
+                Last value: {ITEM.LASTVALUE1}.
+        -
+          name: 'ICMP Ping Loss'
+          type: SIMPLE
+          key: icmppingloss
+          units: '%'
+          description: 'Perca de pacotes ping'
+          applications:
+            -
+              name: Status
+          triggers:
+            -
+              expression: '{min(5m)}>20 and {min(5m)}<150'
+              name: 'High ICMP ping loss'
+              priority: WARNING
+              description: |
+                Ping loss in 5 minutes more than 20%.
+                Last value: {ITEM.LASTVALUE1}.
+              dependencies:
+                -
+                  name: 'Unavailable by ICMP ping'
+                  expression: '{Template Energy APC:icmpping.max(#2)}=0'
+        -
+          name: 'ICMP response time'
+          type: SIMPLE
+          key: icmppingsec
+          units: s
+          description: 'Tempo de resposta ping'
+          applications:
+            -
+              name: Status
+          triggers:
+            -
+              expression: '{avg(5m)}>0.15'
+              name: 'High ICMP ping response time'
+              priority: WARNING
+              description: |
+                Response time more than 0.15 seconds
+                Last value: {ITEM.LASTVALUE1}.
+              dependencies:
+                -
+                  name: 'High ICMP ping loss'
+                  expression: '{Template Energy APC:icmppingloss.min(5m)}>20 and {Template Energy APC:icmppingloss.min(5m)}<150'
+                -
+                  name: 'Unavailable by ICMP ping'
+                  expression: '{Template Energy APC:icmpping.max(#2)}=0'
+        -
+          name: 'Battery Actual Voltage'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.318.1.1.1.2.2.8.0
+          key: upsAdvBatteryActualVoltage
+          units: V
+          description: 'A tensão real do barramento da bateria em Volts.'
+          applications:
+            -
+              name: Battery
+          triggers:
+            -
+              expression: '{last(3m)}>=230'
+              name: 'High Voltage in  {HOST.HOST}'
+              priority: HIGH
+              description: 'Voltagem Acima de 230 Volts'
+        -
+          name: 'Battery Capacity'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.318.1.1.1.2.2.1.0
+          key: upsAdvBatteryCapacity
+          units: '%'
+          description: 'Capacidade restante da bateria expressa em porcentagem'
+          applications:
+            -
+              name: Battery
+          triggers:
+            -
+              expression: '{last(2m)}<=20'
+              name: 'Battery capacity below 20%'
+              priority: HIGH
+              description: |
+                Capacidade da bateria abaixo de 20%
+                Last value: {ITEM.LASTVALUE1}.
+            -
+              expression: '{last(2m)}<=40'
+              name: 'Battery capacity below 40%'
+              priority: HIGH
+              description: 'Capacidade da bateria abaixo de 40%'
+        -
+          name: 'Battery Current'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.318.1.1.1.2.2.9.0
+          key: upsAdvBatteryCurrent
+          units: A
+          description: 'A corrente da bateria em Amps.'
+          applications:
+            -
+              name: Battery
+        -
+          name: 'Number of Batteries Connected with problem'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.318.1.1.1.2.2.6.0
+          key: upsAdvBatteryNumOfBadBattPacks
+          delay: 10m
+          trends: '0'
+          value_type: TEXT
+          description: 'Número de baterias externas conectadas ao UPS que estão com defeito.'
+          applications:
+            -
+              name: Battery
+        -
+          name: 'Number of Batteries Connected'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.318.1.1.1.2.2.5.0
+          key: upsAdvBatteryNumOfBattPacks
+          delay: 10m
+          description: 'Número de baterias externas conectadas ao UPS.'
+          applications:
+            -
+              name: Battery
+        -
+          name: 'Battery RunTime Remaining'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.318.1.1.1.2.2.3.0
+          key: upsAdvBatteryRunTimeRemaining
+          units: s
+          description: 'Tempo de execução da bateria do UPS restante antes do esgotamento da bateria'
+          applications:
+            -
+              name: Battery
+          preprocessing:
+            -
+              type: MULTIPLIER
+              parameters:
+                - '0.01'
+        -
+          name: 'Battery Temperature'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.318.1.1.1.2.2.2.0
+          key: upsAdvBatteryTemperature
+          units: °C
+          description: 'Temperatura da bateria'
+          applications:
+            -
+              name: Battery
+          triggers:
+            -
+              expression: '{last(5m)}>45'
+              name: 'High Temperature on Battery'
+              priority: AVERAGE
+              description: |
+                Temperature on Battery is above 45°C.
+                Last value: {ITEM.LASTVALUE1}.
+        -
+          name: 'Battery Exhaust Thresh'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.318.1.1.1.5.2.14.0
+          key: upsAdvConfigBattExhaustThresh
+          units: uptime
+          description: 'O número de segundos antes do esgotamento da bateria quando o no-break desligará para a sua carga.'
+          applications:
+            -
+              name: Devices
+        -
+          name: 'High Transfer Volt'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.318.1.1.1.5.2.2.0
+          key: upsAdvConfigHighTransferVolt
+          units: VAC
+          description: 'A tensão de linha máxima em VAC permitida antes de o sistema UPS ser transferida para a bateria externa'
+          applications:
+            -
+              name: Devices
+        -
+          name: 'Low Battery Runtime'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.318.1.1.1.5.2.8.0
+          key: upsAdvConfigLowBatteryRunTime
+          units: uptime
+          description: 'O tempo de execução desejado do no-break, em segundos, assim que a condição da bateria fraca for atingida.'
+          applications:
+            -
+              name: Devices
+        -
+          name: 'Low Transfer Volt'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.318.1.1.1.5.2.3.0
+          key: upsAdvConfigLowTransferVolt
+          units: VAC
+          description: 'A tensão de linha mínima em VAC permitida antes de o sistema UPS ser transferida para a bateria externa'
+          applications:
+            -
+              name: Devices
+        -
+          name: 'Rated Output Voltage'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.318.1.1.1.5.2.1.0
+          key: upsAdvConfigRatedOutputVoltage
+          units: VAC
+          description: 'A Tensão nominal de saída do UPS em VAC'
+          applications:
+            -
+              name: Devices
+        -
+          name: 'Delay Shutdown off'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.318.1.1.1.5.2.10.0
+          key: upsAdvConfigShutoffDelay
+          units: uptime
+          description: 'O atraso em segundos em que o no-break permanece ligado após ser informado para desligar.'
+          applications:
+            -
+              name: Devices
+        -
+          name: 'Date of manufacture'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.318.1.1.1.1.2.2.0
+          key: upsAdvIdentDateOfManufacture
+          delay: 1h
+          trends: '0'
+          value_type: TEXT
+          description: 'Data de fabricação do Equipamento'
+          inventory_link: DATE_HW_DECOMM
+          applications:
+            -
+              name: System
+        -
+          name: 'Firmware Revision'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.318.1.1.1.1.2.1.0
+          key: upsAdvIdentFirmwareRevision
+          delay: 10m
+          trends: '0'
+          value_type: TEXT
+          description: 'Revisão do firmware do equipamento.'
+          inventory_link: OS
+          applications:
+            -
+              name: System
+        -
+          name: 'Serial Number'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.318.1.1.1.1.2.3.0
+          key: upsAdvIdentSerialNumber
+          delay: 1h
+          trends: '0'
+          value_type: TEXT
+          description: 'Número de série'
+          inventory_link: SERIALNO_A
+          applications:
+            -
+              name: System
+        -
+          name: 'Input Frequency'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.318.1.1.1.3.2.4.0
+          key: upsAdvInputFrequency
+          units: Hz
+          description: 'A frequência de entrada atual para o sistema UPS em Hz.'
+          applications:
+            -
+              name: Input
+        -
+          name: 'Input Line Voltage'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.318.1.1.1.3.2.1.0
+          key: upsAdvInputLineVoltage
+          units: VAC
+          description: 'A tensão da rede elétrica atual em VAC.'
+          applications:
+            -
+              name: Input
+        -
+          name: 'Input Max Line Voltage'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.318.1.1.1.3.2.2.0
+          key: upsAdvInputMaxLineVoltage
+          units: VAC
+          description: 'A tensão máxima da linha da rede elétrica em VAC durante o período anterior de 1 minuto.'
+          applications:
+            -
+              name: Input
+        -
+          name: 'Input Min Line Voltage'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.318.1.1.1.3.2.3.0
+          key: upsAdvInputMinLineVoltage
+          units: VAC
+          description: 'A tensão mínima da linha da rede elétrica em VAC durante o período anterior de 1 minuto.'
+          applications:
+            -
+              name: Input
+        -
+          name: 'Output Current'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.318.1.1.1.4.2.4.0
+          key: upsAdvOutputCurrent
+          units: A
+          description: 'A corrent em emperes consumida pela carga do no-break.'
+          applications:
+            -
+              name: Output
+        -
+          name: 'Output Frequency'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.318.1.1.1.4.2.2.0
+          key: upsAdvOutputFrequency
+          units: Hz
+          description: 'A frequência de saída atual do sistema UPS em Hz.'
+          applications:
+            -
+              name: Output
+        -
+          name: 'Output Load'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.318.1.1.1.4.2.3.0
+          key: upsAdvOutputLoad
+          units: '%'
+          description: 'A carga atual do UPS expressa em porcentagem da capacidade nominal.'
+          applications:
+            -
+              name: Output
+        -
+          name: 'Output Voltage'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.318.1.1.1.4.2.1.0
+          key: upsAdvOutputVoltage
+          units: VAC
+          description: 'A tensão de saída do sistema UPS em VAC'
+          applications:
+            -
+              name: Output
+        -
+          name: 'Battery Last Replace Date'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.318.1.1.1.2.1.3.0
+          key: upsBasicBatteryLastReplaceDate
+          delay: 1h
+          trends: '0'
+          value_type: TEXT
+          description: 'A data em que as baterias do sistema UPS foram subistituídas pela última vez.'
+          applications:
+            -
+              name: Battery
+        -
+          name: 'Battery Status'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.318.1.1.1.2.1.1.0
+          key: upsBasicBatteryStatus
+          description: |
+            Status da bateria
+            (1) = Desconhecido,
+            (2) = Normal
+            (3) = Bateria  Fraca
+          applications:
+            -
+              name: Battery
+          valuemap:
+            name: upsBatteryStatus
+          triggers:
+            -
+              expression: '{last(3m)}=3'
+              name: 'Low Battery'
+              priority: HIGH
+              description: |
+                Low Battery.
+                Last value: {ITEM.LASTVALUE1}.
+        -
+          name: 'Time on battery'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.318.1.1.1.2.1.2.0
+          key: upsBasicBatteryTimeOnBattery
+          delay: 3m
+          trends: '0'
+          value_type: TEXT
+          description: 'Tempo decorrido desde que o no-break mudou para energia da bateria.'
+          applications:
+            -
+              name: Battery
+        -
+          name: 'Number of Devices Connected'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.318.1.1.1.5.1.1.0
+          key: upsBasicConfigNumDevices
+          description: 'O número de dispositivos conectados ao no-break'
+          applications:
+            -
+              name: Devices
+        -
+          name: 'Model Name'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.318.1.1.1.1.1.1.0
+          key: upsBasicIdentModel
+          delay: 1h
+          trends: '0'
+          value_type: TEXT
+          description: 'Nome do modelo'
+          inventory_link: MODEL
+          applications:
+            -
+              name: System
+        -
+          name: 'Ident Name'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.318.1.1.1.1.1.2.0
+          key: upsBasicIdentName
+          delay: 1h
+          trends: '0'
+          value_type: TEXT
+          description: 'Nome do identificador'
+          inventory_link: NAME
+          applications:
+            -
+              name: System
+        -
+          name: 'Input Phase'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.318.1.1.1.3.1.1.0
+          key: upsBasicInputPhase
+          description: 'A fase de entrada AC atual.'
+          applications:
+            -
+              name: Input
+        -
+          name: 'Output Phase'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.318.1.1.1.4.1.2.0
+          key: upsBasicOutputPhase
+          description: 'A fase de saída atual.'
+          applications:
+            -
+              name: Output
+        -
+          name: 'Output Status'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.318.1.1.1.4.1.1.0
+          key: upsBasicOutputStatus
+          description: 'O estado atual do UPS.'
+          applications:
+            -
+              name: Output
+          valuemap:
+            name: upsOutputStatus
+        -
+          name: 'Battery Replace Indicator'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.318.1.1.1.2.2.4.0
+          key: upsBatteryReplaceIndicator
+          description: |
+            Indica se as baterias do UPS precisam ser substituidas.
+            
+             noBatteryNeedsReplacing(1),
+              batteryNeedsReplacing(2)
+          applications:
+            -
+              name: Battery
+          valuemap:
+            name: upsAdvBatteryReplaceIndicator
+          triggers:
+            -
+              expression: '{last()}=2'
+              name: 'Battery needs replacement'
+              priority: WARNING
+              description: 'Bateria necessita de reparo'
+        -
+          name: 'Total DC Current'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.318.1.1.1.2.2.10.0
+          key: upsTotalDCCurrent
+          units: A
+          description: 'A corrente DC total em Amps.'
+          applications:
+            -
+              name: Battery
+        -
+          name: 'SNMP availability'
+          type: INTERNAL
+          key: 'zabbix[host,snmp,available]'
+          applications:
+            -
+              name: Status
+          triggers:
+            -
+              expression: '{max(5m)}=0'
+              name: 'SNMP Indisponível em {HOST.HOST}'
+              priority: WARNING
+              description: |
+                Check SNMP Connection in this device.
+                Last value: {ITEM.LASTVALUE1}.
+  graphs:
+    -
+      name: 'Battery Capacity'
+      graph_items:
+        -
+          sortorder: '1'
+          color: 199C0D
+          item:
+            host: 'Template Energy APC'
+            key: upsAdvBatteryCapacity
+    -
+      name: 'Battery RunTime Remaining'
+      graph_items:
+        -
+          sortorder: '1'
+          color: 199C0D
+          item:
+            host: 'Template Energy APC'
+            key: upsAdvBatteryRunTimeRemaining
+    -
+      name: 'Battery Temperature'
+      graph_items:
+        -
+          sortorder: '1'
+          color: 199C0D
+          item:
+            host: 'Template Energy APC'
+            key: upsAdvBatteryTemperature
+    -
+      name: 'ICMP Response time'
+      graph_items:
+        -
+          sortorder: '1'
+          color: 199C0D
+          item:
+            host: 'Template Energy APC'
+            key: icmppingsec
+    -
+      name: 'Input X Output (Frequency)'
+      graph_items:
+        -
+          sortorder: '1'
+          color: 199C0D
+          item:
+            host: 'Template Energy APC'
+            key: upsAdvInputFrequency
+        -
+          sortorder: '2'
+          color: F63100
+          item:
+            host: 'Template Energy APC'
+            key: upsAdvOutputFrequency
+    -
+      name: 'Input x Output (Voltage)'
+      graph_items:
+        -
+          sortorder: '1'
+          color: 199C0D
+          item:
+            host: 'Template Energy APC'
+            key: upsAdvInputLineVoltage
+        -
+          sortorder: '2'
+          color: F63100
+          item:
+            host: 'Template Energy APC'
+            key: upsAdvOutputVoltage
+  value_maps:
+    -
+      name: upsAdvBatteryReplaceIndicator
+      mappings:
+        -
+          value: '1'
+          newvalue: noNeedsReplacing
+        -
+          value: '2'
+          newvalue: needsReplacing
+    -
+      name: upsBatteryStatus
+      mappings:
+        -
+          value: '1'
+          newvalue: Unknown
+        -
+          value: '2'
+          newvalue: batteryNormal
+        -
+          value: '3'
+          newvalue: batteryLow
+        -
+          value: '4'
+          newvalue: batteryDepleted
+    -
+      name: upsOutputStatus
+      mappings:
+        -
+          value: '1'
+          newvalue: Unknown
+        -
+          value: '2'
+          newvalue: onLine
+        -
+          value: '3'
+          newvalue: onBattery
+        -
+          value: '4'
+          newvalue: onSmartBoost
+        -
+          value: '5'
+          newvalue: timedSleeping
+        -
+          value: '6'
+          newvalue: softwareBypass
+        -
+          value: '7'
+          newvalue: 'off'
+        -
+          value: '8'
+          newvalue: rebooting
+        -
+          value: '9'
+          newvalue: switchedBypass
+        -
+          value: '10'
+          newvalue: hardwareFailureBypass
+        -
+          value: '11'
+          newvalue: sleepingUntilPowerReturn
+        -
+          value: '12'
+          newvalue: onSmartTrim

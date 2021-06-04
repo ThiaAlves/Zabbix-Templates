@@ -1,0 +1,259 @@
+zabbix_export:
+  version: '5.4'
+  date: '2021-05-28T03:52:07Z'
+  groups:
+    -
+      uuid: 57b7ae836ca64446ba2c296389c009b7
+      name: Templates/Modules
+  templates:
+    -
+      uuid: 296cb27ad93b4063b77aaf1a8339d40c
+      template: 'Windows CPU by Zabbix agent active'
+      name: 'Windows CPU by Zabbix agent active'
+      description: 'Template tooling version used: 0.38'
+      groups:
+        -
+          name: Templates/Modules
+      items:
+        -
+          uuid: 94cedfa2390f4e509456222a69207023
+          name: 'CPU DPC time'
+          type: ZABBIX_ACTIVE
+          key: 'perf_counter_en["\Processor Information(_total)\% DPC Time"]'
+          history: 7d
+          value_type: FLOAT
+          units: '%'
+          description: |
+            Processor DPC time is the time that a single processor spent receiving and servicing deferred procedure 
+            calls (DPCs). DPCs are interrupts that run at a lower priority than standard interrupts. % DPC Time is a 
+            component of % Privileged Time because DPCs are executed in privileged mode. If a high % DPC Time is 
+            sustained, there may be a processor bottleneck or an application or hardware related issue that can 
+            significantly diminish overall system performance.
+          tags:
+            -
+              tag: Application
+              value: CPU
+        -
+          uuid: 9c3ee1744a604a41b90dcec49effaff7
+          name: 'CPU interrupt time'
+          type: ZABBIX_ACTIVE
+          key: 'perf_counter_en["\Processor Information(_total)\% Interrupt Time"]'
+          history: 7d
+          value_type: FLOAT
+          units: '%'
+          description: |
+            The Processor Information\% Interrupt Time is the time the processor spends receiving and servicing 
+            hardware interrupts during sample intervals. This value is an indirect indicator of the activity of 
+            devices that generate interrupts, such as the system clock, the mouse, disk drivers, data communication 
+            lines, network interface cards and other peripheral devices. This is an easy way to identify a potential 
+            hardware failure. This should never be higher than 20%.
+          tags:
+            -
+              tag: Application
+              value: CPU
+          triggers:
+            -
+              uuid: cbcd8d6c2eab4f18be5a40c2128e1b76
+              expression: 'min(/Windows CPU by Zabbix agent active/perf_counter_en["\Processor Information(_total)\% Interrupt Time"],5m)>{$CPU.INTERRUPT.CRIT.MAX}'
+              name: 'CPU interrupt time is too high (over {$CPU.INTERRUPT.CRIT.MAX}% for 5m)'
+              priority: WARNING
+              description: |
+                "The CPU Interrupt Time in the last 5 minutes exceeds {$CPU.INTERRUPT.CRIT.MAX}%."
+                The Processor Information\% Interrupt Time is the time the processor spends receiving and servicing 
+                hardware interrupts during sample intervals. This value is an indirect indicator of the activity of 
+                devices that generate interrupts, such as the system clock, the mouse, disk drivers, data communication 
+                lines, network interface cards and other peripheral devices. This is an easy way to identify a potential 
+                hardware failure. This should never be higher than 20%.
+                Last value: {ITEM.LASTVALUE1}.
+              dependencies:
+                -
+                  name: 'High CPU utilization (over {$CPU.UTIL.CRIT}% for 5m)'
+                  expression: 'min(/Windows CPU by Zabbix agent active/system.cpu.util,5m)>{$CPU.UTIL.CRIT}'
+        -
+          uuid: 49073e4ccf964d349945824888ec46b0
+          name: 'CPU privileged time'
+          type: ZABBIX_ACTIVE
+          key: 'perf_counter_en["\Processor Information(_total)\% Privileged Time"]'
+          history: 7d
+          value_type: FLOAT
+          units: '%'
+          description: |
+            The Processor Information\% Privileged Time counter shows the percent of time that the processor is spent 
+            executing in Kernel (or Privileged) mode. Privileged mode includes services interrupts inside Interrupt 
+            Service Routines (ISRs), executing Deferred Procedure Calls (DPCs), Device Driver calls and other kernel-mode 
+            functions of the Windows® Operating System.
+          tags:
+            -
+              tag: Application
+              value: CPU
+          triggers:
+            -
+              uuid: 150f35f3b43c48eb995a1e8f1211e9b3
+              expression: 'min(/Windows CPU by Zabbix agent active/perf_counter_en["\Processor Information(_total)\% Privileged Time"],5m)>{$CPU.PRIV.CRIT.MAX}'
+              name: 'CPU privileged time is too high (over {$CPU.PRIV.CRIT.MAX}% for 5m)'
+              priority: WARNING
+              description: |
+                The CPU privileged time in the last 5 minutes exceeds {$CPU.PRIV.CRIT.MAX}%.
+                Last value: {ITEM.LASTVALUE1}.
+              dependencies:
+                -
+                  name: 'CPU interrupt time is too high (over {$CPU.INTERRUPT.CRIT.MAX}% for 5m)'
+                  expression: 'min(/Windows CPU by Zabbix agent active/perf_counter_en["\Processor Information(_total)\% Interrupt Time"],5m)>{$CPU.INTERRUPT.CRIT.MAX}'
+                -
+                  name: 'High CPU utilization (over {$CPU.UTIL.CRIT}% for 5m)'
+                  expression: 'min(/Windows CPU by Zabbix agent active/system.cpu.util,5m)>{$CPU.UTIL.CRIT}'
+        -
+          uuid: bebffbf027bb48feba459e7f344d67f2
+          name: 'CPU user time'
+          type: ZABBIX_ACTIVE
+          key: 'perf_counter_en["\Processor Information(_total)\% User Time"]'
+          history: 7d
+          value_type: FLOAT
+          units: '%'
+          description: |
+            The Processor Information\% User Time counter shows the percent of time that the processor(s) is spent executing 
+            in User mode.
+          tags:
+            -
+              tag: Application
+              value: CPU
+        -
+          uuid: 8d1d279c74324690a1ee37dbc90a7f88
+          name: 'Context switches per second'
+          type: ZABBIX_ACTIVE
+          key: 'perf_counter_en["\System\Context Switches/sec"]'
+          history: 7d
+          value_type: FLOAT
+          description: |
+            Context Switches/sec is the combined rate at which all processors on the computer are switched from one thread to another.
+            Context switches occur when a running thread voluntarily relinquishes the processor, is preempted by a higher priority ready thread, or switches between user-mode and privileged (kernel) mode to use an Executive or subsystem service.
+            It is the sum of Thread\\Context Switches/sec for all threads running on all processors in the computer and is measured in numbers of switches.
+            There are context switch counters on the System and Thread objects. This counter displays the difference between the values observed in the last two samples, divided by the duration of the sample interval.
+          tags:
+            -
+              tag: Application
+              value: CPU
+        -
+          uuid: b7a1b8f5c4664195921d459a60f09d57
+          name: 'CPU queue length'
+          type: ZABBIX_ACTIVE
+          key: 'perf_counter_en["\System\Processor Queue Length"]'
+          history: 7d
+          value_type: FLOAT
+          description: |
+            The Processor Queue Length shows the number of threads that are observed as delayed in the processor Ready Queue 
+            and are waiting to be executed.
+          tags:
+            -
+              tag: Application
+              value: CPU
+        -
+          uuid: 6f3c6b7312be445eb54e0851447a879e
+          name: 'CPU utilization'
+          type: ZABBIX_ACTIVE
+          key: system.cpu.util
+          history: 7d
+          value_type: FLOAT
+          units: '%'
+          description: 'CPU utilization in %'
+          tags:
+            -
+              tag: Application
+              value: CPU
+          triggers:
+            -
+              uuid: 5f1bdb9eb4c44e8a8f33afee709b0667
+              expression: 'min(/Windows CPU by Zabbix agent active/system.cpu.util,5m)>{$CPU.UTIL.CRIT}'
+              name: 'High CPU utilization (over {$CPU.UTIL.CRIT}% for 5m)'
+              opdata: 'Current utilization: {ITEM.LASTVALUE1}'
+              priority: WARNING
+              description: |
+                CPU utilization is too high. The system might be slow to respond.
+                Last value: {ITEM.LASTVALUE1}.
+        -
+          uuid: cb071eb5cc82471c83e88b9125c2832a
+          name: 'Number of cores'
+          type: ZABBIX_ACTIVE
+          key: 'wmi.get[root/cimv2,"Select NumberOfLogicalProcessors from Win32_ComputerSystem"]'
+          history: 7d
+          description: 'The number of logical processors available on the computer.'
+          tags:
+            -
+              tag: Application
+              value: CPU
+      macros:
+        -
+          macro: '{$CPU.INTERRUPT.CRIT.MAX}'
+          value: '50'
+          description: 'The critical threshold of the % Interrupt Time counter.'
+        -
+          macro: '{$CPU.PRIV.CRIT.MAX}'
+          value: '30'
+          description: 'The threshold of the % Privileged Time counter.'
+        -
+          macro: '{$CPU.QUEUE.CRIT.MAX}'
+          value: '3'
+          description: 'The threshold of the Processor Queue Length counter.'
+        -
+          macro: '{$CPU.UTIL.CRIT}'
+          value: '90'
+          description: 'The critical threshold of the CPU utilization in %.'
+  triggers:
+    -
+      uuid: dfba6b17ab94449181584c8a4410f50f
+      expression: 'min(/Windows CPU by Zabbix agent active/perf_counter_en["\System\Processor Queue Length"],5m) - last(/Windows CPU by Zabbix agent active/wmi.get[root/cimv2,"Select NumberOfLogicalProcessors from Win32_ComputerSystem"]) * 2 > {$CPU.QUEUE.CRIT.MAX}'
+      name: 'CPU queue length is too high (over {$CPU.QUEUE.CRIT.MAX} for 5m)'
+      priority: WARNING
+      description: |
+        The CPU Queue Length in the last 5 minutes exceeds {$CPU.QUEUE.CRIT.MAX}. According to actual observations, PQL should not exceed the number of cores * 2. To fine-tune the conditions, use the macro {$CPU.QUEUE.CRIT.MAX }.
+        Last value: {ITEM.LASTVALUE1}.
+      dependencies:
+        -
+          name: 'High CPU utilization (over {$CPU.UTIL.CRIT}% for 5m)'
+          expression: 'min(/Windows CPU by Zabbix agent active/system.cpu.util,5m)>{$CPU.UTIL.CRIT}'
+  graphs:
+    -
+      uuid: 12c859baa46044a0a439f26d2eb50436
+      name: 'CPU jumps'
+      graph_items:
+        -
+          color: 1A7C11
+          item:
+            host: 'Windows CPU by Zabbix agent active'
+            key: 'perf_counter_en["\System\Context Switches/sec"]'
+        -
+          sortorder: '1'
+          color: 2774A4
+          item:
+            host: 'Windows CPU by Zabbix agent active'
+            key: 'perf_counter_en["\Processor Information(_total)\% Interrupt Time"]'
+    -
+      uuid: 523969311486483e93b4704c544861d6
+      name: 'CPU usage'
+      type: STACKED
+      ymin_type_1: FIXED
+      ymax_type_1: FIXED
+      graph_items:
+        -
+          color: 1A7C11
+          item:
+            host: 'Windows CPU by Zabbix agent active'
+            key: 'perf_counter_en["\Processor Information(_total)\% User Time"]'
+        -
+          sortorder: '1'
+          color: 2774A4
+          item:
+            host: 'Windows CPU by Zabbix agent active'
+            key: 'perf_counter_en["\Processor Information(_total)\% Privileged Time"]'
+    -
+      uuid: 33392bbdf1d146e2ad347fafa4f9a5d2
+      name: 'CPU utilization'
+      ymin_type_1: FIXED
+      ymax_type_1: FIXED
+      graph_items:
+        -
+          drawtype: GRADIENT_LINE
+          color: 1A7C11
+          item:
+            host: 'Windows CPU by Zabbix agent active'
+            key: system.cpu.util

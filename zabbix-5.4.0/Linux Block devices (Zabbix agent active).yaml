@@ -1,0 +1,331 @@
+zabbix_export:
+  version: '5.4'
+  date: '2021-05-28T02:06:23Z'
+  groups:
+    -
+      uuid: 57b7ae836ca64446ba2c296389c009b7
+      name: Templates/Modules
+  templates:
+    -
+      uuid: aa226119d3e94f53b9a2809f1d4ebaee
+      template: 'Linux block devices by Zabbix agent active'
+      name: 'Linux block devices by Zabbix agent active'
+      description: 'Template tooling version used: 0.38'
+      groups:
+        -
+          name: Templates/Modules
+      discovery_rules:
+        -
+          uuid: 37d15facfc5f42f4ad1145f55d4bdb1e
+          name: 'Block devices discovery'
+          type: ZABBIX_ACTIVE
+          key: vfs.dev.discovery
+          delay: 1h
+          filter:
+            evaltype: AND
+            conditions:
+              -
+                macro: '{#DEVTYPE}'
+                value: disk
+                formulaid: C
+              -
+                macro: '{#DEVNAME}'
+                value: '{$VFS.DEV.DEVNAME.MATCHES}'
+                formulaid: B
+              -
+                macro: '{#DEVNAME}'
+                value: '{$VFS.DEV.DEVNAME.NOT_MATCHES}'
+                operator: NOT_MATCHES_REGEX
+                formulaid: A
+          item_prototypes:
+            -
+              uuid: 5a9fb5097fb1425aafc718018ebd95f8
+              name: '{#DEVNAME}: Disk average queue size (avgqu-sz)'
+              type: DEPENDENT
+              key: 'vfs.dev.queue_size[{#DEVNAME}]'
+              delay: '0'
+              history: 7d
+              value_type: FLOAT
+              description: 'Current average disk queue, the number of requests outstanding on the disk at the time the performance data is collected.'
+              preprocessing:
+                -
+                  type: JSONPATH
+                  parameters:
+                    - '$[10]'
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '0.001'
+              master_item:
+                key: 'vfs.file.contents[/sys/block/{#DEVNAME}/stat]'
+              tags:
+                -
+                  tag: Application
+                  value: 'Disk {#DEVNAME}'
+            -
+              uuid: 4263e16baa044186947ad9f4ec12f6b4
+              name: '{#DEVNAME}: Disk read request avg waiting time (r_await)'
+              type: CALCULATED
+              key: 'vfs.dev.read.await[{#DEVNAME}]'
+              history: 7d
+              value_type: FLOAT
+              units: '!ms'
+              params: '(last(//vfs.dev.read.time.rate[{#DEVNAME}])/(last(//vfs.dev.read.rate[{#DEVNAME}])+(last(//vfs.dev.read.rate[{#DEVNAME}])=0)))*1000*(last(//vfs.dev.read.rate[{#DEVNAME}]) > 0)'
+              description: 'This formula contains two boolean expressions that evaluates to 1 or 0 in order to set calculated metric to zero and to avoid division by zero exception.'
+              tags:
+                -
+                  tag: Application
+                  value: 'Disk {#DEVNAME}'
+            -
+              uuid: 7a02e002d83f4e71bdcc031077738f2b
+              name: '{#DEVNAME}: Disk read rate'
+              type: DEPENDENT
+              key: 'vfs.dev.read.rate[{#DEVNAME}]'
+              delay: '0'
+              history: 7d
+              value_type: FLOAT
+              units: '!r/s'
+              description: 'r/s. The number (after merges) of read requests completed per second for the device.'
+              preprocessing:
+                -
+                  type: JSONPATH
+                  parameters:
+                    - '$[0]'
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+              master_item:
+                key: 'vfs.file.contents[/sys/block/{#DEVNAME}/stat]'
+              tags:
+                -
+                  tag: Application
+                  value: 'Disk {#DEVNAME}'
+            -
+              uuid: ae4ae1c7ef2e434f875c8099ff3b101b
+              name: '{#DEVNAME}: Disk read time (rate)'
+              type: DEPENDENT
+              key: 'vfs.dev.read.time.rate[{#DEVNAME}]'
+              delay: '0'
+              history: 7d
+              value_type: FLOAT
+              description: 'Rate of total read time counter. Used in r_await calculation'
+              preprocessing:
+                -
+                  type: JSONPATH
+                  parameters:
+                    - '$[3]'
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '0.001'
+              master_item:
+                key: 'vfs.file.contents[/sys/block/{#DEVNAME}/stat]'
+              tags:
+                -
+                  tag: Application
+                  value: 'Zabbix raw items'
+            -
+              uuid: 708baac844f54ca2b91ba8ed9f624459
+              name: '{#DEVNAME}: Disk utilization'
+              type: DEPENDENT
+              key: 'vfs.dev.util[{#DEVNAME}]'
+              delay: '0'
+              history: 7d
+              value_type: FLOAT
+              units: '%'
+              description: 'This item is the percentage of elapsed time that the selected disk drive was busy servicing read or writes requests.'
+              preprocessing:
+                -
+                  type: JSONPATH
+                  parameters:
+                    - '$[9]'
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '0.1'
+              master_item:
+                key: 'vfs.file.contents[/sys/block/{#DEVNAME}/stat]'
+              tags:
+                -
+                  tag: Application
+                  value: 'Disk {#DEVNAME}'
+            -
+              uuid: e36cbccc4d9e470f8078bd2e04c5c5da
+              name: '{#DEVNAME}: Disk write request avg waiting time (w_await)'
+              type: CALCULATED
+              key: 'vfs.dev.write.await[{#DEVNAME}]'
+              history: 7d
+              value_type: FLOAT
+              units: '!ms'
+              params: '(last(//vfs.dev.write.time.rate[{#DEVNAME}])/(last(//vfs.dev.write.rate[{#DEVNAME}])+(last(//vfs.dev.write.rate[{#DEVNAME}])=0)))*1000*(last(//vfs.dev.write.rate[{#DEVNAME}]) > 0)'
+              description: 'This formula contains two boolean expressions that evaluates to 1 or 0 in order to set calculated metric to zero and to avoid division by zero exception.'
+              tags:
+                -
+                  tag: Application
+                  value: 'Disk {#DEVNAME}'
+            -
+              uuid: ef9afdff2799455e85a8477a307dd83f
+              name: '{#DEVNAME}: Disk write rate'
+              type: DEPENDENT
+              key: 'vfs.dev.write.rate[{#DEVNAME}]'
+              delay: '0'
+              history: 7d
+              value_type: FLOAT
+              units: '!w/s'
+              description: 'w/s. The number (after merges) of write requests completed per second for the device.'
+              preprocessing:
+                -
+                  type: JSONPATH
+                  parameters:
+                    - '$[4]'
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+              master_item:
+                key: 'vfs.file.contents[/sys/block/{#DEVNAME}/stat]'
+              tags:
+                -
+                  tag: Application
+                  value: 'Disk {#DEVNAME}'
+            -
+              uuid: 165825d4e5e442ad97d6455a117a7663
+              name: '{#DEVNAME}: Disk write time (rate)'
+              type: DEPENDENT
+              key: 'vfs.dev.write.time.rate[{#DEVNAME}]'
+              delay: '0'
+              history: 7d
+              value_type: FLOAT
+              description: 'Rate of total write time counter. Used in w_await calculation'
+              preprocessing:
+                -
+                  type: JSONPATH
+                  parameters:
+                    - '$[7]'
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '0.001'
+              master_item:
+                key: 'vfs.file.contents[/sys/block/{#DEVNAME}/stat]'
+              tags:
+                -
+                  tag: Application
+                  value: 'Zabbix raw items'
+            -
+              uuid: ab92fd1578124197ba4dc8af11ebece4
+              name: '{#DEVNAME}: Get stats'
+              type: ZABBIX_ACTIVE
+              key: 'vfs.file.contents[/sys/block/{#DEVNAME}/stat]'
+              history: '0'
+              trends: '0'
+              value_type: TEXT
+              description: 'Get contents of /sys/block/{#DEVNAME}/stat for disk stats.'
+              preprocessing:
+                -
+                  type: JAVASCRIPT
+                  parameters:
+                    - 'return JSON.stringify(value.trim().split(/ +/));'
+              tags:
+                -
+                  tag: Application
+                  value: 'Zabbix raw items'
+          trigger_prototypes:
+            -
+              uuid: af9c4b7070f94999a2a1569de0948822
+              expression: 'min(/Linux block devices by Zabbix agent active/vfs.dev.read.await[{#DEVNAME}],15m) > {$VFS.DEV.READ.AWAIT.WARN:"{#DEVNAME}"} or min(/Linux block devices by Zabbix agent active/vfs.dev.write.await[{#DEVNAME}],15m) > {$VFS.DEV.WRITE.AWAIT.WARN:"{#DEVNAME}"}'
+              name: '{#DEVNAME}: Disk read/write request responses are too high (read > {$VFS.DEV.READ.AWAIT.WARN:"{#DEVNAME}"} ms for 15m or write > {$VFS.DEV.WRITE.AWAIT.WARN:"{#DEVNAME}"} ms for 15m)'
+              priority: WARNING
+              description: |
+                This trigger might indicate disk {#DEVNAME} saturation.
+                Last value: {ITEM.LASTVALUE1}.
+              manual_close: 'YES'
+          graph_prototypes:
+            -
+              uuid: 8748136db91b499da7516cb6fde881fb
+              name: '{#DEVNAME}: Disk average waiting time'
+              graph_items:
+                -
+                  color: 1A7C11
+                  item:
+                    host: 'Linux block devices by Zabbix agent active'
+                    key: 'vfs.dev.read.await[{#DEVNAME}]'
+                -
+                  sortorder: '1'
+                  drawtype: GRADIENT_LINE
+                  color: 2774A4
+                  item:
+                    host: 'Linux block devices by Zabbix agent active'
+                    key: 'vfs.dev.write.await[{#DEVNAME}]'
+            -
+              uuid: 00756c13228340d7b4483b796dc8f79f
+              name: '{#DEVNAME}: Disk read/write rates'
+              graph_items:
+                -
+                  color: 1A7C11
+                  item:
+                    host: 'Linux block devices by Zabbix agent active'
+                    key: 'vfs.dev.read.rate[{#DEVNAME}]'
+                -
+                  sortorder: '1'
+                  drawtype: GRADIENT_LINE
+                  color: 2774A4
+                  item:
+                    host: 'Linux block devices by Zabbix agent active'
+                    key: 'vfs.dev.write.rate[{#DEVNAME}]'
+            -
+              uuid: 7cf1fd3334f543c8b44fb131890eb87e
+              name: '{#DEVNAME}: Disk utilization and queue'
+              graph_items:
+                -
+                  color: 1A7C11
+                  yaxisside: RIGHT
+                  item:
+                    host: 'Linux block devices by Zabbix agent active'
+                    key: 'vfs.dev.queue_size[{#DEVNAME}]'
+                -
+                  sortorder: '1'
+                  drawtype: GRADIENT_LINE
+                  color: 2774A4
+                  item:
+                    host: 'Linux block devices by Zabbix agent active'
+                    key: 'vfs.dev.util[{#DEVNAME}]'
+          preprocessing:
+            -
+              type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+      macros:
+        -
+          macro: '{$VFS.DEV.DEVNAME.MATCHES}'
+          value: .+
+          description: 'This macro is used in block devices discovery. Can be overridden on the host or linked template level'
+        -
+          macro: '{$VFS.DEV.DEVNAME.NOT_MATCHES}'
+          value: '^(loop[0-9]*|sd[a-z][0-9]+|nbd[0-9]+|sr[0-9]+|fd[0-9]+|dm-[0-9]+|ram[0-9]+|ploop[a-z0-9]+|md[0-9]*|hcp[0-9]*|zram[0-9]*)'
+          description: 'This macro is used in block devices discovery. Can be overridden on the host or linked template level'
+        -
+          macro: '{$VFS.DEV.READ.AWAIT.WARN}'
+          value: '20'
+          description: 'Disk read average response time (in ms) before the trigger would fire'
+        -
+          macro: '{$VFS.DEV.WRITE.AWAIT.WARN}'
+          value: '20'
+          description: 'Disk write average response time (in ms) before the trigger would fire'

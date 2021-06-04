@@ -1,0 +1,785 @@
+zabbix_export:
+  version: '5.4'
+  date: '2021-05-28T03:34:01Z'
+  groups:
+    -
+      uuid: 41072b386306447bb96bf0a3c55fec25
+      name: 'Templates - UNIVOX'
+    -
+      uuid: 64053af3aad6487796735196037fd2e8
+      name: 'Templates A10'
+  templates:
+    -
+      uuid: bdeb770c78a9462ea859c2838065f751
+      template: 'Template SNMP A10 AX Series'
+      name: 'Template SNMP A10 AX Series'
+      templates:
+        -
+          name: 'Template Module ICMP Ping'
+      groups:
+        -
+          name: 'Templates - UNIVOX'
+        -
+          name: 'Templates A10'
+      items:
+        -
+          uuid: 3fc9e916850e42958ec739557fd0f5bd
+          name: 'Global Total Current Connections'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.22610.2.4.3.1.2.1.0
+          key: axAppGlobalTotalCurrentConnections
+          delay: 3m
+          tags:
+            -
+              tag: Application
+              value: Connections
+        -
+          uuid: e1c0f099b7254e67ab48c6301e8300dc
+          name: 'Global New NAT Connections P/s'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.22610.2.4.3.1.2.5.0
+          key: axAppGlobalTotalNewIPNatconnections
+          delay: 3m
+          preprocessing:
+            -
+              type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+          tags:
+            -
+              tag: Application
+              value: Connections
+        -
+          uuid: a6560e5581594d8883ac65c75d18b460
+          name: 'Global Session Non TcpUdp IP'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.22610.2.4.3.19.1.4.0
+          key: axSessionGlobalStatNonTcpUdpIPSession
+          delay: 3m
+          tags:
+            -
+              tag: Application
+              value: Connections
+        -
+          uuid: bf5b3b5e1a51476195e4c41ec9847223
+          name: 'Global session TCP Established'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.22610.2.4.3.19.1.1.0
+          key: axSessionGlobalStatTCPEstablished
+          delay: 3m
+          tags:
+            -
+              tag: Application
+              value: Connections
+        -
+          uuid: d4637d7d142240a686a8b6618bab78d4
+          name: 'Global Session TCP Half Open'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.22610.2.4.3.19.1.2.0
+          key: axSessionGlobalStatTCPHalfOpen
+          delay: 3m
+          tags:
+            -
+              tag: Application
+              value: Connections
+        -
+          uuid: bc861c986c934cd7935304f43bc26289
+          name: 'Global Session UDP'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.22610.2.4.3.19.1.3.0
+          key: axSessionGlobalStatUDP
+          delay: 3m
+          tags:
+            -
+              tag: Application
+              value: Connections
+        -
+          uuid: 68b8cfb35b484ded92f34e3d729f6cca
+          name: 'Control CPU Usage (5 sec)'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.22610.2.4.1.3.4.0
+          key: axSysAverageControlCpuUsage
+          delay: 3m
+          units: '%'
+          tags:
+            -
+              tag: Application
+              value: CPU
+          triggers:
+            -
+              uuid: 59910406e18a419c8f268b3258a67618
+              expression: 'min(/Template SNMP A10 AX Series/axSysAverageControlCpuUsage,5m)>90'
+              name: 'High Control CPU Usage [{ITEM.LASTVALUE1}]'
+              priority: AVERAGE
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: a93ea39ebc8b4d77a3d4e23078c99a7f
+          name: 'CPU Usage (5 sec)'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.22610.2.4.1.3.3.0
+          key: axSysAverageCpuUsage
+          delay: 3m
+          units: '%'
+          tags:
+            -
+              tag: Application
+              value: CPU
+          triggers:
+            -
+              uuid: 30c431881ba044e68c939f42f01d02ad
+              expression: 'min(/Template SNMP A10 AX Series/axSysAverageCpuUsage,5m)>90'
+              name: 'High CPU Usage [{ITEM.LASTVALUE1}]'
+              priority: AVERAGE
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: 0fa98c20b8174b498e493ecfc4b502ee
+          name: 'Data CPU Usage (5 sec)'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.22610.2.4.1.3.5.0
+          key: axSysAverageDataCpuUsage
+          delay: 3m
+          units: '%'
+          tags:
+            -
+              tag: Application
+              value: CPU
+          triggers:
+            -
+              uuid: 0ddd31f89be5433c9edaa6932610700e
+              expression: 'min(/Template SNMP A10 AX Series/axSysAverageDataCpuUsage,5m)>90'
+              name: 'High Data CPU Usage [{ITEM.LASTVALUE1}]'
+              priority: AVERAGE
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: 19293edadeaa42dd8f52360ae03e266f
+          name: 'Free Disk Space'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.22610.2.4.1.4.2.0
+          key: axSysDiskFreeSpace
+          delay: 3m
+          units: B
+          preprocessing:
+            -
+              type: MULTIPLIER
+              parameters:
+                - '1048576'
+          tags:
+            -
+              tag: Application
+              value: Disk
+        -
+          uuid: 738b52123dfd4f09a59ca9d0b5ba28ab
+          name: 'Total Disk Space'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.22610.2.4.1.4.1.0
+          key: axSysDiskTotalSpace
+          delay: 1h
+          units: B
+          preprocessing:
+            -
+              type: MULTIPLIER
+              parameters:
+                - '1048576'
+          tags:
+            -
+              tag: Application
+              value: Disk
+        -
+          uuid: 2dec54b86ed44a0b841c1b166534c5eb
+          name: 'Firmware Version'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.22610.2.4.1.6.3.0
+          key: axSysFirmwareVersion
+          delay: 1h
+          trends: '0'
+          value_type: CHAR
+          tags:
+            -
+              tag: Application
+              value: General
+        -
+          uuid: 72bd7b2e3f3f4f05a5a0795e98424882
+          name: 'Speed of FAN #1'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.22610.2.4.1.5.2.0
+          key: axSysHwFan1Speed
+          delay: 3m
+          units: RPM
+          tags:
+            -
+              tag: Application
+              value: FAN
+        -
+          uuid: 3984b3daa8ba4b29b4c9f8b9bd1bd559
+          name: 'Speed of FAN #2'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.22610.2.4.1.5.3.0
+          key: axSysHwFan2Speed
+          delay: 3m
+          units: RPM
+          tags:
+            -
+              tag: Application
+              value: FAN
+        -
+          uuid: e7607f464432429c827d15c39e77e609
+          name: 'Speed of FAN #3'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.22610.2.4.1.5.4.0
+          key: axSysHwFan3Speed
+          units: RPM
+          tags:
+            -
+              tag: Application
+              value: FAN
+        -
+          uuid: 6fa472edb68e44118a547cabbf6a1247
+          name: 'System Temperature'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.22610.2.4.1.5.1.0
+          key: axSysHwPhySystemTemp
+          delay: 3m
+          units: °C
+          tags:
+            -
+              tag: Application
+              value: Temperature
+        -
+          uuid: fc32135cdf1a45caa6244f5be66f8c67
+          name: 'Status of Left or Lower Power Supply'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.22610.2.4.1.5.7.0
+          key: axSysLowerOrLeftPowerSupplyStatus
+          delay: 3m
+          tags:
+            -
+              tag: Application
+              value: 'Power Supplies'
+          triggers:
+            -
+              uuid: 7de69af9ac99457c830a1de2c6577b35
+              expression: 'last(/Template SNMP A10 AX Series/axSysLowerOrLeftPowerSupplyStatus)=0'
+              name: 'Lower/Left Power Supply is off'
+              priority: AVERAGE
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: 3f47c6884fe942e8b9c12295253486a4
+          name: 'Total memory'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.22610.2.4.1.2.1.0
+          key: axSysMemoryTotal
+          delay: 1h
+          units: B
+          preprocessing:
+            -
+              type: MULTIPLIER
+              parameters:
+                - '1024'
+          tags:
+            -
+              tag: Application
+              value: Memory
+        -
+          uuid: 5fb1c5f8cca3458ebfce383dab835f8e
+          name: 'Used memory'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.22610.2.4.1.2.2.0
+          key: axSysMemoryUsage
+          delay: 3m
+          units: B
+          preprocessing:
+            -
+              type: MULTIPLIER
+              parameters:
+                - '1024'
+          tags:
+            -
+              tag: Application
+              value: Memory
+        -
+          uuid: 21dca2ca54c84bd187c6e7e31f037a1e
+          name: 'Serial Number'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.22610.2.4.1.6.2.0
+          key: axSysSerialNumber
+          delay: 1h
+          trends: '0'
+          value_type: CHAR
+          tags:
+            -
+              tag: Application
+              value: General
+        -
+          uuid: f5142143875540e1aea0c7fb0d7fc9b9
+          name: 'Status of Right or Upper Power Supply'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.22610.2.4.1.5.8.0
+          key: axSysUpperOrRightPowerSupplyStatus
+          delay: 3m
+          tags:
+            -
+              tag: Application
+              value: 'Power Supplies'
+          triggers:
+            -
+              uuid: 051af6ca772d41a7a34bdb988650a3d3
+              expression: 'last(/Template SNMP A10 AX Series/axSysUpperOrRightPowerSupplyStatus)=0'
+              name: 'Upper/Right Power Supply is off'
+              priority: AVERAGE
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: dc99fef006cb42d58f7a76ed035fc22c
+          name: 'CALCULO DE % DA MEMORIA'
+          type: CALCULATED
+          key: cal.memory.a10
+          params: |
+            (last(//axSysMemoryUsage)*100)/
+            last(//axSysMemoryTotal)
+          tags:
+            -
+              tag: Application
+              value: Memory
+        -
+          uuid: 5a2bb277987c440ab6bc8e1e25d20487
+          name: 'CALCULO DE % DO SPACE DISK'
+          type: CALCULATED
+          key: cal.spacedisck.a10
+          params: |
+            (last(//axSysDiskFreeSpace)*100)/
+            last(//axSysDiskTotalSpace)
+          tags:
+            -
+              tag: Application
+              value: Disk
+      discovery_rules:
+        -
+          uuid: 40abfc7b1be34c45b0aca187c5af8e6b
+          name: 'FAN Discovery'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.22610.2.4.1.5.9.1.2
+          key: axFanName
+          delay: 1d
+          item_prototypes:
+            -
+              uuid: a327949a1cdf4a3f9b6629916e0c9433
+              name: 'Speed of FAN "$1"'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.22610.2.4.1.5.9.1.4.{#SNMPINDEX}'
+              key: 'axFanSpeed["{#SNMPVALUE}"]'
+              delay: 3m
+              units: RPM
+              tags:
+                -
+                  tag: Application
+                  value: FAN
+            -
+              uuid: d9effac1442a4dd9986d3b8082cd2b8d
+              name: 'Status of "$1" FAN'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.22610.2.4.1.5.9.1.3.{#SNMPINDEX}'
+              key: 'axFanStatus["{#SNMPVALUE}"]'
+              delay: 3m
+              value_type: FLOAT
+              description: |
+                A10-AX-MIB::axFanStatus
+                
+                Fan status: 
+                0: Failed,
+                4: OK-fixed/high,
+                5: OK-low/med,
+                6: OK-med/med,
+                7: OK-med/high, 
+                -2: not ready,
+                -1: unknown.
+              tags:
+                -
+                  tag: Application
+                  value: FAN
+              trigger_prototypes:
+                -
+                  uuid: 14ff01ef886a4706a604cb1866f06daf
+                  expression: 'last(/Template SNMP A10 AX Series/axFanStatus["{#SNMPVALUE}"])=0'
+                  name: 'FAN "{#SNMPVALUE}" is failed'
+                  priority: HIGH
+                  description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: 2f1563ed00ea4994ae145220b4b1244f
+          name: 'Power Supply Discovery'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.22610.2.4.1.5.12.1.2
+          key: axPowerSupplyName
+          delay: 1d
+          item_prototypes:
+            -
+              uuid: c8a52cf88ea242e9801921d169adaea8
+              name: 'Status of Power Supply "$1"'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.22610.2.4.1.5.12.1.3.{#SNMPINDEX}'
+              key: 'axPowerSupplyStatus["{#SNMPVALUE}"]'
+              value_type: FLOAT
+              tags:
+                -
+                  tag: Application
+                  value: 'Power Supplies'
+              trigger_prototypes:
+                -
+                  uuid: d8a99ca5e30343d198555a4e0158cfa1
+                  expression: 'last(/Template SNMP A10 AX Series/axPowerSupplyStatus["{#SNMPVALUE}"])=2'
+                  name: 'Power Supply "{#SNMPVALUE}" is absent'
+                  priority: WARNING
+                  description: 'Last value: {ITEM.LASTVALUE1}.'
+                -
+                  uuid: 3b1453fd9e724fe69d71e720d86afc67
+                  expression: 'last(/Template SNMP A10 AX Series/axPowerSupplyStatus["{#SNMPVALUE}"])=0'
+                  name: 'Power Supply "{#SNMPVALUE}" is off'
+                  priority: WARNING
+                  description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: 1d9acc8c1333494bb352672da294e505
+          name: 'Power Supply Voltage Discovery'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.22610.2.4.1.5.11.1.3
+          key: axPowerSupplyVoltageDescription
+          delay: 1d
+          item_prototypes:
+            -
+              uuid: 08f7bb296e814037ab4d9db713d25685
+              name: 'Status of Power Supply Voltage "$1"'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.22610.2.4.1.5.11.1.2.{#SNMPINDEX}'
+              key: 'axPowerSupplyVoltageStatus["{#SNMPVALUE}"]'
+              delay: 3m
+              tags:
+                -
+                  tag: Application
+                  value: Voltage
+              trigger_prototypes:
+                -
+                  uuid: 2853ebda3df24937919b6cded5bb337a
+                  expression: 'last(/Template SNMP A10 AX Series/axPowerSupplyVoltageStatus["{#SNMPVALUE}"])=0'
+                  name: 'Power Supply Voltage "{#SNMPVALUE}" is invalid'
+                  priority: AVERAGE
+                  description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: 2b5596cac6774453ac39bb81e5b0f0f5
+          name: 'Interface Network'
+          type: SNMP_AGENT
+          snmp_oid: 'discoveryA10[{#SNMPVALUE},IF-MIB::ifDescr,{#SNMPSPEED},IF-MIB::ifHighSpeed]'
+          key: discoveryA10.ifDescr
+          delay: 1d
+          item_prototypes:
+            -
+              uuid: 671219becb7f416086494cfd2f4d6d62
+              name: '{#SNMPVALUE} - DISCART IN'
+              type: SNMP_AGENT
+              snmp_oid: 'IF-MIB::ifInDiscards.{#SNMPINDEX}'
+              key: 'discart.a10.in.[{#SNMPINDEX}]'
+              units: Mbytes
+              preprocessing:
+                -
+                  type: SIMPLE_CHANGE
+                  parameters:
+                    - ''
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '1'
+              tags:
+                -
+                  tag: Application
+                  value: 'Network interface - Discart'
+            -
+              uuid: 67a5bfde7ef6471e84a209300c615ddc
+              name: '{#SNMPVALUE} - DISCART OUT'
+              type: SNMP_AGENT
+              snmp_oid: 'IF-MIB::ifOutDiscards.{#SNMPINDEX}'
+              key: 'discart.a10.out.[{#SNMPINDEX}]'
+              units: Mbytes
+              preprocessing:
+                -
+                  type: SIMPLE_CHANGE
+                  parameters:
+                    - ''
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '1'
+              tags:
+                -
+                  tag: Application
+                  value: 'Network interface - Discart'
+            -
+              uuid: 221d643c4db34410b7a2768c385918a6
+              name: '{#SNMPVALUE} - ERROR IN'
+              type: SNMP_AGENT
+              snmp_oid: 'IF-MIB::ifInErrors.{#SNMPINDEX}'
+              key: 'error.a10.in.[{#SNMPINDEX}]'
+              units: Mbytes
+              preprocessing:
+                -
+                  type: SIMPLE_CHANGE
+                  parameters:
+                    - ''
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '1'
+              tags:
+                -
+                  tag: Application
+                  value: 'Network interface - Error'
+            -
+              uuid: a044e0d949d54c48a658c1814445debc
+              name: '{#SNMPVALUE} - ERROR OUT'
+              type: SNMP_AGENT
+              snmp_oid: 'IF-MIB::ifOutErrors.{#SNMPINDEX}'
+              key: 'error.a10.out.[{#SNMPINDEX}]'
+              units: Mbytes
+              preprocessing:
+                -
+                  type: SIMPLE_CHANGE
+                  parameters:
+                    - ''
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '1'
+              tags:
+                -
+                  tag: Application
+                  value: 'Network interface - Error'
+            -
+              uuid: fc31701a2955437ab6941885f380f0ac
+              name: '{#SNMPVALUE} - STATUS PORT'
+              type: SNMP_AGENT
+              snmp_oid: 'IF-MIB::ifOperStatus.{#SNMPINDEX}'
+              key: 'status.a10.port.[{#SNMPINDEX}]'
+              tags:
+                -
+                  tag: Application
+                  value: 'Network interface - Status'
+              trigger_prototypes:
+                -
+                  uuid: d44012ce791640eaac30ae5cbb076a64
+                  expression: 'last(/Template SNMP A10 AX Series/status.a10.port.[{#SNMPINDEX}])<>1'
+                  name: 'PORT {#SNMPVALUE} is DOWN!'
+                  priority: HIGH
+                  description: 'Last value: {ITEM.LASTVALUE1}.'
+            -
+              uuid: 0f10be4525044e31af2100116140fc45
+              name: '{#SNMPVALUE} - TRAFFIC IN'
+              type: SNMP_AGENT
+              snmp_oid: 'IF-MIB::ifHCInOctets.{#SNMPINDEX}'
+              key: 'traffic.a10.in.[{#SNMPINDEX}]'
+              units: Mbytes
+              preprocessing:
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '8'
+              tags:
+                -
+                  tag: Application
+                  value: 'Network interface - traffic'
+              trigger_prototypes:
+                -
+                  uuid: 417cd37fb7074f53b699111491fd29d2
+                  expression: 'last(/Template SNMP A10 AX Series/traffic.a10.in.[{#SNMPINDEX}],#24)>=({#SNMPSPEED}*80000000) or last(/Template SNMP A10 AX Series/traffic.a10.in.[{#SNMPINDEX}],#24)>=({#SNMPSPEED}*80000000)'
+                  name: 'O CONSUMO DA - {#SNMPVALUE} - ESTA ACIMA DE 80%'
+                  priority: AVERAGE
+                  description: 'Last value: {ITEM.LASTVALUE1}.'
+                -
+                  uuid: da071f9ba52444eb86673e24a855defb
+                  expression: 'last(/Template SNMP A10 AX Series/traffic.a10.in.[{#SNMPINDEX}],#24)>=({#SNMPSPEED}*90000000) or last(/Template SNMP A10 AX Series/traffic.a10.in.[{#SNMPINDEX}],#24)>=({#SNMPSPEED}*90000000)'
+                  name: 'O CONSUMO DA - {#SNMPVALUE} - ESTA ACIMA DE 80%'
+                  priority: HIGH
+                  description: 'Last value: {ITEM.LASTVALUE1}.'
+            -
+              uuid: 17acd62012a74be7aaf7c8b01fb5905a
+              name: '{#SNMPVALUE} - TRAFFIC OUT'
+              type: SNMP_AGENT
+              snmp_oid: 'IF-MIB::ifHCOutOctets.{#SNMPINDEX}'
+              key: 'traffic.a10.out.[{#SNMPINDEX}]'
+              units: Mbytes
+              preprocessing:
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '8'
+              tags:
+                -
+                  tag: Application
+                  value: 'Network interface - traffic'
+          trigger_prototypes:
+            -
+              uuid: 5def5bb7a0364f7b93e220195b2a7c2e
+              expression: 'last(/Template SNMP A10 AX Series/discart.a10.out.[{#SNMPINDEX}])>0 or last(/Template SNMP A10 AX Series/discart.a10.in.[{#SNMPINDEX}])>0'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'max(/Template SNMP A10 AX Series/discart.a10.in.[{#SNMPINDEX}],10m)>0 or max(/Template SNMP A10 AX Series/discart.a10.out.[{#SNMPINDEX}],10m)>0'
+              name: 'Discards de Pacotes - {#SNMPVALUE}'
+              priority: AVERAGE
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+            -
+              uuid: 6adeea2442564affb57d30030b80db4e
+              expression: 'min(/Template SNMP A10 AX Series/error.a10.in.[{#SNMPINDEX}],4m)>0 or min(/Template SNMP A10 AX Series/error.a10.out.[{#SNMPINDEX}],4m)>0'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'max(/Template SNMP A10 AX Series/error.a10.in.[{#SNMPINDEX}],10m)>0 or max(/Template SNMP A10 AX Series/error.a10.out.[{#SNMPINDEX}],10m)>0'
+              name: 'Erros da Porta - {#SNMPVALUE}'
+              priority: HIGH
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+          lld_macro_paths:
+            -
+              lld_macro: '{#SNMPVALUE}'
+              path: '^Ethernet .*$'
+  triggers:
+    -
+      uuid: dde919a6153d43079019035f54f22a3b
+      expression: 'max(/Template SNMP A10 AX Series/axSysDiskFreeSpace,1d)<last(/Template SNMP A10 AX Series/axSysDiskTotalSpace)*0.2'
+      name: 'Free disk space is less than 20%'
+      priority: AVERAGE
+      description: 'Last value: {ITEM.LASTVALUE1}.'
+    -
+      uuid: 9875b7c2e31440ba956b889138d56610
+      expression: 'last(/Template SNMP A10 AX Series/axSysMemoryUsage)>=last(/Template SNMP A10 AX Series/axSysMemoryTotal)*0.9'
+      name: 'High memory usage'
+      priority: AVERAGE
+      description: 'Last value: {ITEM.LASTVALUE1}.'
+  graphs:
+    -
+      uuid: 675ea29e09ba49a48ee66ebeca49d211
+      name: 'CPU Usage'
+      graph_items:
+        -
+          sortorder: '1'
+          color: 199C0D
+          item:
+            host: 'Template SNMP A10 AX Series'
+            key: axSysAverageControlCpuUsage
+        -
+          sortorder: '2'
+          color: F63100
+          item:
+            host: 'Template SNMP A10 AX Series'
+            key: axSysAverageCpuUsage
+        -
+          sortorder: '3'
+          color: 2774A4
+          item:
+            host: 'Template SNMP A10 AX Series'
+            key: axSysAverageDataCpuUsage
+    -
+      uuid: 5582de7cfed044eabc1ebe97d603c9ea
+      name: 'Disk Space Usage'
+      graph_items:
+        -
+          sortorder: '1'
+          color: 199C0D
+          item:
+            host: 'Template SNMP A10 AX Series'
+            key: axSysDiskFreeSpace
+        -
+          sortorder: '2'
+          color: F63100
+          item:
+            host: 'Template SNMP A10 AX Series'
+            key: axSysDiskTotalSpace
+    -
+      uuid: e486002e5bc74e42b8b2e8e671520249
+      name: 'Memory Usage'
+      graph_items:
+        -
+          sortorder: '1'
+          color: 199C0D
+          item:
+            host: 'Template SNMP A10 AX Series'
+            key: axSysMemoryTotal
+        -
+          sortorder: '2'
+          color: F63100
+          item:
+            host: 'Template SNMP A10 AX Series'
+            key: axSysMemoryUsage
+    -
+      uuid: f433f6653413466b84148f59956c26e7
+      name: 'NAT Connections'
+      graph_items:
+        -
+          sortorder: '1'
+          color: 199C0D
+          item:
+            host: 'Template SNMP A10 AX Series'
+            key: axSessionGlobalStatNonTcpUdpIPSession
+        -
+          sortorder: '2'
+          color: F63100
+          item:
+            host: 'Template SNMP A10 AX Series'
+            key: axSessionGlobalStatTCPEstablished
+        -
+          sortorder: '3'
+          color: 2774A4
+          item:
+            host: 'Template SNMP A10 AX Series'
+            key: axSessionGlobalStatTCPHalfOpen
+        -
+          sortorder: '4'
+          color: F7941D
+          item:
+            host: 'Template SNMP A10 AX Series'
+            key: axSessionGlobalStatUDP
+        -
+          sortorder: '5'
+          color: FC6EA3
+          item:
+            host: 'Template SNMP A10 AX Series'
+            key: axAppGlobalTotalCurrentConnections
+    -
+      uuid: a71c66eee6934349b45a5e4166d2862e
+      name: 'New NAT Connections P/s'
+      graph_items:
+        -
+          sortorder: '1'
+          color: 199C0D
+          item:
+            host: 'Template SNMP A10 AX Series'
+            key: axAppGlobalTotalNewIPNatconnections
+    -
+      uuid: f2d77b4445b24a94a18c07b1164fe389
+      name: 'Speed of FANs'
+      graph_items:
+        -
+          sortorder: '1'
+          color: 199C0D
+          item:
+            host: 'Template SNMP A10 AX Series'
+            key: axSysHwFan1Speed
+        -
+          sortorder: '2'
+          color: F63100
+          item:
+            host: 'Template SNMP A10 AX Series'
+            key: axSysHwFan2Speed
+        -
+          sortorder: '3'
+          color: 2774A4
+          item:
+            host: 'Template SNMP A10 AX Series'
+            key: axSysHwFan3Speed
+    -
+      uuid: a5e5282b0f06433ebf37fe1c6fd67952
+      name: 'System Temperature'
+      graph_items:
+        -
+          sortorder: '1'
+          color: 199C0D
+          item:
+            host: 'Template SNMP A10 AX Series'
+            key: axSysHwPhySystemTemp

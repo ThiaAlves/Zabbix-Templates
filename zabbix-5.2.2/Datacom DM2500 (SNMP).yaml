@@ -1,0 +1,416 @@
+zabbix_export:
+  version: '5.2'
+  date: '2021-06-04T11:10:14Z'
+  groups:
+    -
+      name: DATACOM
+  templates:
+    -
+      template: 'DATACOM DM2500'
+      name: 'DATACOM DM2500'
+      groups:
+        -
+          name: DATACOM
+      applications:
+        -
+          name: CPU
+        -
+          name: Interfaces
+        -
+          name: Mem
+      items:
+        -
+          name: 'DM2500 - CPU0'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.25.3.3.1.2.196608
+          key: CPU0
+          delay: '30'
+          units: '%'
+          description: 'Carga da CPU 0'
+          applications:
+            -
+              name: CPU
+        -
+          name: 'DM2500 - CPU1'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.25.3.3.1.2.196609
+          key: CPU1
+          delay: '30'
+          units: '%'
+          description: 'Carga da CPU 1'
+          applications:
+            -
+              name: CPU
+        -
+          name: 'DM2500 - CPU2'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.25.3.3.1.2.196610
+          key: CPU2
+          delay: '30'
+          units: '%'
+          description: 'Carga da CPU 2'
+          applications:
+            -
+              name: CPU
+        -
+          name: 'DM2500 - CPU3'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.25.3.3.1.2.196611
+          key: CPU3
+          delay: '30'
+          units: '%'
+          description: 'Carga da CPU 3'
+          applications:
+            -
+              name: CPU
+        -
+          name: 'Número de interfaces de rede'
+          type: SNMP_AGENT
+          snmp_oid: ifNumber.0
+          key: ifNumber
+          delay: 10m
+          history: 7d
+          applications:
+            -
+              name: Interfaces
+        -
+          name: 'DM2500 - memAvailReal'
+          type: SNMP_AGENT
+          snmp_oid: 'UCD-SNMP-MIB::memAvailReal.0'
+          key: memAvailReal.0
+          delay: '30'
+          units: B
+          description: 'Memória disponível em Bytes'
+          applications:
+            -
+              name: Mem
+          preprocessing:
+            -
+              type: MULTIPLIER
+              parameters:
+                - '1024'
+        -
+          name: 'DM2500 - memCached'
+          type: SNMP_AGENT
+          snmp_oid: 'UCD-SNMP-MIB::memCached.0'
+          key: memCached.0
+          delay: '30'
+          units: B
+          description: 'Memória Cache em Bytes'
+          applications:
+            -
+              name: Mem
+          preprocessing:
+            -
+              type: MULTIPLIER
+              parameters:
+                - '1024'
+        -
+          name: 'DM2500 - memTotalFree'
+          type: SNMP_AGENT
+          snmp_oid: 'UCD-SNMP-MIB::memTotalFree.0'
+          key: memTotalFree.0
+          delay: '30'
+          units: B
+          description: 'Memória total disponível'
+          applications:
+            -
+              name: Mem
+          preprocessing:
+            -
+              type: MULTIPLIER
+              parameters:
+                - '1024'
+          triggers:
+            -
+              expression: '{prev()}<200'
+              name: '{HOST.IP} - {HOST.NAME} - Memory Available Low'
+              priority: WARNING
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          name: 'DM2500 - CpuIdle'
+          type: SNMP_AGENT
+          snmp_oid: 'UCD-SNMP-MIB::ssCpuIdle.0'
+          key: ssCpuIdle.0
+          delay: '30'
+          units: '%'
+          description: 'Porcentagem da CPU Inativa'
+          applications:
+            -
+              name: CPU
+        -
+          name: 'DM2500 - CpuSystem'
+          type: SNMP_AGENT
+          snmp_oid: 'UCD-SNMP-MIB::ssCpuSystem.0'
+          key: ssCpuSystem.0
+          delay: '30'
+          units: '%'
+          description: 'Porcentagem da utilização da CPU pelo sistema'
+          applications:
+            -
+              name: CPU
+        -
+          name: 'DM2500 - CpuUser'
+          type: SNMP_AGENT
+          snmp_oid: 'UCD-SNMP-MIB::ssCpuUser.0'
+          key: ssCpuUser.0
+          delay: '30'
+          units: '%'
+          description: 'Porcentagem da utilização da CPU pelo Usuário'
+          applications:
+            -
+              name: CPU
+        -
+          name: 'Device uptime'
+          type: SNMP_AGENT
+          snmp_oid: 'SNMPv2-MIB::sysUpTime.0'
+          key: sysUpTime
+          delay: '60'
+          history: 7d
+          units: uptime
+          description: 'Tempo do dispositivo ligado'
+          preprocessing:
+            -
+              type: MULTIPLIER
+              parameters:
+                - '0.01'
+      discovery_rules:
+        -
+          name: 'Interfaces de rede'
+          type: SNMP_AGENT
+          snmp_oid: 'discovery[{#SNMPVALUE},IF-MIB::ifDescr]'
+          key: ifDescr
+          delay: 10m
+          item_prototypes:
+            -
+              name: 'Admin status de interface $1'
+              type: SNMP_AGENT
+              snmp_oid: 'IF-MIB::ifAdminStatus.{#SNMPINDEX}'
+              key: 'ifAdminStatus[{#SNMPVALUE}]'
+              description: 'Status administrador da interface'
+              applications:
+                -
+                  name: Interfaces
+            -
+              name: 'Alias de interface $1'
+              type: SNMP_AGENT
+              snmp_oid: 'ifAlias.{#SNMPINDEX}'
+              key: 'ifAlias[{#SNMPVALUE}]'
+              delay: 10m
+              trends: '0'
+              value_type: CHAR
+              description: 'Apelido da interface'
+              applications:
+                -
+                  name: Interfaces
+            -
+              name: 'Descrição da interface $1'
+              type: SNMP_AGENT
+              snmp_oid: 'ifDescr.{#SNMPINDEX}'
+              key: 'ifDescr[{#SNMPVALUE}]'
+              delay: 10m
+              trends: '0'
+              value_type: CHAR
+              applications:
+                -
+                  name: Interfaces
+            -
+              name: 'Erros de entrada na interface $1'
+              type: SNMP_AGENT
+              snmp_oid: 'ifInErrors.{#SNMPINDEX}'
+              key: 'ifInErrors[{#SNMPVALUE}]'
+              applications:
+                -
+                  name: Interfaces
+            -
+              name: 'O tráfego de entrada na interface $1'
+              type: SNMP_AGENT
+              snmp_oid: 'ifInOctets.{#SNMPINDEX}'
+              key: 'ifInOctets[{#SNMPVALUE}]'
+              units: bps
+              applications:
+                -
+                  name: Interfaces
+              preprocessing:
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '8'
+            -
+              name: 'Status operacional de interface $1'
+              type: SNMP_AGENT
+              snmp_oid: 'ifOperStatus.{#SNMPINDEX}'
+              key: 'ifOperStatus[{#SNMPVALUE}]'
+              applications:
+                -
+                  name: Interfaces
+              trigger_prototypes:
+                -
+                  expression: '{diff(0)}=1 and {min(10)}=2'
+                  recovery_mode: RECOVERY_EXPRESSION
+                  recovery_expression: '{last(0)} <> 2'
+                  name: 'Status DOWN em {HOST.HOST} interface {#SNMPVALUE}'
+                  priority: INFO
+                  description: 'Last value: {ITEM.LASTVALUE1}.'
+            -
+              name: 'Erros de saída na interface $1'
+              type: SNMP_AGENT
+              snmp_oid: 'ifOutErrors.{#SNMPINDEX}'
+              key: 'ifOutErrors[{#SNMPVALUE}]'
+              applications:
+                -
+                  name: Interfaces
+            -
+              name: 'O tráfego de saída na interface $1'
+              type: SNMP_AGENT
+              snmp_oid: 'ifOutOctets.{#SNMPINDEX}'
+              key: 'ifOutOctets[{#SNMPVALUE}]'
+              units: bps
+              preprocessing:
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '8'
+          graph_prototypes:
+            -
+              name: 'Tráfego na interface {#SNMPVALUE}'
+              graph_items:
+                -
+                  sortorder: '1'
+                  color: 199C0D
+                  item:
+                    host: 'DATACOM DM2500'
+                    key: 'ifInOctets[{#SNMPVALUE}]'
+                -
+                  sortorder: '2'
+                  color: F63100
+                  item:
+                    host: 'DATACOM DM2500'
+                    key: 'ifOutOctets[{#SNMPVALUE}]'
+      macros:
+        -
+          macro: '{$SNMP_COMMUNITY}'
+          value: public
+      dashboards:
+        -
+          name: DATACOM
+          widgets:
+            -
+              type: GRAPH_CLASSIC
+              width: '8'
+              height: '4'
+              fields:
+                -
+                  type: GRAPH
+                  name: graphid
+                  value:
+                    name: 'Device Uptime'
+                    host: 'DATACOM DM2500'
+            -
+              type: GRAPH_CLASSIC
+              x: '8'
+              width: '9'
+              height: '4'
+              fields:
+                -
+                  type: GRAPH
+                  name: graphid
+                  value:
+                    name: 'DM2500 - CPU'
+                    host: 'DATACOM DM2500'
+            -
+              type: GRAPH_CLASSIC
+              x: '17'
+              width: '7'
+              height: '4'
+              fields:
+                -
+                  type: GRAPH
+                  name: graphid
+                  value:
+                    name: 'DM2500 - Memory'
+                    host: 'DATACOM DM2500'
+            -
+              type: GRAPH_PROTOTYPE
+              'y': '4'
+              width: '24'
+              height: '4'
+              fields:
+                -
+                  type: GRAPH_PROTOTYPE
+                  name: graphid
+                  value:
+                    name: 'Tráfego na interface {#SNMPVALUE}'
+                    host: 'DATACOM DM2500'
+  triggers:
+    -
+      expression: '({DATACOM DM2500:CPU0.last(,1m)} + {DATACOM DM2500:CPU1.last(,1m)} + {DATACOM DM2500:CPU2.last(,1m)} + {DATACOM DM2500:CPU3.last(,1m)} / 4) >80'
+      name: '{HOST.IP} - {HOST.NAME} CPU Load High > 80% Usage'
+      priority: WARNING
+      description: 'Last value: {ITEM.LASTVALUE1}.'
+  graphs:
+    -
+      name: 'Device Uptime'
+      graph_items:
+        -
+          sortorder: '1'
+          color: 199C0D
+          item:
+            host: 'DATACOM DM2500'
+            key: sysUpTime
+    -
+      name: 'DM2500 - CPU'
+      graph_items:
+        -
+          sortorder: '1'
+          color: 199C0D
+          item:
+            host: 'DATACOM DM2500'
+            key: CPU0
+        -
+          sortorder: '2'
+          color: F63100
+          item:
+            host: 'DATACOM DM2500'
+            key: CPU1
+        -
+          sortorder: '3'
+          color: 2774A4
+          item:
+            host: 'DATACOM DM2500'
+            key: CPU2
+        -
+          sortorder: '4'
+          color: F7941D
+          item:
+            host: 'DATACOM DM2500'
+            key: CPU3
+    -
+      name: 'DM2500 - Memory'
+      graph_items:
+        -
+          sortorder: '1'
+          color: 199C0D
+          item:
+            host: 'DATACOM DM2500'
+            key: memAvailReal.0
+        -
+          sortorder: '2'
+          color: F63100
+          item:
+            host: 'DATACOM DM2500'
+            key: memCached.0
+        -
+          sortorder: '3'
+          color: 2774A4
+          item:
+            host: 'DATACOM DM2500'
+            key: memTotalFree.0

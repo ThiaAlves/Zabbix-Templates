@@ -1,0 +1,622 @@
+zabbix_export:
+  version: '5.4'
+  date: '2021-05-28T03:29:33Z'
+  groups:
+    -
+      uuid: 846977d1dfed4968bc5f8bdb363285bc
+      name: 'Templates/Operating systems'
+  templates:
+    -
+      uuid: edc9f0a5a5d54797bf68e37364743831
+      template: 'Template OS Linux'
+      name: 'Template OS Linux'
+      templates:
+        -
+          name: 'Template Module ICMP Ping'
+      groups:
+        -
+          name: 'Templates/Operating systems'
+      items:
+        -
+          uuid: 5725483867c34f9d92909ef23d3b484e
+          name: 'Host name of zabbix_agentd running'
+          key: agent.hostname
+          delay: 1h
+          trends: '0'
+          value_type: CHAR
+          tags:
+            -
+              tag: Application
+              value: 'Zabbix agent'
+          triggers:
+            -
+              uuid: 56642c23e2a445aa89f0578d7c0e843a
+              expression: '(last(/Template OS Linux/agent.hostname,#1)<>last(/Template OS Linux/agent.hostname,#2))>0'
+              name: 'Host name of zabbix_agentd was changed on {HOST.HOST}'
+              priority: INFO
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: c5a8ec6f4bc14d798e564606802815f1
+          name: 'Agent ping'
+          key: agent.ping
+          tags:
+            -
+              tag: Application
+              value: 'Zabbix agent'
+          triggers:
+            -
+              uuid: 7e0b97feb0ed4eacbfec09a3224fff5a
+              expression: 'nodata(/Template OS Linux/agent.ping,5m)=1'
+              name: 'zabbix agent on {HOST.HOST} is unreachable for 5 minutes'
+              priority: AVERAGE
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: f3752f69a14d467e8de65c4825774aa4
+          name: 'Version of zabbix_agent(d) running'
+          key: agent.version
+          delay: 1h
+          trends: '0'
+          value_type: CHAR
+          tags:
+            -
+              tag: Application
+              value: 'Zabbix agent'
+          triggers:
+            -
+              uuid: c8edc9a5a4de42f0bb500fce77fb66b3
+              expression: '(last(/Template OS Linux/agent.version,#1)<>last(/Template OS Linux/agent.version,#2))>0'
+              name: 'Version of zabbix_agent(d) was changed on {HOST.HOST}'
+              priority: INFO
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: 6f0d30b413f746f1857c142a7d4ab2dc
+          name: 'Maximum number of opened files'
+          key: kernel.maxfiles
+          delay: 1h
+          tags:
+            -
+              tag: Application
+              value: OS
+          triggers:
+            -
+              uuid: f91add8cc5f24f2e8eda5dbac6956863
+              expression: 'last(/Template OS Linux/kernel.maxfiles)<1024'
+              name: 'Configured max number of opened files is too low on {HOST.HOST}'
+              priority: INFO
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: 679313e0039c461a8f34badfb9390545
+          name: 'Maximum number of processes'
+          key: kernel.maxproc
+          delay: 1h
+          tags:
+            -
+              tag: Application
+              value: OS
+          triggers:
+            -
+              uuid: b9c6644db41a49fbaf84b22c30f72dc4
+              expression: 'last(/Template OS Linux/kernel.maxproc)<256'
+              name: 'Configured max number of processes is too low on {HOST.NAME}'
+              priority: INFO
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: 2bb3314953be4cd290cce97926ad6276
+          name: 'Number of running processes'
+          key: 'proc.num[,,run]'
+          tags:
+            -
+              tag: Application
+              value: Processes
+          triggers:
+            -
+              uuid: 0593da1b30c049f39877190a19fc8731
+              expression: 'avg(/Template OS Linux/proc.num[,,run],5m)>300'
+              name: 'Too many processes running on {HOST.HOST}'
+              priority: WARNING
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: 160ccce412104e75be08bcedd30c8d29
+          name: 'Number of processes'
+          key: 'proc.num[]'
+          tags:
+            -
+              tag: Application
+              value: Processes
+          triggers:
+            -
+              uuid: 748b3d15505e4720a86352d532bbe99d
+              expression: 'avg(/Template OS Linux/proc.num[],5m)>750'
+              name: 'Too many processes on {HOST.HOST}'
+              priority: WARNING
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: dbe46edd97724bb6bcad126dcfc21098
+          name: 'Host boot time'
+          key: system.boottime
+          delay: 10m
+          units: unixtime
+          tags:
+            -
+              tag: Application
+              value: General
+            -
+              tag: Application
+              value: OS
+        -
+          uuid: 4cead1ac32c142958f93fe4c1b17b0f8
+          name: 'Interrupts per second'
+          key: system.cpu.intr
+          units: ips
+          preprocessing:
+            -
+              type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+          tags:
+            -
+              tag: Application
+              value: CPU
+            -
+              tag: Application
+              value: Performance
+        -
+          uuid: 1cd6d414685a4ccbacf2b0d35b15c815
+          name: 'Processor load (1 min average per core)'
+          key: 'system.cpu.load[percpu,avg1]'
+          value_type: FLOAT
+          tags:
+            -
+              tag: Application
+              value: Performance
+          triggers:
+            -
+              uuid: a139ce0c5613401ea82f8c53184c550d
+              expression: 'avg(/Template OS Linux/system.cpu.load[percpu,avg1],5m)>5'
+              name: 'Processor load is too high on {HOST.HOST}'
+              priority: WARNING
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: 8cf7c02cf20e461e8cd2ece183a3549e
+          name: 'Processor load (5 min average per core)'
+          key: 'system.cpu.load[percpu,avg5]'
+          delay: 5m
+          value_type: FLOAT
+          tags:
+            -
+              tag: Application
+              value: CPU
+            -
+              tag: Application
+              value: Performance
+        -
+          uuid: a8aa7983c18f4788855ff8cd9ec4c926
+          name: 'Processor load (15 min average per core)'
+          key: 'system.cpu.load[percpu,avg15]'
+          delay: 15m
+          value_type: FLOAT
+          tags:
+            -
+              tag: Application
+              value: Performance
+        -
+          uuid: 4e9dc5be89a04b53a3c51bfa757f24c1
+          name: 'Context switches per second'
+          key: system.cpu.switches
+          units: sps
+          preprocessing:
+            -
+              type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+          tags:
+            -
+              tag: Application
+              value: CPU
+            -
+              tag: Application
+              value: Performance
+        -
+          uuid: b508c78f5713493e995a27b94a456506
+          name: 'CPU guest time'
+          key: 'system.cpu.util[,guest]'
+          value_type: FLOAT
+          units: '%'
+          tags:
+            -
+              tag: Application
+              value: CPU
+            -
+              tag: Application
+              value: Performance
+        -
+          uuid: 01909ba9992b4bec9ab2d78e48fa520e
+          name: 'CPU guest nice time'
+          key: 'system.cpu.util[,guest_nice]'
+          value_type: FLOAT
+          units: '%'
+          tags:
+            -
+              tag: Application
+              value: CPU
+            -
+              tag: Application
+              value: Performance
+        -
+          uuid: 3f2ae412e35e4e77913c42bcb4ffbde2
+          name: 'CPU idle time'
+          key: 'system.cpu.util[,idle]'
+          value_type: FLOAT
+          units: '%'
+          tags:
+            -
+              tag: Application
+              value: CPU
+            -
+              tag: Application
+              value: Performance
+        -
+          uuid: e2e95d5be1084c9c86543d4096047b03
+          name: 'CPU interrupt time'
+          key: 'system.cpu.util[,interrupt]'
+          value_type: FLOAT
+          units: '%'
+          tags:
+            -
+              tag: Application
+              value: CPU
+            -
+              tag: Application
+              value: Performance
+        -
+          uuid: 46c5c8d4c6a54730a2e2f787a20c5b96
+          name: 'CPU iowait time'
+          key: 'system.cpu.util[,iowait]'
+          value_type: FLOAT
+          units: '%'
+          tags:
+            -
+              tag: Application
+              value: CPU
+            -
+              tag: Application
+              value: Performance
+          triggers:
+            -
+              uuid: ec27ff72fd4d43c48aa062bf086328a5
+              expression: 'avg(/Template OS Linux/system.cpu.util[,iowait],5m)>20'
+              name: 'Disk I/O is overloaded on {HOST.NAME}'
+              priority: WARNING
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: 33c3075263ca4eff8ca6e2482e109986
+          name: 'CPU nice time'
+          key: 'system.cpu.util[,nice]'
+          value_type: FLOAT
+          units: '%'
+          tags:
+            -
+              tag: Application
+              value: CPU
+            -
+              tag: Application
+              value: Performance
+        -
+          uuid: 685a286f36b84e1d835f660b045b9798
+          name: 'CPU softirq time'
+          key: 'system.cpu.util[,softirq]'
+          value_type: FLOAT
+          units: '%'
+          tags:
+            -
+              tag: Application
+              value: CPU
+            -
+              tag: Application
+              value: Performance
+        -
+          uuid: fe3b012c9c0c4a948053ab21f8c9eea0
+          name: 'CPU steal time'
+          key: 'system.cpu.util[,steal]'
+          value_type: FLOAT
+          units: '%'
+          tags:
+            -
+              tag: Application
+              value: CPU
+            -
+              tag: Application
+              value: Performance
+        -
+          uuid: 1128787dc4fa4b97af14f048f00c373e
+          name: 'CPU system time'
+          key: 'system.cpu.util[,system]'
+          value_type: FLOAT
+          units: '%'
+          tags:
+            -
+              tag: Application
+              value: CPU
+            -
+              tag: Application
+              value: Performance
+        -
+          uuid: c8122476f16649ef950a23fe9f6c1e38
+          name: 'CPU user time'
+          key: 'system.cpu.util[,user]'
+          value_type: FLOAT
+          units: '%'
+          tags:
+            -
+              tag: Application
+              value: CPU
+            -
+              tag: Application
+              value: Performance
+        -
+          uuid: 9e656b572c3840fc9289df61b8011bd6
+          name: 'Host name'
+          key: system.hostname
+          delay: 1h
+          trends: '0'
+          value_type: CHAR
+          tags:
+            -
+              tag: Application
+              value: General
+            -
+              tag: Application
+              value: OS
+          triggers:
+            -
+              uuid: 98716f7728e04790b0b4b55965e184f4
+              expression: '(last(/Template OS Linux/system.hostname,#1)<>last(/Template OS Linux/system.hostname,#2))>0'
+              name: 'Hostname was changed on {HOST.HOST}'
+              priority: INFO
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: b8a5f879099f4f33adc12e83097bf2c9
+          name: 'Host local time'
+          key: system.localtime
+          units: uptime
+          tags:
+            -
+              tag: Application
+              value: General
+            -
+              tag: Application
+              value: OS
+        -
+          uuid: 25164c261b274ea786dd87524196929b
+          name: 'Free swap space'
+          key: 'system.swap.size[,free]'
+          units: B
+          tags:
+            -
+              tag: Application
+              value: Memory
+        -
+          uuid: c42386b5947247e3a73bcdbffda72b30
+          name: 'Free swap space in %'
+          key: 'system.swap.size[,pfree]'
+          value_type: FLOAT
+          units: '%'
+          tags:
+            -
+              tag: Application
+              value: Memory
+          triggers:
+            -
+              uuid: bd45ddf807294afea1b7edb3b56e933b
+              expression: 'last(/Template OS Linux/system.swap.size[,pfree])<20'
+              name: 'Lack of free swap space on {HOST.NAME}'
+              priority: WARNING
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: 4801328922504974a936f6585a0c696c
+          name: 'Total swap space'
+          key: 'system.swap.size[,total]'
+          delay: 1h
+          units: B
+          tags:
+            -
+              tag: Application
+              value: Memory
+        -
+          uuid: e87dcaa3544e453dbc78a762627fe974
+          name: 'System information'
+          key: system.uname
+          delay: 1h
+          trends: '0'
+          value_type: CHAR
+          tags:
+            -
+              tag: Application
+              value: General
+            -
+              tag: Application
+              value: OS
+          triggers:
+            -
+              uuid: 3e68b3afda9e47da99e14bd48149a784
+              expression: '(last(/Template OS Linux/system.uname,#1)<>last(/Template OS Linux/system.uname,#2))>0'
+              name: 'Host information was changed on {HOST.HOST}'
+              priority: INFO
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: 22214fa5dd054ff2b2d059693d454cb0
+          name: 'System uptime'
+          key: system.uptime
+          delay: 10m
+          units: uptime
+          tags:
+            -
+              tag: Application
+              value: General
+            -
+              tag: Application
+              value: OS
+          triggers:
+            -
+              uuid: 9a7558379d554f2d87d836818988347c
+              expression: 'last(/Template OS Linux/system.uptime)<10m'
+              name: '{HOST.HOST} has just been restarted'
+              priority: INFO
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: 455f53504e424fd08c91b1c64354c1d1
+          name: 'Number of logged in users'
+          key: system.users.num
+          tags:
+            -
+              tag: Application
+              value: OS
+        -
+          uuid: 21e695f785f9449696dfd4c0266866c2
+          name: 'Available memory'
+          key: 'vm.memory.size[available]'
+          units: B
+          tags:
+            -
+              tag: Application
+              value: Memory
+          triggers:
+            -
+              uuid: 3dacd2129863462b843b032902ef85b3
+              expression: 'last(/Template OS Linux/vm.memory.size[available])<20M'
+              name: 'Lack of available memory on server {HOST.NAME}'
+              priority: AVERAGE
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: 29d122c53a1c471e9b5e7f083cd94a93
+          name: 'Total memory'
+          key: 'vm.memory.size[total]'
+          delay: 1h
+          units: B
+          tags:
+            -
+              tag: Application
+              value: Memory
+      discovery_rules:
+        -
+          uuid: b61ebb5701344b7c84d2b86217e954bd
+          name: 'Network Interfaces Discovery'
+          key: net.if.discovery
+          delay: 1h
+          filter:
+            conditions:
+              -
+                macro: '{#IFNAME}'
+                value: '@Network interfaces for discovery'
+                formulaid: A
+          item_prototypes:
+            -
+              uuid: 9dfcdcb258004c769b9c1d730f5552ac
+              name: 'Incoming network traffic on {#IFNAME}'
+              key: 'net.if.in[{#IFNAME}]'
+              units: bps
+              preprocessing:
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '8'
+              tags:
+                -
+                  tag: Application
+                  value: 'Network interfaces'
+            -
+              uuid: 0c3dd4e928de40eea133d2e376961f9b
+              name: 'Outgoing network traffic on {#IFNAME}'
+              key: 'net.if.out[{#IFNAME}]'
+              units: bps
+              preprocessing:
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '8'
+              tags:
+                -
+                  tag: Application
+                  value: 'Network interfaces'
+        -
+          uuid: d99e64a41e6b4e57bb9126f761e235fe
+          name: 'Mounted filesystem discovery'
+          key: vfs.fs.discovery
+          delay: 1h
+          filter:
+            conditions:
+              -
+                macro: '{#FSTYPE}'
+                value: '@File systems for discovery'
+                formulaid: A
+          item_prototypes:
+            -
+              uuid: 3fd5f0e4403f411986ed98dc911f9f5d
+              name: 'Free inodes on {#FSNAME} (percentage)'
+              key: 'vfs.fs.inode[{#FSNAME},pfree]'
+              value_type: FLOAT
+              units: '%'
+              tags:
+                -
+                  tag: Application
+                  value: Filesystems
+              trigger_prototypes:
+                -
+                  uuid: d364415d4f754401b8413d0971f06100
+                  expression: 'last(/Template OS Linux/vfs.fs.inode[{#FSNAME},pfree])<20'
+                  name: 'Free inodes is less than 20% on volume {#FSNAME}'
+                  priority: WARNING
+                  description: 'Last value: {ITEM.LASTVALUE1}.'
+            -
+              uuid: 8d0f848e29ef482c9ff4329fbbe47dab
+              name: 'Free disk space on {#FSNAME}'
+              key: 'vfs.fs.size[{#FSNAME},free]'
+              units: B
+              tags:
+                -
+                  tag: Application
+                  value: Filesystems
+            -
+              uuid: 959519ac683e49579cd63bdbd22b2748
+              name: 'Free disk space on {#FSNAME} (percentage)'
+              key: 'vfs.fs.size[{#FSNAME},pfree]'
+              value_type: FLOAT
+              units: '%'
+              tags:
+                -
+                  tag: Application
+                  value: Filesystems
+              trigger_prototypes:
+                -
+                  uuid: c39ed468d32a48f1a87e40183e9570f4
+                  expression: 'last(/Template OS Linux/vfs.fs.size[{#FSNAME},pfree])<20'
+                  name: 'Free disk space is less than 20% on volume {#FSNAME}'
+                  priority: WARNING
+                  description: 'Last value: {ITEM.LASTVALUE1}.'
+            -
+              uuid: 244717e2a2814e7b9ef511e15874678a
+              name: 'Total disk space on {#FSNAME}'
+              key: 'vfs.fs.size[{#FSNAME},total]'
+              delay: 1h
+              units: B
+              tags:
+                -
+                  tag: Application
+                  value: Filesystems
+            -
+              uuid: 0f1c38fb55b74deabae4db657534be2b
+              name: 'Used disk space on {#FSNAME}'
+              key: 'vfs.fs.size[{#FSNAME},used]'
+              units: B
+              tags:
+                -
+                  tag: Application
+                  value: Filesystems

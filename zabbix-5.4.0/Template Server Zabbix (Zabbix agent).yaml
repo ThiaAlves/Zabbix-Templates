@@ -1,0 +1,2082 @@
+zabbix_export:
+  version: '5.4'
+  date: '2021-05-28T03:32:33Z'
+  groups:
+    -
+      uuid: 7df96b18c230490a9a0a9e2307226338
+      name: Templates
+  templates:
+    -
+      uuid: d1ddc1b1c3c248578ba6994be1aeaddf
+      template: 'Template Server Zabbix'
+      name: 'Template Server Zabbix'
+      description: 'Template Do servidor zabbix'
+      groups:
+        -
+          name: Templates
+      items:
+        -
+          uuid: b8c07cc5feb44e8abf458129717d8b63
+          name: 'Host name of zabbix_agentd running'
+          key: agent.hostname
+          delay: 1h
+          trends: '0'
+          value_type: CHAR
+          description: 'Nome do host do zabbix_agent em andamento'
+          tags:
+            -
+              tag: Application
+              value: 'Zabbix agent'
+          triggers:
+            -
+              uuid: ca053832be5c417dac78d7594a536a2e
+              expression: '(last(/Template Server Zabbix/agent.hostname,#1)<>last(/Template Server Zabbix/agent.hostname,#2))>0'
+              name: 'Host name of zabbix_agentd was changed on {HOST.HOST}'
+              priority: INFO
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: 33389b3a081c4fff8c0de7df1c8239ef
+          name: 'Agent ping'
+          key: agent.ping
+          description: 'Retorno de disponibilidade do agente Zabbix'
+          triggers:
+            -
+              uuid: f27f8976268c4f4dbb38a904908f8648
+              expression: 'nodata(/Template Server Zabbix/agent.ping,5m)=1'
+              name: 'Zabbix agent on {HOST.HOST} is unreachable for 5 minutes'
+              priority: AVERAGE
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: da39807e63724a13a6a98c7819cf9537
+          name: 'Version of zabbix_agent(d) running'
+          key: agent.version
+          delay: 1h
+          trends: '0'
+          value_type: CHAR
+          description: 'Versão do agente zabbix em andamento'
+          tags:
+            -
+              tag: Application
+              value: 'Zabbix agent'
+          triggers:
+            -
+              uuid: fef2c13b185a4e3cb3b0ac4713320e5c
+              expression: '(last(/Template Server Zabbix/agent.version,#1)<>last(/Template Server Zabbix/agent.version,#2))>0'
+              name: 'Version of zabbix_agent(d) was changed on {HOST.HOST}'
+              priority: INFO
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: 736e635fbd4947429e03f1b804d40d32
+          name: 'Maximum number of opened files'
+          key: kernel.maxfiles
+          delay: 1h
+          description: 'Número máximo de arquivos abertos.'
+          tags:
+            -
+              tag: Application
+              value: OS
+          triggers:
+            -
+              uuid: f9d3254e0ebe4b90adbeea2a8707279e
+              expression: 'last(/Template Server Zabbix/kernel.maxfiles)<1024'
+              name: 'Configured max number of opened files is too low on {HOST.NAME}'
+              priority: INFO
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: 4d3ed595f44a4b62bda4ff9ce7677be9
+          name: 'Maximum number of processes'
+          key: kernel.maxproc
+          delay: 1h
+          description: 'Número máximo de processos'
+          tags:
+            -
+              tag: Application
+              value: OS
+          triggers:
+            -
+              uuid: 27afa537e3f1404c9bebbeb3a2a6fc9d
+              expression: 'last(/Template Server Zabbix/kernel.maxproc)<256'
+              name: 'Configured max number of processes is too low on {HOST.NAME}'
+              priority: INFO
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: f9d7435e905e4dd4aa38ef2a12498ee1
+          name: 'Number of running processes'
+          key: 'proc.num[,,run]'
+          description: 'Número de processos em andamento.'
+          tags:
+            -
+              tag: Application
+              value: Processes
+          triggers:
+            -
+              uuid: 9c91065fad854b4b82406d4f2a73fcc5
+              expression: 'avg(/Template Server Zabbix/proc.num[,,run],5m)>300'
+              name: 'TOo many processes running on {HOST.NAME}'
+              priority: WARNING
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: 08d40531347c414b98f4bb5a76575106
+          name: 'Number of processes'
+          key: 'proc.num[]'
+          description: 'Total number of processes in any state.'
+          tags:
+            -
+              tag: Application
+              value: Processes
+          triggers:
+            -
+              uuid: d8de97bd2ca54233b0c0936f0add95e5
+              expression: 'avg(/Template Server Zabbix/proc.num[],5m)>750'
+              name: 'Too many processes on {HOST.NAME}'
+              priority: WARNING
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: 0c8aede78cfe468aa906aa7b42046b0a
+          name: 'Host boot time'
+          key: system.boottime
+          delay: 10m
+          units: unixtime
+          description: 'Tempo do boot.'
+          tags:
+            -
+              tag: Application
+              value: General
+            -
+              tag: Application
+              value: OS
+        -
+          uuid: ca9a8ddbb3fe46109fa3e4aec716569c
+          name: 'Interrupts per second'
+          key: system.cpu.intr
+          units: ips
+          description: 'Interrupções por segundo.'
+          preprocessing:
+            -
+              type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+          tags:
+            -
+              tag: Application
+              value: CPU
+            -
+              tag: Application
+              value: Performance
+        -
+          uuid: 6f92e6b102534944b8d39846aa153ca5
+          name: 'Processor load (1 min average per core)'
+          key: 'system.cpu.load[percpu,avg1]'
+          value_type: FLOAT
+          description: 'Média da carga do processador em 1 minuto'
+          tags:
+            -
+              tag: Application
+              value: CPU
+            -
+              tag: Application
+              value: Performance
+          triggers:
+            -
+              uuid: 8e17eb67c1f04e98be3725f34d00a746
+              expression: 'avg(/Template Server Zabbix/system.cpu.load[percpu,avg1],5m)>5'
+              name: 'Processor load is too high on {HOST.NAME}'
+              priority: WARNING
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: 09a824fda62a41c0860a0b49e5358c88
+          name: 'Processos load (5 min average per core)'
+          key: 'system.cpu.load[percpu,avg5]'
+          value_type: FLOAT
+          description: 'Média da carga do processador em 5 minutos.'
+          tags:
+            -
+              tag: Application
+              value: CPU
+            -
+              tag: Application
+              value: Performance
+        -
+          uuid: 4247a794cd8642fb8fb57deaf76209d4
+          name: 'Processor load (15 min average per core)'
+          key: 'system.cpu.load[percpu,avg15]'
+          value_type: FLOAT
+          description: 'Média da carga do processador em 15 minutos'
+          tags:
+            -
+              tag: Application
+              value: CPU
+            -
+              tag: Application
+              value: Performance
+        -
+          uuid: ec2725778a5745089572ab1b139df75a
+          name: 'Context switches per second'
+          key: system.cpu.switches
+          units: sps
+          description: 'Mudanças de contexto por segundo.'
+          tags:
+            -
+              tag: Application
+              value: CPU
+            -
+              tag: Application
+              value: Performance
+        -
+          uuid: 704528a8908047b5802126c70921d516
+          name: 'CPU guest nice time'
+          key: 'system.cpu.util[,guest_nice]'
+          value_type: FLOAT
+          units: '%'
+          description: 'O tempo útil de utilização da CPU em porcentagem'
+          tags:
+            -
+              tag: Application
+              value: CPU
+        -
+          uuid: 656a94146105475b9d8602d96f3d26e3
+          name: 'CPU idle time'
+          key: 'system.cpu.util[,idle]'
+          value_type: FLOAT
+          units: '%'
+          description: 'O tempo em porcentagem que a CPU passa sem executar nenhum processo.'
+          tags:
+            -
+              tag: Application
+              value: CPU
+            -
+              tag: Application
+              value: Performance
+        -
+          uuid: b59e3232127343f7a8653b521affb0eb
+          name: 'CPU interrupt time'
+          key: 'system.cpu.util[,interrupt]'
+          value_type: FLOAT
+          units: '%'
+          description: 'O tempo em porcentagem que o CPU é interrompido pelo hardware.'
+          tags:
+            -
+              tag: Application
+              value: CPU
+            -
+              tag: Application
+              value: Performance
+        -
+          uuid: 58847018bb8245fc9b3af48ea1d8d263
+          name: 'CPU iowait time'
+          key: 'system.cpu.util[,iowait]'
+          value_type: FLOAT
+          units: '%'
+          description: 'O tempo que a CPU está em modo de espera'
+          tags:
+            -
+              tag: Application
+              value: CPU
+            -
+              tag: Application
+              value: Performance
+          triggers:
+            -
+              uuid: 2e372d96eb294f699114a30389ff2412
+              expression: 'avg(/Template Server Zabbix/system.cpu.util[,iowait],5m)>20'
+              name: 'Disk I/O is overloaded on {HOST.NAME}'
+              priority: WARNING
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: 8a0e9072c1f147509c1f8f01111e80ae
+          name: 'CPU nice time'
+          key: 'system.cpu.util[,nice]'
+          value_type: FLOAT
+          units: '%'
+          description: 'O tempo gasto da CPU para executar bons processos.'
+          tags:
+            -
+              tag: Application
+              value: CPU
+            -
+              tag: Application
+              value: Performance
+        -
+          uuid: ec834af36a8f4747a62745d3ba317e7c
+          name: 'CPU softirq time'
+          key: 'system.cpu.util[,softirq]'
+          value_type: FLOAT
+          units: '%'
+          description: 'O tempo de informação da CPU por serviços de software.'
+          tags:
+            -
+              tag: Application
+              value: CPU
+        -
+          uuid: 3e1ae43807d6438da27e00dc0f4c38e7
+          name: 'CPU steal time'
+          key: 'system.cpu.util[,steal]'
+          value_type: FLOAT
+          units: '%'
+          description: 'The amount of CPU ''stolen'' from this virtual machine by the hypervisor for other tasks (such as running another virtual machine).'
+          tags:
+            -
+              tag: Application
+              value: CPU
+        -
+          uuid: 6bc971e77d4d42139cab0940dd7e7fdc
+          name: 'CPU system time'
+          key: 'system.cpu.util[,system]'
+          value_type: FLOAT
+          units: '%'
+          description: 'O tempo gasto pela CPU com processos envolvendo o kernel'
+          tags:
+            -
+              tag: Application
+              value: CPU
+            -
+              tag: Application
+              value: Performance
+        -
+          uuid: 8fe011e0937e447693eee9e365734aa9
+          name: 'CPU user time'
+          key: 'system.cpu.util[,user]'
+          value_type: FLOAT
+          units: '%'
+          description: 'O tempo gasto pela CPU por processos do usuário que não são produtivos.'
+          tags:
+            -
+              tag: Application
+              value: CPU
+            -
+              tag: Application
+              value: Performance
+        -
+          uuid: 8281553c28464d929f6634d419dc5f32
+          name: 'Host name'
+          key: system.hostname
+          delay: 1h
+          trends: '0'
+          value_type: CHAR
+          description: 'Nome do host.'
+          tags:
+            -
+              tag: Application
+              value: General
+            -
+              tag: Application
+              value: OS
+          triggers:
+            -
+              uuid: 3387a22f6cb040ca8f6fca8d27d4ec6b
+              expression: '(last(/Template Server Zabbix/system.hostname,#1)<>last(/Template Server Zabbix/system.hostname,#2))>0'
+              name: 'Hostname was changed on {HOST.NAME}'
+              priority: INFO
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: 5861596ec0f743e494cb2a26512a26c1
+          name: 'Host local time'
+          key: system.localtime
+          units: unixtime
+          description: 'Horário local do host.'
+          tags:
+            -
+              tag: Application
+              value: General
+        -
+          uuid: 20c78ec7706643bc828df2b3059f313d
+          name: 'Free swap space'
+          key: 'system.swap.size[,free]'
+          units: B
+          description: 'Memória Swap livre.'
+          tags:
+            -
+              tag: Application
+              value: Memory
+        -
+          uuid: ffca59d99e484295bebad011465a2d12
+          name: 'Free swap space in %'
+          key: 'system.swap.size[,pfree]'
+          value_type: FLOAT
+          units: '%'
+          description: 'Memória swap livre em porcentagem'
+          tags:
+            -
+              tag: Application
+              value: Memory
+          triggers:
+            -
+              uuid: 92e2882939734bfca30aed9e2e35e119
+              expression: 'last(/Template Server Zabbix/system.swap.size[,pfree])<20'
+              name: 'Lack of free swap space on {HOST.NAME}'
+              priority: WARNING
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: 777ac23295df4ff3a1cbab0accc84705
+          name: 'Total swap space'
+          key: 'system.swap.size[,total]'
+          delay: 1h
+          units: B
+          description: 'Memória Swap Total'
+          tags:
+            -
+              tag: Application
+              value: Memory
+        -
+          uuid: e4de2f3e706647168de521467ee651bc
+          name: 'System information'
+          key: system.uname
+          delay: 1h
+          trends: '0'
+          value_type: TEXT
+          description: 'Informação do Sistema'
+          tags:
+            -
+              tag: Application
+              value: General
+            -
+              tag: Application
+              value: OS
+          triggers:
+            -
+              uuid: ad42722ebd8b409d9a3311a9e993943b
+              expression: '(last(/Template Server Zabbix/system.uname,#1)<>last(/Template Server Zabbix/system.uname,#2))>0'
+              name: 'Host information was changed on {HOST.NAME}'
+              priority: INFO
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: 94fea6e902b04841a5caa5e33d7b27f7
+          name: 'System uptime'
+          key: system.uptime
+          delay: 10m
+          units: uptime
+          description: 'Tempo do sistema ligado'
+          tags:
+            -
+              tag: Application
+              value: General
+            -
+              tag: Application
+              value: OS
+          triggers:
+            -
+              uuid: c9c23e773ded4377ae15513bfd7da28f
+              expression: 'change(/Template Server Zabbix/system.uptime)<0'
+              name: '{HOST.NAME} has just been restarted'
+              priority: INFO
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: ee9d717d8bea4f4298059f65fdaaa924
+          name: 'Number of logged in users'
+          key: system.users.num
+          description: 'Number of users who are currently logged in.'
+          tags:
+            -
+              tag: Application
+              value: OS
+        -
+          uuid: c855b799efb04decbc7363c6081ebddb
+          name: 'Checksum of /etc/httpd/conf/httpd.conf'
+          key: 'vfs.file.cksum[/etc/httpd/conf/httpd.conf]'
+          delay: 1h
+          tags:
+            -
+              tag: Application
+              value: Security
+        -
+          uuid: 96361256da1f4bdb869ada5ee79a153d
+          name: 'Checksum of /etc/passwd'
+          key: 'vfs.file.cksum[/etc/passwd]'
+          delay: 1h
+          tags:
+            -
+              tag: Application
+              value: Security
+          triggers:
+            -
+              uuid: d1e7547bb1a746778b7f21f1ad16ba96
+              expression: '(last(/Template Server Zabbix/vfs.file.cksum[/etc/passwd],#1)<>last(/Template Server Zabbix/vfs.file.cksum[/etc/passwd],#2))>0'
+              name: '/etc/passwd has been changed on {HOST.NAME}'
+              priority: WARNING
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: 651a93015d1049fba3393d6102ca03f2
+          name: 'Available memory'
+          key: 'vm.memory.size[available]'
+          units: B
+          description: 'Available memory is defined as free+cached+buffers memory.'
+          tags:
+            -
+              tag: Application
+              value: Memory
+          triggers:
+            -
+              uuid: b1cc5cd26beb4227b5c88cb9bfaf3a30
+              expression: 'last(/Template Server Zabbix/vm.memory.size[available])<20M'
+              name: 'Lack of available memory on server {HOST.NAME}'
+              priority: AVERAGE
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: e2681322970845459f5c0b0c710773e2
+          name: 'Total memory'
+          key: 'vm.memory.size[total]'
+          delay: 1h
+          units: B
+          description: 'Memória total'
+          tags:
+            -
+              tag: Application
+              value: Memory
+        -
+          uuid: bad095c3e3c34a5d8ba6084b12842912
+          name: 'Zabbix proprocessing queue'
+          type: INTERNAL
+          key: 'zabbix[preprocessing_queue]'
+          description: 'Soma da Quantidade de itens na fila de Processamento do Zabbix'
+          tags:
+            -
+              tag: Application
+              value: 'Zabbix server'
+        -
+          uuid: 8f28c99637274e56a9d45643f4d385e4
+          name: 'Zabbix $4 $2 processes, in %'
+          type: INTERNAL
+          key: 'zabbix[process,alerter,avg,busy]'
+          value_type: FLOAT
+          units: '%'
+          description: 'Porcentagem da ocupação do processo alerter.'
+          tags:
+            -
+              tag: Application
+              value: 'Zabbix server'
+          triggers:
+            -
+              uuid: e38cb9f7a4f94b59acda94f6c4cc50f6
+              expression: 'avg(/Template Server Zabbix/zabbix[process,alerter,avg,busy],10m)>75'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'avg(/Template Server Zabbix/zabbix[process,alerter,avg,busy],10m)<65'
+              name: 'Zabbix alerter processes more than 75% busy'
+              priority: AVERAGE
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: 434bfdb2b4784d2c81160e260904456e
+          name: 'Zabbix $4 $2 processes, in %'
+          type: INTERNAL
+          key: 'zabbix[process,alert manager,avg,busy]'
+          value_type: FLOAT
+          units: '%'
+          description: 'Porcentagem da ocupação do processo alert manager.'
+          tags:
+            -
+              tag: Application
+              value: 'Zabbix server'
+          triggers:
+            -
+              uuid: 68418d496d644e54bfa053058f016c01
+              expression: 'avg(/Template Server Zabbix/zabbix[process,alert manager,avg,busy],10m)>75'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'avg(/Template Server Zabbix/zabbix[process,alert manager,avg,busy],10m)<65'
+              name: 'Zabbix alert manager processes more than 75% busy'
+              priority: AVERAGE
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: 430544bb03be4c839b7d94f23a21ed46
+          name: 'Zabbix $4 $2 processes, in %'
+          type: INTERNAL
+          key: 'zabbix[process,configuration syncer,avg,busy]'
+          value_type: FLOAT
+          units: '%'
+          description: 'Porcentagem da ocupação do processo configuration syncer.'
+          tags:
+            -
+              tag: Application
+              value: 'Zabbix server'
+          triggers:
+            -
+              uuid: 5d6c675875b54b1c81d4844c068c8797
+              expression: 'avg(/Template Server Zabbix/zabbix[process,configuration syncer,avg,busy],10m)>75'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'avg(/Template Server Zabbix/zabbix[process,configuration syncer,avg,busy],10m)<65'
+              name: 'Zabbix configuration syncer processes more than 75% busy'
+              priority: AVERAGE
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: aa4b23eca1ce4074bd02db95a973e5b2
+          name: 'Zabbix $4 $2 processes, in %'
+          type: INTERNAL
+          key: 'zabbix[process,discoverer,avg,busy]'
+          value_type: FLOAT
+          units: '%'
+          description: 'Porcentagem da ocupação do processo discoverer.'
+          tags:
+            -
+              tag: Application
+              value: 'Zabbix server'
+          triggers:
+            -
+              uuid: 2a0ab5a8118944aea93108bfa565db38
+              expression: 'avg(/Template Server Zabbix/zabbix[process,discoverer,avg,busy],10m)>75'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'avg(/Template Server Zabbix/zabbix[process,discoverer,avg,busy],10m)<65'
+              name: 'Zabbix discoverer processes more than 75% busy'
+              priority: AVERAGE
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: 20702c8c701e444e9d967485df01b8f9
+          name: 'Zabbix $4 $2 processes, in %'
+          type: INTERNAL
+          key: 'zabbix[process,escalator,avg,busy]'
+          value_type: FLOAT
+          units: '%'
+          description: 'Porcentagem da ocupação do processo escalator.'
+          tags:
+            -
+              tag: Application
+              value: 'Zabbix server'
+          triggers:
+            -
+              uuid: 1198878ef5b34246a7e809cd4b4f2de7
+              expression: 'avg(/Template Server Zabbix/zabbix[process,escalator,avg,busy],10m)>75'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'avg(/Template Server Zabbix/zabbix[process,escalator,avg,busy],10m)<65'
+              name: 'Zabbix escalator processes more than 75% busy'
+              priority: AVERAGE
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: d50c37dc33914865840ee1876bd45eb3
+          name: 'Zabbix $4 $2 processes, in %'
+          type: INTERNAL
+          key: 'zabbix[process,history syncer,avg,busy]'
+          value_type: FLOAT
+          units: '%'
+          description: 'Porcentagem da ocupação do processo history syncer.'
+          tags:
+            -
+              tag: Application
+              value: 'Zabbix server'
+          triggers:
+            -
+              uuid: 859d5ac3446c443086ac7616c6edd027
+              expression: 'avg(/Template Server Zabbix/zabbix[process,history syncer,avg,busy],10m)>75'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'avg(/Template Server Zabbix/zabbix[process,history syncer,avg,busy],10m)<65'
+              name: 'Zabbix history syncer processes more than 75% busy'
+              priority: AVERAGE
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: 279a0517acb74757a601a189d6d05d14
+          name: 'Zabbix $4 $2 processes, in %'
+          type: INTERNAL
+          key: 'zabbix[process,housekeeper,avg,busy]'
+          value_type: FLOAT
+          units: '%'
+          description: 'Porcentagem da ocupação do processo housekeeper.'
+          tags:
+            -
+              tag: Application
+              value: 'Zabbix server'
+          triggers:
+            -
+              uuid: 71f896d1d0c143acb05bcbe9c6282ed3
+              expression: 'avg(/Template Server Zabbix/zabbix[process,housekeeper,avg,busy],30m)>75'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'avg(/Template Server Zabbix/zabbix[process,housekeeper,avg,busy],30m)<65'
+              name: 'Zabbix housekeeper processes more than 75% busy'
+              priority: AVERAGE
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: 0e996d8625414e469ead306ea794fd1c
+          name: 'Zabbix $4 $2 processes, in %'
+          type: INTERNAL
+          key: 'zabbix[process,http poller,avg,busy]'
+          value_type: FLOAT
+          units: '%'
+          description: 'Porcentagem da ocupação do processo http poller.'
+          tags:
+            -
+              tag: Application
+              value: 'Zabbix server'
+          triggers:
+            -
+              uuid: 85917e8a12f64de293f3fdba831c4bea
+              expression: 'avg(/Template Server Zabbix/zabbix[process,http poller,avg,busy],10m)>75'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'avg(/Template Server Zabbix/zabbix[process,http poller,avg,busy],10m)<65'
+              name: 'Zabbix http poller processes more than 75% busy'
+              priority: AVERAGE
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: f668a922e0e14ad5a9939d3c234c5c46
+          name: 'Zabbix $4 $2 processes, in %'
+          type: INTERNAL
+          key: 'zabbix[process,icmp pinger,avg,busy]'
+          value_type: FLOAT
+          units: '%'
+          description: 'Porcentagem da ocupação do processo icmp pinger.'
+          tags:
+            -
+              tag: Application
+              value: 'Zabbix server'
+          triggers:
+            -
+              uuid: 71724f8d6e884084baf8c11594d89109
+              expression: 'avg(/Template Server Zabbix/zabbix[process,icmp pinger,avg,busy],10m)>75'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'avg(/Template Server Zabbix/zabbix[process,icmp pinger,avg,busy],10m)<65'
+              name: 'Zabbix icmp pinger process more than 75% busy'
+              priority: AVERAGE
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: d7a5e936f6cf4c778f5b7ea180b41e84
+          name: 'Zabbix $4 $2 processes, in %'
+          type: INTERNAL
+          key: 'zabbix[process,ipmi manager,avg,busy]'
+          value_type: FLOAT
+          units: '%'
+          description: 'Porcentagem da ocupação do processo ipmi manager.'
+          tags:
+            -
+              tag: Application
+              value: 'Zabbix server'
+          triggers:
+            -
+              uuid: e2124f6794a04c01bf89c02c3c7f61b3
+              expression: 'avg(/Template Server Zabbix/zabbix[process,ipmi manager,avg,busy],10m)>75'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'avg(/Template Server Zabbix/zabbix[process,ipmi manager,avg,busy],10m)<65'
+              name: 'Zabbix ipmi manager processes more than 75% busy'
+              priority: AVERAGE
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: 4ee2de2d6afc4164bdc87f110c9b4bde
+          name: 'Zabbix $4 $2 processes, in %'
+          type: INTERNAL
+          key: 'zabbix[process,ipmi poller,avg,busy]'
+          value_type: FLOAT
+          units: '%'
+          description: 'Porcentagem da ocupação do processo ipmi poller. se o valor estiver alto considere aumentar as configurações desse item no arquivo Zabbix_server.conf'
+          tags:
+            -
+              tag: Application
+              value: 'Zabbix server'
+          triggers:
+            -
+              uuid: 517f455068814df7820875898b3029d3
+              expression: 'avg(/Template Server Zabbix/zabbix[process,ipmi poller,avg,busy],10m)>75'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'avg(/Template Server Zabbix/zabbix[process,ipmi poller,avg,busy],10m)<65'
+              name: 'Zabbix ipmi poller processes more than 75% busy'
+              priority: AVERAGE
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: d0cfb54b97b24c188ba2f99c7ef0eb68
+          name: 'Zabbix $4 $2 processes, in %'
+          type: INTERNAL
+          key: 'zabbix[process,java poller,avg,busy]'
+          value_type: FLOAT
+          units: '%'
+          description: 'Porcentagem da ocupação do processo java poller.'
+          tags:
+            -
+              tag: Application
+              value: 'Zabbix server'
+          triggers:
+            -
+              uuid: 96a9ad2b846a433e971105408509ff09
+              expression: 'avg(/Template Server Zabbix/zabbix[process,java poller,avg,busy],10m)>75'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'avg(/Template Server Zabbix/zabbix[process,java poller,avg,busy],10m)>75'
+              name: 'Zabbix java poller processes more than 75% busy'
+              priority: AVERAGE
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: f7745b0f3a574120825413cd64e791ad
+          name: 'Zabbix $4 $2 processes, in %'
+          type: INTERNAL
+          key: 'zabbix[process,poller,avg,busy]'
+          value_type: FLOAT
+          units: '%'
+          description: 'Porcentagem da ocupação do processo poller.'
+          tags:
+            -
+              tag: Application
+              value: 'Zabbix server'
+          triggers:
+            -
+              uuid: 35d56f76008347038e0d2cf66e425f05
+              expression: 'avg(/Template Server Zabbix/zabbix[process,poller,avg,busy],10m)>75'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'avg(/Template Server Zabbix/zabbix[process,poller,avg,busy],10m)<65'
+              name: 'Zabbix poller processes more than 75% busy'
+              priority: AVERAGE
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: 58ad6ee8f7d7409299375e7d3e416bfa
+          name: 'Zabbix $4 $2 processes, in %'
+          type: INTERNAL
+          key: 'zabbix[process,preprocessing manager,avg,busy]'
+          value_type: FLOAT
+          units: '%'
+          description: 'Porcentagem da ocupação do processo preprosing manager.'
+          tags:
+            -
+              tag: Application
+              value: 'Zabbix server'
+          triggers:
+            -
+              uuid: dd319fb8bdbf4bd6ac4cfa375f83695c
+              expression: 'avg(/Template Server Zabbix/zabbix[process,preprocessing manager,avg,busy],10m)>75'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'avg(/Template Server Zabbix/zabbix[process,preprocessing manager,avg,busy],10m)<65'
+              name: 'Zabbix preprocessing manager processes more than 75% busy'
+              priority: AVERAGE
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: 935948ac3060404aaac20550f721ef2e
+          name: 'Zabbix $4 $2 processes, in %'
+          type: INTERNAL
+          key: 'zabbix[process,preprocessing worker,avg,busy]'
+          value_type: FLOAT
+          units: '%'
+          description: 'Porcentagem da ocupação do processo preprocessing worker. Se o valor stiver alto considere aumentar as configurações desse item no arquivo Zabbix_server.conf'
+          tags:
+            -
+              tag: Application
+              value: 'Zabbix server'
+          triggers:
+            -
+              uuid: 7c3e914d1a1c4e498bd0d2bad77818b1
+              expression: 'avg(/Template Server Zabbix/zabbix[process,preprocessing worker,avg,busy],10m)>75'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'avg(/Template Server Zabbix/zabbix[process,preprocessing worker,avg,busy],10m)<65'
+              name: 'Zabbix preprocessing worker processes more than 75% busy'
+              priority: AVERAGE
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: 2e5c64284fd9441483dc68fd2d78ae69
+          name: 'Zabbix $4 $2 processes, in %'
+          type: INTERNAL
+          key: 'zabbix[process,proxy poller,avg,busy]'
+          value_type: FLOAT
+          units: '%'
+          description: 'Porcentagem da ocupação do processo proxy poller. Se o valor estiver alto considere aumentar as configurações desse item no arquivo Zabbix_server.conf'
+          tags:
+            -
+              tag: Application
+              value: 'Zabbix server'
+          triggers:
+            -
+              uuid: 27be28d9f8e142e48515ce0bb7488930
+              expression: 'avg(/Template Server Zabbix/zabbix[process,proxy poller,avg,busy],10m)>75'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'avg(/Template Server Zabbix/zabbix[process,proxy poller,avg,busy],10m)<65'
+              name: 'Zabbix proxy poller processes more than 75% busy'
+              priority: AVERAGE
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: f0fd590a5c4649c99082c89727faad9d
+          name: 'Zabbix $4 $2 processes, in %'
+          type: INTERNAL
+          key: 'zabbix[process,self-monitoring,avg,busy]'
+          value_type: FLOAT
+          units: '%'
+          description: 'Porcentagem da ocupação do processo self-monitoring. Se o valor estiver alto considere aumentar as configurações desse item no arquivo Zabbix_server.conf'
+          tags:
+            -
+              tag: Application
+              value: 'Zabbix server'
+          triggers:
+            -
+              uuid: 8b08b8895a4a44088dda031feb8c0dc3
+              expression: 'min(/Template Server Zabbix/zabbix[process,self-monitoring,avg,busy],10m)>75'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'min(/Template Server Zabbix/zabbix[process,self-monitoring,avg,busy],10m)<65'
+              name: 'Zabbix self-monitoring processes more than 75% busy'
+              priority: AVERAGE
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: 22c7a483e88d424593f67a894037867c
+          name: 'Zabbix $4 $2 processes, in %'
+          type: INTERNAL
+          key: 'zabbix[process,snmp trapper,avg,busy]'
+          value_type: FLOAT
+          units: '%'
+          description: 'Porcentagem da ocupação do processo snmp trapper. se o valor estiver alto considere aumentar as configurações desse item no arquivo Zabbix_server.conf'
+          tags:
+            -
+              tag: Application
+              value: 'Zabbix server'
+          triggers:
+            -
+              uuid: 391259985f2243b3bc806a140936003a
+              expression: 'avg(/Template Server Zabbix/zabbix[process,snmp trapper,avg,busy],10m)>75'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'avg(/Template Server Zabbix/zabbix[process,snmp trapper,avg,busy],10m)<65'
+              name: 'Zabbix snmp trapper processes more than 75% busy'
+              priority: AVERAGE
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: 3645755c75024328a04984593f1a98b9
+          name: 'Zabbix $4 $2 processes, in %'
+          type: INTERNAL
+          key: 'zabbix[process,task manager,avg,busy]'
+          value_type: FLOAT
+          units: '%'
+          description: 'Porcentagem da ocupação do processo task manager. Se o valor estiver alto considere aumentar as consigurações desse item no arquivo Zabbix_server.conf'
+          tags:
+            -
+              tag: Application
+              value: 'Zabbix server'
+          triggers:
+            -
+              uuid: 6c790d1814184b91a06026b240b40cc6
+              expression: 'avg(/Template Server Zabbix/zabbix[process,task manager,avg,busy],10m)>75'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'avg(/Template Server Zabbix/zabbix[process,task manager,avg,busy],10m)<65'
+              name: 'Zabbix task manager processes more than 75% busy'
+              priority: AVERAGE
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: 970687c0849d4c37b77355b9daab92bf
+          name: 'Zabbix $4 $2 processes, in %'
+          type: INTERNAL
+          key: 'zabbix[process,timer,avg,busy]'
+          value_type: FLOAT
+          units: '%'
+          description: 'Porcentagem da ocupação do processo timer. se o valor estiver alto considere aumentar as configurações desse item no arquivo Zabbix_server.conf'
+          tags:
+            -
+              tag: Application
+              value: 'Zabbix server'
+          triggers:
+            -
+              uuid: 7e1be919b6e44397b9ed7db4639b930c
+              expression: 'avg(/Template Server Zabbix/zabbix[process,timer,avg,busy],10m)>75'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'avg(/Template Server Zabbix/zabbix[process,timer,avg,busy],10m)<65'
+              name: 'Zabbix timer processes more than 75% busy'
+              priority: AVERAGE
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: ab2066b7191e4c22bba7a76d2c6fc3a6
+          name: 'Zabbix $4 $2 processes, in %'
+          type: INTERNAL
+          key: 'zabbix[process,trapper,avg,busy]'
+          value_type: FLOAT
+          units: '%'
+          description: 'Porcentagem da ocupação do processo trapper. se o valor estiver alto considere aumentar as configurações desse item no arquivo Zabbix_server.conf'
+          tags:
+            -
+              tag: Application
+              value: 'Zabbix server'
+          triggers:
+            -
+              uuid: ae8281cd36244dc0a09c79370acdea72
+              expression: 'avg(/Template Server Zabbix/zabbix[process,trapper,avg,busy],10m)>75'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'avg(/Template Server Zabbix/zabbix[process,trapper,avg,busy],10m)<65'
+              name: 'Zabbix trapper processes more than 75% busy'
+              priority: AVERAGE
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: 99cc91f46a284d2ea63040637aabc221
+          name: 'Zabbix $4 $2 processes, in %'
+          type: INTERNAL
+          key: 'zabbix[process,unreachable poller,avg,busy]'
+          value_type: FLOAT
+          units: '%'
+          description: 'Porcentagem da ocupação do processo unreachable poller.'
+          tags:
+            -
+              tag: Application
+              value: 'Zabbix server'
+          triggers:
+            -
+              uuid: c239b10eb2324da2a29e85296f7afd51
+              expression: 'avg(/Template Server Zabbix/zabbix[process,unreachable poller,avg,busy],10m)>75'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'avg(/Template Server Zabbix/zabbix[process,unreachable poller,avg,busy],10m)<65'
+              name: 'Zabbix unreachable poller processes more than 75% busy'
+              priority: AVERAGE
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: 902ae5e7f5724e4396326264de3a8e98
+          name: 'Zabbix $4 $2 processes, in %'
+          type: INTERNAL
+          key: 'zabbix[process,vmware collector,avg,busy]'
+          value_type: FLOAT
+          units: '%'
+          description: 'Porcentagem da ocupação do processo vmware collector.'
+          tags:
+            -
+              tag: Application
+              value: 'Zabbix server'
+          triggers:
+            -
+              uuid: bc12f32939ca46278dd2f1f8a3583414
+              expression: 'avg(/Template Server Zabbix/zabbix[process,vmware collector,avg,busy],10m)>75'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'avg(/Template Server Zabbix/zabbix[process,vmware collector,avg,busy],10m)<65'
+              name: 'Zabbix vmware collector processes more than 75% busy'
+              priority: AVERAGE
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: eab8c9908a674a0c8bce549c65b54b93
+          name: 'Zabbix queue over $2'
+          type: INTERNAL
+          key: 'zabbix[queue,10m]'
+          delay: 10m
+          description: 'Fila do zabbix durante 10 minutos.'
+          tags:
+            -
+              tag: Application
+              value: 'Zabbix server'
+          triggers:
+            -
+              uuid: 8c688a2ccaa74f939bc66e108ed297d8
+              expression: 'min(/Template Server Zabbix/zabbix[queue,10m],10m)>100'
+              name: 'More than 100 items having missing data dor more than 10 minutes'
+              priority: WARNING
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: 388377e2f52a4cd7bedc861eb9fedf60
+          name: 'Zabbix queue'
+          type: INTERNAL
+          key: 'zabbix[queue]'
+          delay: 10m
+          description: 'Fila do zabbix'
+          tags:
+            -
+              tag: Application
+              value: 'Zabbix server'
+        -
+          uuid: 81a2dfce025a4350b78964c8620c09f4
+          name: 'Zabbix configuration cache, % free'
+          type: INTERNAL
+          key: 'zabbix[rcache,buffer,pfree]'
+          value_type: FLOAT
+          units: '%'
+          tags:
+            -
+              tag: Application
+              value: 'Zabbix server'
+          triggers:
+            -
+              uuid: 88e547832b8d4d01a8d54d35c40e3d07
+              expression: 'min(/Template Server Zabbix/zabbix[rcache,buffer,pfree],10m)<25'
+              name: 'Less than 25% free in the configuration cache'
+              priority: AVERAGE
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: 9b82bd4dcaf64ab5ba54cc0ea4271006
+          name: 'Zabbix configuration cache, % used'
+          type: INTERNAL
+          key: 'zabbix[rcache,buffer,pused]'
+          value_type: FLOAT
+          units: '%'
+          description: 'Porcentagem em uso das Configurações de cache do Zabbix.'
+          tags:
+            -
+              tag: Application
+              value: 'Zabbix server'
+          triggers:
+            -
+              uuid: 65209e7ef5274e76992434bdbaebd7a5
+              expression: 'max(/Template Server Zabbix/zabbix[rcache,buffer,pused],10m)>75'
+              name: 'More than 75% used in the configuration cache'
+              priority: AVERAGE
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: b4f2fa87919c43be80fc40b622ccb6af
+          name: 'Zabbix value cache, % free'
+          type: INTERNAL
+          key: 'zabbix[vcache,buffer,pfree]'
+          value_type: FLOAT
+          units: '%'
+          description: 'Porcentagem livre do cache de valores do zabbix'
+          tags:
+            -
+              tag: Application
+              value: 'Zabbix server'
+          triggers:
+            -
+              uuid: c41f1d98885148a8a378ea4ea92e4f8a
+              expression: 'min(/Template Server Zabbix/zabbix[vcache,buffer,pfree],10m)<5'
+              name: 'Less than 5% free in the value cache'
+              priority: AVERAGE
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: 39754941907543fc8981b170cb9de9e6
+          name: 'Zabbix value cache, % used'
+          type: INTERNAL
+          key: 'zabbix[vcache,buffer,pused]'
+          value_type: FLOAT
+          units: '%'
+          description: 'Porcentagem em uso do Cache de valores do Zabbix.'
+          tags:
+            -
+              tag: Application
+              value: 'Zabbix server'
+          triggers:
+            -
+              uuid: 31ea15027c334ba889d24baa1f98b8b2
+              expression: 'max(/Template Server Zabbix/zabbix[vcache,buffer,pused],10m)>95'
+              name: 'More than 95% used in the value cache'
+              priority: AVERAGE
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: 4240274905914fbc8eb93fb99ceb411b
+          name: 'Zabbix value cache hits'
+          type: INTERNAL
+          key: 'zabbix[vcache,cache,hits]'
+          value_type: FLOAT
+          units: vps
+          preprocessing:
+            -
+              type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+          tags:
+            -
+              tag: Application
+              value: 'Zabbix server'
+        -
+          uuid: fbdd186fd87e4d729e52cb4d5f03d453
+          name: 'Zabbix value cache misses'
+          type: INTERNAL
+          key: 'zabbix[vcache,cache,misses]'
+          value_type: FLOAT
+          units: vps
+          preprocessing:
+            -
+              type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+          tags:
+            -
+              tag: Application
+              value: 'Zabbix server'
+        -
+          uuid: 7de4e130c88c466fbffd605b9d69e499
+          name: 'Zabbix value cache operating mode'
+          type: INTERNAL
+          key: 'zabbix[vcache,cache,mode]'
+          tags:
+            -
+              tag: Application
+              value: 'Zabbix server'
+          triggers:
+            -
+              uuid: d8a50af686bb4a4ea36e840cfd0e6d0c
+              expression: 'last(/Template Server Zabbix/zabbix[vcache,cache,mode])=1'
+              name: 'Zabbix value cache working in low memory mode'
+              priority: HIGH
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: 07763bc98eee4a75a12d472b26501ea1
+          name: 'Zabbix vmware cache, % free'
+          type: INTERNAL
+          key: 'zabbix[vmware,buffer,pfree]'
+          value_type: FLOAT
+          units: '%'
+          tags:
+            -
+              tag: Application
+              value: 'Zabbix server'
+          triggers:
+            -
+              uuid: 7cae2dd3994c49bc9969aa7df043eea4
+              expression: 'min(/Template Server Zabbix/zabbix[vmware,buffer,pfree],10m)<25'
+              name: 'Less than 25% free in the vmware cache'
+              priority: AVERAGE
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: 8d3d16a365c74bb8a54d7f118d607753
+          name: 'Zabbix vmware cache, % used'
+          type: INTERNAL
+          key: 'zabbix[vmware,buffer,pused]'
+          value_type: FLOAT
+          units: '%'
+          tags:
+            -
+              tag: Application
+              value: 'Zabbix server'
+          triggers:
+            -
+              uuid: 2693325cd1f441488fea27c505c3b903
+              expression: 'max(/Template Server Zabbix/zabbix[vmware,buffer,pused],10m)>75'
+              name: 'More than75% used in the vmware cache'
+              priority: AVERAGE
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: df088a88a5fc40e0b840286801eb89aa
+          name: 'Zabbix $2 write cache, % free'
+          type: INTERNAL
+          key: 'zabbix[wcache,history,pfree]'
+          value_type: FLOAT
+          units: '%'
+          description: 'Cache do History write disponível em porcentagem.'
+          tags:
+            -
+              tag: Application
+              value: 'Zabbix server'
+          triggers:
+            -
+              uuid: daac7ee570714001bb465b6f923481e0
+              expression: 'min(/Template Server Zabbix/zabbix[wcache,history,pfree],10m)<25'
+              name: 'Less than 25% free in the history cache'
+              priority: AVERAGE
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: e2c260823b694369b1ac572374643cf0
+          name: 'Zabbix history write cache, % used'
+          type: INTERNAL
+          key: 'zabbix[wcache,history,pused]'
+          value_type: FLOAT
+          units: '%'
+          description: 'Porcentagem em uso do Cache de history write do Zabbix'
+          tags:
+            -
+              tag: Application
+              value: 'Zabbix server'
+          triggers:
+            -
+              uuid: b92db5f7147c4e45a61292a905a18bd3
+              expression: 'max(/Template Server Zabbix/zabbix[wcache,history,pused],10m)>75'
+              name: 'More than 75% used in the history cache'
+              priority: AVERAGE
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: 4da4b250219f45f18df868b45e592846
+          name: 'Zabbix history index cache % free'
+          type: INTERNAL
+          key: 'zabbix[wcache,index,pfree]'
+          value_type: FLOAT
+          units: '%'
+          description: 'Porcentagem livre do Cache de history index do Zabbix.'
+          tags:
+            -
+              tag: Application
+              value: 'Zabbix server'
+          triggers:
+            -
+              uuid: cada14ce539c4f9989b25ccf95955ee2
+              expression: 'min(/Template Server Zabbix/zabbix[wcache,index,pfree],10m)<25'
+              name: 'Less than 25% free in the history index cache'
+              priority: AVERAGE
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: 3183f4a2fbf34ad4a19c572b5d99b864
+          name: 'Zabbix history index cache % used'
+          type: INTERNAL
+          key: 'zabbix[wcache,index,pused]'
+          value_type: FLOAT
+          units: '%'
+          tags:
+            -
+              tag: Application
+              value: 'Zabbix server'
+          triggers:
+            -
+              uuid: d6c9ca8566c7409e8b805b841c4df5a9
+              expression: 'max(/Template Server Zabbix/zabbix[wcache,index,pused],10m)>75'
+              name: 'More than 75% used in the history index cache'
+              priority: AVERAGE
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: eaaaebe34a864aee9726ebf110250344
+          name: 'Zabbix $2 write cache, % free'
+          type: INTERNAL
+          key: 'zabbix[wcache,trend,pfree]'
+          value_type: FLOAT
+          units: '%'
+          description: 'Cache do Trends write disponível em porcentagem.'
+          tags:
+            -
+              tag: Application
+              value: 'Zabbix server'
+          triggers:
+            -
+              uuid: 9bd1208d7d1a4a76a0b2acabb6e75314
+              expression: 'min(/Template Server Zabbix/zabbix[wcache,trend,pfree],10m)<25'
+              name: 'Less than 25% free in the trends cache'
+              priority: AVERAGE
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: a5fa2227782c4ff0844ff13d5d71d330
+          name: 'Zabbix trend write cache, % used'
+          type: INTERNAL
+          key: 'zabbix[wcache,trend,pused]'
+          value_type: FLOAT
+          units: '%'
+          description: 'Porcentagem em uso do Cache de trend write do Zabbix.'
+          tags:
+            -
+              tag: Application
+              value: 'Zabbix server'
+          triggers:
+            -
+              uuid: 6a88ef422eab4965a473516da97bd6da
+              expression: 'max(/Template Server Zabbix/zabbix[wcache,trend,pused],10m)>75'
+              name: 'More than 75% used in the trends cache'
+              priority: AVERAGE
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: 8d0ee6a87f1a44d599859b294167fd9a
+          name: 'Number of processed numeric (float) values per second'
+          type: INTERNAL
+          key: 'zabbix[wcache,values,float]'
+          value_type: FLOAT
+          description: 'Número de itens do tipo (float) processados por segundo'
+          preprocessing:
+            -
+              type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+          tags:
+            -
+              tag: Application
+              value: 'Zabbix server'
+        -
+          uuid: 53b32573a8e248f5a415e83adfc95b20
+          name: 'Number of processed log values per second'
+          type: INTERNAL
+          key: 'zabbix[wcache,values,log]'
+          trends: '0'
+          value_type: LOG
+          description: 'Número de itens do tipo ''Log'' processados por segundo'
+          preprocessing:
+            -
+              type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+          tags:
+            -
+              tag: Application
+              value: 'Zabbix server'
+        -
+          uuid: 71975fa0122c4a89be47425352444452
+          name: 'Number of processed not supported values per second'
+          type: INTERNAL
+          key: 'zabbix[wcache,values,not supported]'
+          value_type: FLOAT
+          description: 'Número de itens não suportados processados por segundo.'
+          preprocessing:
+            -
+              type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+          tags:
+            -
+              tag: Application
+              value: 'Zabbix server'
+        -
+          uuid: a3d4b5a6e71d4915bae1c05712658d72
+          name: 'Number of processed character values per second'
+          type: INTERNAL
+          key: 'zabbix[wcache,values,str]'
+          value_type: FLOAT
+          description: 'Número de Valores do tipo ''Carácter'' processados por segundo'
+          preprocessing:
+            -
+              type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+          tags:
+            -
+              tag: Application
+              value: 'Zabbix server'
+        -
+          uuid: 1e14dede957d4ff887f8184ef960536b
+          name: 'Number of processed text values per second'
+          type: INTERNAL
+          key: 'zabbix[wcache,values,text]'
+          value_type: FLOAT
+          description: 'Número de itens do tipo ''texto'' processados por segundo'
+          preprocessing:
+            -
+              type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+          tags:
+            -
+              tag: Application
+              value: 'Zabbix server'
+        -
+          uuid: 6a8983b5bcca4341bc87a7db24226341
+          name: 'Number of processed numeric (unsigned) values per second'
+          type: INTERNAL
+          key: 'zabbix[wcache,values,uint]'
+          value_type: FLOAT
+          description: 'Número de itens do tipo ''inteiro'' processados por segundo'
+          preprocessing:
+            -
+              type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+          tags:
+            -
+              tag: Application
+              value: 'Zabbix server'
+        -
+          uuid: 4823539d4b214c8dab34333cea547004
+          name: 'Values processed by Zabbix server per second'
+          type: INTERNAL
+          key: 'zabbix[wcache,values]'
+          value_type: FLOAT
+          description: 'Valores processados pelo Zabbix Server por segundo'
+          preprocessing:
+            -
+              type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+          tags:
+            -
+              tag: Application
+              value: 'Zabbix server'
+      discovery_rules:
+        -
+          uuid: 1c00d48efe234e0ab304c14c3937a20c
+          name: 'Network interface discovery'
+          key: net.if.discovery
+          delay: 1h
+          filter:
+            conditions:
+              -
+                macro: '{#IFNAME}'
+                value: '@Network interfaces for discovery'
+                formulaid: A
+          description: 'Discovery of network interfaces as defined in global regular expression "Network interfaces for discovery".'
+          item_prototypes:
+            -
+              uuid: e85908a3b69e493ca40819d055665eb9
+              name: 'Incoming network traffic on {#IFNAME}'
+              key: 'net.if.in[{#IFNAME}]'
+              units: bps
+              description: 'Tráfego de entrada na interface'
+              preprocessing:
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '8'
+              tags:
+                -
+                  tag: Application
+                  value: 'Network interfaces'
+            -
+              uuid: 854ca67d9a0140cb982b6855fec6e5f7
+              name: 'Outgoing network traffic on {#IFNAME}'
+              key: 'net.if.out[{#IFNAME}]'
+              units: bps
+              description: 'Tráfego de saída na interface'
+              preprocessing:
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '8'
+              tags:
+                -
+                  tag: Application
+                  value: 'Network interfaces'
+          graph_prototypes:
+            -
+              uuid: 29de2c5eaea9433ca8bb4e0f2314200e
+              name: 'Network traffic on {#IFNAME}'
+              graph_items:
+                -
+                  sortorder: '1'
+                  color: 199C0D
+                  item:
+                    host: 'Template Server Zabbix'
+                    key: 'net.if.in[{#IFNAME}]'
+                -
+                  sortorder: '2'
+                  color: F63100
+                  item:
+                    host: 'Template Server Zabbix'
+                    key: 'net.if.out[{#IFNAME}]'
+        -
+          uuid: 5496e917c401455c98d19a10ed65d935
+          name: 'Mounted filesystem discovery'
+          key: vfs.fs.discovery
+          delay: 1h
+          filter:
+            conditions:
+              -
+                macro: '{#FSTYPE}'
+                value: '@File systems for discovery'
+                formulaid: A
+          description: 'Discovery of file systems of different types an defined in global regular expression "File systems for discovery".'
+          item_prototypes:
+            -
+              uuid: c373c1703936412dbb762e2a4d8ff4cf
+              name: 'Free inodes on {#FSNAME} (percentage)'
+              key: 'vfs.fs.inode[{#FSNAME},pfree]'
+              value_type: FLOAT
+              units: '%'
+              tags:
+                -
+                  tag: Application
+                  value: Filesystems
+              trigger_prototypes:
+                -
+                  uuid: 6bfaad9ebad0458aa7b21a5b5a6a8fd9
+                  expression: 'last(/Template Server Zabbix/vfs.fs.inode[{#FSNAME},pfree])<20'
+                  name: 'Free inodes is less than 20% on volume {#FSNAME}'
+                  priority: WARNING
+                  description: 'Last value: {ITEM.LASTVALUE1}.'
+            -
+              uuid: 6680e515cff34554a6bf6409e5c245c3
+              name: 'Free disk space on {#FSNAME}'
+              key: 'vfs.fs.size[{#FSNAME},free]'
+              units: B
+              description: 'Espaço livre no disco'
+              tags:
+                -
+                  tag: Application
+                  value: Filesystems
+            -
+              uuid: 0a191ee2e23c4fd88d8f2aa185852526
+              name: 'Free disk space on {#FSNAME} (percentage)'
+              key: 'vfs.fs.size[{#FSNAME},pfree]'
+              value_type: FLOAT
+              units: '%'
+              description: 'Espaço livre no disco em porcentagem'
+              tags:
+                -
+                  tag: Application
+                  value: Filesystems
+              trigger_prototypes:
+                -
+                  uuid: 006acc72943243ceab7da4af568a97b3
+                  expression: 'last(/Template Server Zabbix/vfs.fs.size[{#FSNAME},pfree])<20'
+                  name: 'Free disk space is less than 20% on volume {#FSNAME}'
+                  priority: WARNING
+                  description: 'Last value: {ITEM.LASTVALUE1}.'
+            -
+              uuid: 7ef23fec3fdf4fa2b1a8f0c31432eaeb
+              name: 'Total disk space on {#FSNAME}'
+              key: 'vfs.fs.size[{#FSNAME},total]'
+              delay: 1h
+              units: B
+              description: 'Espaço total no disco'
+              tags:
+                -
+                  tag: Application
+                  value: Filesystems
+            -
+              uuid: 62d198e742d94373a67b70584e351637
+              name: 'Used disk space on {#FSNAME}'
+              key: 'vfs.fs.size[{#FSNAME},used]'
+              units: B
+              description: 'Espaço usado no disco'
+              tags:
+                -
+                  tag: Application
+                  value: Filesystems
+          graph_prototypes:
+            -
+              uuid: 029bb63ec9a04b10bf6a5e7f22b73bcf
+              name: 'Disk space usage {#FSNAME}'
+              width: '600'
+              height: '340'
+              yaxismax: '0'
+              show_work_period: 'NO'
+              show_triggers: 'NO'
+              type: PIE
+              show_3d: 'YES'
+              graph_items:
+                -
+                  sortorder: '1'
+                  color: 199C0D
+                  item:
+                    host: 'Template Server Zabbix'
+                    key: 'vfs.fs.size[{#FSNAME},free]'
+                -
+                  sortorder: '2'
+                  color: F63100
+                  item:
+                    host: 'Template Server Zabbix'
+                    key: 'vfs.fs.size[{#FSNAME},total]'
+  graphs:
+    -
+      uuid: e1eec7dee43d4287a662834e54ff7937
+      name: 'Check arquivos'
+      graph_items:
+        -
+          sortorder: '1'
+          color: 199C0D
+          item:
+            host: 'Template Server Zabbix'
+            key: 'vfs.file.cksum[/etc/httpd/conf/httpd.conf]'
+        -
+          sortorder: '2'
+          color: F63100
+          item:
+            host: 'Template Server Zabbix'
+            key: 'vfs.file.cksum[/etc/passwd]'
+    -
+      uuid: 95a8ba6863804eaea307d18ac95aad3c
+      name: 'CPU jumps'
+      graph_items:
+        -
+          sortorder: '1'
+          color: 199C0D
+          item:
+            host: 'Template Server Zabbix'
+            key: system.cpu.switches
+        -
+          sortorder: '2'
+          color: F63100
+          item:
+            host: 'Template Server Zabbix'
+            key: system.cpu.intr
+    -
+      uuid: d12a3d94aabb476abdb1030fa260913e
+      name: 'CPU load'
+      graph_items:
+        -
+          sortorder: '1'
+          color: 199C0D
+          item:
+            host: 'Template Server Zabbix'
+            key: 'system.cpu.load[percpu,avg1]'
+        -
+          sortorder: '2'
+          color: F63100
+          item:
+            host: 'Template Server Zabbix'
+            key: 'system.cpu.load[percpu,avg15]'
+        -
+          sortorder: '3'
+          color: 2774A4
+          item:
+            host: 'Template Server Zabbix'
+            key: 'system.cpu.load[percpu,avg5]'
+    -
+      uuid: 49e27394f11e4e70af656ab33ce6d1fc
+      name: 'CPU utilization'
+      graph_items:
+        -
+          sortorder: '1'
+          color: 199C0D
+          item:
+            host: 'Template Server Zabbix'
+            key: 'system.cpu.util[,guest_nice]'
+        -
+          sortorder: '2'
+          color: F63100
+          item:
+            host: 'Template Server Zabbix'
+            key: 'system.cpu.util[,idle]'
+        -
+          sortorder: '3'
+          color: 2774A4
+          item:
+            host: 'Template Server Zabbix'
+            key: 'system.cpu.util[,interrupt]'
+        -
+          sortorder: '4'
+          color: F7941D
+          item:
+            host: 'Template Server Zabbix'
+            key: 'system.cpu.util[,iowait]'
+        -
+          sortorder: '5'
+          color: FC6EA3
+          item:
+            host: 'Template Server Zabbix'
+            key: 'system.cpu.util[,nice]'
+        -
+          sortorder: '6'
+          color: 6C59DC
+          item:
+            host: 'Template Server Zabbix'
+            key: 'system.cpu.util[,softirq]'
+        -
+          sortorder: '7'
+          color: C7A72D
+          item:
+            host: 'Template Server Zabbix'
+            key: 'system.cpu.util[,steal]'
+        -
+          sortorder: '8'
+          color: BA2A5D
+          item:
+            host: 'Template Server Zabbix'
+            key: 'system.cpu.util[,system]'
+        -
+          sortorder: '9'
+          color: F230E0
+          item:
+            host: 'Template Server Zabbix'
+            key: 'system.cpu.util[,user]'
+    -
+      uuid: 8f0c0cdad3f940e0aeac3da38783e906
+      name: 'Memory usage'
+      graph_items:
+        -
+          sortorder: '1'
+          color: 199C0D
+          item:
+            host: 'Template Server Zabbix'
+            key: 'vm.memory.size[available]'
+    -
+      uuid: 09d1b8c162f546e2a60a0ecd491e627c
+      name: 'Swap usage'
+      graph_items:
+        -
+          sortorder: '1'
+          color: 199C0D
+          item:
+            host: 'Template Server Zabbix'
+            key: 'system.swap.size[,free]'
+        -
+          sortorder: '2'
+          color: F63100
+          item:
+            host: 'Template Server Zabbix'
+            key: 'system.swap.size[,total]'
+    -
+      uuid: b37d08e24ef24419b99ecd3e791d0454
+      name: 'Value cache effectiveness'
+      graph_items:
+        -
+          sortorder: '1'
+          color: 199C0D
+          item:
+            host: 'Template Server Zabbix'
+            key: 'zabbix[vcache,cache,hits]'
+        -
+          sortorder: '2'
+          color: F63100
+          item:
+            host: 'Template Server Zabbix'
+            key: 'zabbix[vcache,cache,misses]'
+    -
+      uuid: b3f20be9187543a89dcf8a194649633a
+      name: 'Zabbix cache usage, % free'
+      graph_items:
+        -
+          sortorder: '1'
+          color: 199C0D
+          item:
+            host: 'Template Server Zabbix'
+            key: 'zabbix[rcache,buffer,pfree]'
+        -
+          sortorder: '2'
+          color: F63100
+          item:
+            host: 'Template Server Zabbix'
+            key: 'zabbix[wcache,index,pfree]'
+        -
+          sortorder: '3'
+          color: 2774A4
+          item:
+            host: 'Template Server Zabbix'
+            key: 'zabbix[wcache,history,pfree]'
+        -
+          sortorder: '4'
+          color: F7941D
+          item:
+            host: 'Template Server Zabbix'
+            key: 'zabbix[wcache,trend,pfree]'
+        -
+          sortorder: '5'
+          color: FC6EA3
+          item:
+            host: 'Template Server Zabbix'
+            key: 'zabbix[vcache,buffer,pfree]'
+        -
+          sortorder: '6'
+          color: 6C59DC
+          item:
+            host: 'Template Server Zabbix'
+            key: 'zabbix[vmware,buffer,pfree]'
+    -
+      uuid: b85a43ac8aa743e7875f23576e78259e
+      name: 'Zabbix cache usage, % used'
+      graph_items:
+        -
+          sortorder: '1'
+          color: 199C0D
+          item:
+            host: 'Template Server Zabbix'
+            key: 'zabbix[rcache,buffer,pused]'
+        -
+          sortorder: '2'
+          color: F63100
+          item:
+            host: 'Template Server Zabbix'
+            key: 'zabbix[wcache,index,pused]'
+        -
+          sortorder: '3'
+          color: 2774A4
+          item:
+            host: 'Template Server Zabbix'
+            key: 'zabbix[wcache,history,pused]'
+        -
+          sortorder: '4'
+          color: F7941D
+          item:
+            host: 'Template Server Zabbix'
+            key: 'zabbix[wcache,trend,pused]'
+        -
+          sortorder: '5'
+          color: FC6EA3
+          item:
+            host: 'Template Server Zabbix'
+            key: 'zabbix[vcache,buffer,pused]'
+        -
+          sortorder: '6'
+          color: 6C59DC
+          item:
+            host: 'Template Server Zabbix'
+            key: 'zabbix[vmware,buffer,pused]'
+    -
+      uuid: ba31ed0487424543afdfec063ea5e1c0
+      name: 'Zabbix data gathering process busy %'
+      graph_items:
+        -
+          sortorder: '1'
+          color: 199C0D
+          item:
+            host: 'Template Server Zabbix'
+            key: 'zabbix[process,alerter,avg,busy]'
+        -
+          sortorder: '2'
+          color: F63100
+          item:
+            host: 'Template Server Zabbix'
+            key: 'zabbix[process,alert manager,avg,busy]'
+        -
+          sortorder: '3'
+          color: 2774A4
+          item:
+            host: 'Template Server Zabbix'
+            key: 'zabbix[process,configuration syncer,avg,busy]'
+        -
+          sortorder: '4'
+          color: F7941D
+          item:
+            host: 'Template Server Zabbix'
+            key: 'zabbix[process,discoverer,avg,busy]'
+        -
+          sortorder: '5'
+          color: FC6EA3
+          item:
+            host: 'Template Server Zabbix'
+            key: 'zabbix[process,escalator,avg,busy]'
+        -
+          sortorder: '6'
+          color: 6C59DC
+          item:
+            host: 'Template Server Zabbix'
+            key: 'zabbix[process,history syncer,avg,busy]'
+        -
+          sortorder: '7'
+          color: C7A72D
+          item:
+            host: 'Template Server Zabbix'
+            key: 'zabbix[process,housekeeper,avg,busy]'
+        -
+          sortorder: '8'
+          color: BA2A5D
+          item:
+            host: 'Template Server Zabbix'
+            key: 'zabbix[process,http poller,avg,busy]'
+        -
+          sortorder: '9'
+          color: F230E0
+          item:
+            host: 'Template Server Zabbix'
+            key: 'zabbix[process,icmp pinger,avg,busy]'
+        -
+          sortorder: '10'
+          color: 5CCD18
+          item:
+            host: 'Template Server Zabbix'
+            key: 'zabbix[process,ipmi manager,avg,busy]'
+        -
+          sortorder: '11'
+          color: BB2A02
+          item:
+            host: 'Template Server Zabbix'
+            key: 'zabbix[process,ipmi poller,avg,busy]'
+        -
+          sortorder: '12'
+          color: AC41A5
+          item:
+            host: 'Template Server Zabbix'
+            key: 'zabbix[process,java poller,avg,busy]'
+        -
+          sortorder: '13'
+          color: 89ABF8
+          item:
+            host: 'Template Server Zabbix'
+            key: 'zabbix[process,poller,avg,busy]'
+        -
+          sortorder: '14'
+          color: 7EC25C
+          item:
+            host: 'Template Server Zabbix'
+            key: 'zabbix[process,preprocessing manager,avg,busy]'
+        -
+          sortorder: '15'
+          color: 3165D5
+          item:
+            host: 'Template Server Zabbix'
+            key: 'zabbix[process,preprocessing worker,avg,busy]'
+        -
+          sortorder: '16'
+          color: 79A277
+          item:
+            host: 'Template Server Zabbix'
+            key: 'zabbix[process,proxy poller,avg,busy]'
+        -
+          sortorder: '17'
+          color: AA73DE
+          item:
+            host: 'Template Server Zabbix'
+            key: 'zabbix[process,self-monitoring,avg,busy]'
+        -
+          sortorder: '18'
+          color: FD5434
+          item:
+            host: 'Template Server Zabbix'
+            key: 'zabbix[process,snmp trapper,avg,busy]'
+        -
+          sortorder: '19'
+          color: F21C3E
+          item:
+            host: 'Template Server Zabbix'
+            key: 'zabbix[process,task manager,avg,busy]'
+        -
+          sortorder: '20'
+          color: 87AC4D
+          item:
+            host: 'Template Server Zabbix'
+            key: 'zabbix[process,timer,avg,busy]'
+        -
+          sortorder: '21'
+          color: E89DF4
+          item:
+            host: 'Template Server Zabbix'
+            key: 'zabbix[process,trapper,avg,busy]'
+        -
+          sortorder: '22'
+          color: 199C0D
+          item:
+            host: 'Template Server Zabbix'
+            key: 'zabbix[process,unreachable poller,avg,busy]'
+        -
+          sortorder: '23'
+          color: F63100
+          item:
+            host: 'Template Server Zabbix'
+            key: 'zabbix[process,vmware collector,avg,busy]'
+    -
+      uuid: 7c11ca6ffd654744aedb6ab46a1acb3d
+      name: 'Zabbix internal process busy %'
+      graph_items:
+        -
+          sortorder: '1'
+          color: 199C0D
+          item:
+            host: 'Template Server Zabbix'
+            key: 'zabbix[process,alerter,avg,busy]'
+        -
+          sortorder: '2'
+          color: F63100
+          item:
+            host: 'Template Server Zabbix'
+            key: 'zabbix[process,alert manager,avg,busy]'
+        -
+          sortorder: '3'
+          color: 2774A4
+          item:
+            host: 'Template Server Zabbix'
+            key: 'zabbix[process,configuration syncer,avg,busy]'
+        -
+          sortorder: '4'
+          color: F7941D
+          item:
+            host: 'Template Server Zabbix'
+            key: 'zabbix[process,escalator,avg,busy]'
+        -
+          sortorder: '5'
+          color: FC6EA3
+          item:
+            host: 'Template Server Zabbix'
+            key: 'zabbix[process,history syncer,avg,busy]'
+        -
+          sortorder: '6'
+          color: 6C59DC
+          item:
+            host: 'Template Server Zabbix'
+            key: 'zabbix[process,housekeeper,avg,busy]'
+        -
+          sortorder: '7'
+          color: C7A72D
+          item:
+            host: 'Template Server Zabbix'
+            key: 'zabbix[process,ipmi manager,avg,busy]'
+        -
+          sortorder: '8'
+          color: BA2A5D
+          item:
+            host: 'Template Server Zabbix'
+            key: 'zabbix[process,preprocessing manager,avg,busy]'
+        -
+          sortorder: '9'
+          color: F230E0
+          item:
+            host: 'Template Server Zabbix'
+            key: 'zabbix[process,preprocessing worker,avg,busy]'
+        -
+          sortorder: '10'
+          color: 5CCD18
+          item:
+            host: 'Template Server Zabbix'
+            key: 'zabbix[process,self-monitoring,avg,busy]'
+        -
+          sortorder: '11'
+          color: BB2A02
+          item:
+            host: 'Template Server Zabbix'
+            key: 'zabbix[process,task manager,avg,busy]'
+        -
+          sortorder: '12'
+          color: AC41A5
+          item:
+            host: 'Template Server Zabbix'
+            key: 'zabbix[process,timer,avg,busy]'
+    -
+      uuid: 498ac309c4ff41aa8413ac985934e4b6
+      name: 'Zabbix preprocessing queue'
+      graph_items:
+        -
+          sortorder: '1'
+          color: 199C0D
+          item:
+            host: 'Template Server Zabbix'
+            key: 'zabbix[preprocessing_queue]'
+    -
+      uuid: 25371e08121f42148799b8f9064fb033
+      name: 'Zabbix server performance'
+      graph_items:
+        -
+          sortorder: '1'
+          color: 199C0D
+          item:
+            host: 'Template Server Zabbix'
+            key: 'zabbix[wcache,values]'
+        -
+          sortorder: '2'
+          color: F63100
+          item:
+            host: 'Template Server Zabbix'
+            key: 'zabbix[queue]'

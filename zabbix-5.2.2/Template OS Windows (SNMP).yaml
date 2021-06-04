@@ -1,0 +1,569 @@
+zabbix_export:
+  version: '5.2'
+  date: '2021-06-04T11:23:41Z'
+  groups:
+    -
+      name: 'Templates/Operating systems'
+  templates:
+    -
+      template: 'Template OS Windows'
+      name: 'Template OS Windows'
+      groups:
+        -
+          name: 'Templates/Operating systems'
+      applications:
+        -
+          name: CPU
+        -
+          name: Filesystems
+        -
+          name: General
+        -
+          name: Memory
+        -
+          name: 'Network interfaces'
+        -
+          name: OS
+        -
+          name: Performance
+        -
+          name: Processes
+        -
+          name: Services
+        -
+          name: 'Zabbix agent'
+      items:
+        -
+          name: 'Host name of zabbix_agentd running'
+          key: agent.hostname
+          delay: 1h
+          trends: '0'
+          value_type: CHAR
+          applications:
+            -
+              name: 'Zabbix agent'
+          triggers:
+            -
+              expression: '{diff(0)}>0'
+              name: 'Host name of zabbix_agentd was changed on {HOST.HOST}'
+              priority: INFO
+              description: |
+                Host Name in zabbix agent is changed.
+                Last value: {ITEM.LASTVALUE1}.
+        -
+          name: 'Agent ping'
+          key: agent.ping
+          applications:
+            -
+              name: 'Zabbix agent'
+          valuemap:
+            name: 'Zabbix Agent Status'
+          triggers:
+            -
+              expression: '{nodata(5m)}=1'
+              name: 'zabbix agent on {HOST.HOST} is unreachable for 5 minutes'
+              priority: AVERAGE
+              description: |
+                Agent ping nodata for 5 minutes.
+                Last value: {ITEM.LASTVALUE1}.
+        -
+          name: 'Version of zabbix_agent(d) running'
+          key: agent.version
+          delay: 1h
+          trends: '0'
+          value_type: CHAR
+          applications:
+            -
+              name: 'Zabbix agent'
+          triggers:
+            -
+              expression: '{diff(0)}>0'
+              name: 'Version of zabbix_agent(d) was changed on {HOST.HOST}'
+              priority: INFO
+              description: |
+                Agent Version changed.
+                Last value: {ITEM.LASTVALUE1}.
+        -
+          name: 'File read bytes per second'
+          key: 'perf_counter[\2\16]'
+          history: 1w
+          value_type: FLOAT
+          units: Bps
+          description: 'Full counter name: \System\File Read Bytes/sec'
+          applications:
+            -
+              name: Filesystems
+            -
+              name: Performance
+        -
+          name: 'File write bytes per second'
+          key: 'perf_counter[\2\18]'
+          history: 1w
+          value_type: FLOAT
+          units: Bps
+          description: 'Full counter name: \System\File Write Bytes/sec'
+          applications:
+            -
+              name: Filesystems
+            -
+              name: Performance
+        -
+          name: 'Number of threads'
+          key: 'perf_counter[\2\250]'
+          history: 1w
+          description: 'Full counter name: \System\Threads'
+          applications:
+            -
+              name: OS
+        -
+          name: 'Average disk read queue length'
+          key: 'perf_counter[\234(_Total)\1402]'
+          history: 1w
+          value_type: FLOAT
+          description: 'Full counter name: \PhysicalDisk(_Total)\Avg. Disk Read Queue Length'
+          applications:
+            -
+              name: Filesystems
+            -
+              name: Performance
+        -
+          name: 'Average disk write queue length'
+          key: 'perf_counter[\234(_Total)\1404]'
+          history: 1w
+          value_type: FLOAT
+          description: 'Full counter name: \PhysicalDisk(_Total)\Avg. Disk Write Queue Length'
+          applications:
+            -
+              name: Filesystems
+            -
+              name: Performance
+        -
+          name: 'Number of processes'
+          key: 'proc.num[]'
+          history: 1w
+          applications:
+            -
+              name: Processes
+          triggers:
+            -
+              expression: '{avg(5m)}>300'
+              name: 'Too many processes on {HOST.NAME}'
+              priority: AVERAGE
+              description: |
+                Number of processes average 5 minutes more than 300.
+                Last value: {ITEM.LASTVALUE1}.
+        -
+          name: 'Processor load (1 min average)'
+          key: 'system.cpu.load[percpu,avg1]'
+          history: 1w
+          value_type: FLOAT
+          applications:
+            -
+              name: CPU
+            -
+              name: Performance
+          triggers:
+            -
+              expression: '{avg(5m)}>5'
+              name: 'Processor load is too high on {HOST.NAME}'
+              priority: AVERAGE
+              description: |
+                CPU load in 5 minutes is more than 5.
+                Last value: {ITEM.LASTVALUE1}.
+        -
+          name: 'Processor load (5 min average)'
+          key: 'system.cpu.load[percpu,avg5]'
+          history: 1w
+          value_type: FLOAT
+          applications:
+            -
+              name: CPU
+            -
+              name: Performance
+        -
+          name: 'Processor load (15 min average)'
+          key: 'system.cpu.load[percpu,avg15]'
+          history: 1w
+          value_type: FLOAT
+          applications:
+            -
+              name: CPU
+            -
+              name: Performance
+        -
+          name: 'Free swap space'
+          key: 'system.swap.size[,free]'
+          history: 1w
+          units: B
+          applications:
+            -
+              name: Memory
+        -
+          name: 'Total swap space'
+          key: 'system.swap.size[,total]'
+          delay: 1h
+          history: 1w
+          units: B
+          applications:
+            -
+              name: Memory
+        -
+          name: 'System information'
+          key: system.uname
+          delay: 1h
+          history: 1w
+          trends: '0'
+          value_type: CHAR
+          inventory_link: OS
+          applications:
+            -
+              name: General
+            -
+              name: OS
+          triggers:
+            -
+              expression: '{diff(0)}>0'
+              name: 'Host information was changed on {HOST.NAME}'
+              priority: AVERAGE
+              description: |
+                System uname changed.
+                Last value: {ITEM.LASTVALUE1}.
+        -
+          name: 'System uptime'
+          key: system.uptime
+          history: 1w
+          units: uptime
+          applications:
+            -
+              name: General
+          triggers:
+            -
+              expression: '{change(0)}<0'
+              name: '{HOST.NAME} has just been restarted'
+              priority: AVERAGE
+              description: |
+                System uptime change.
+                Last value: {ITEM.LASTVALUE1}.
+        -
+          name: 'Free memory'
+          key: 'vm.memory.size[free]'
+          history: 1w
+          units: B
+          applications:
+            -
+              name: Memory
+          triggers:
+            -
+              expression: '{last(0)}<10000'
+              name: 'Lack of free memory on server {HOST.NAME}'
+              priority: AVERAGE
+              description: |
+                Free Memory is less than 10000.
+                Last value: {ITEM.LASTVALUE1}.
+        -
+          name: 'Total memory'
+          key: 'vm.memory.size[total]'
+          delay: 1h
+          history: 1w
+          units: B
+          applications:
+            -
+              name: Memory
+        -
+          name: 'Free virtual memory, in %'
+          key: 'vm.vmemory.size[pavailable]'
+          history: 1w
+          value_type: FLOAT
+          units: '%'
+          applications:
+            -
+              name: Memory
+          triggers:
+            -
+              expression: '{min(10m)}<10'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: '{min(10m)}>20'
+              name: 'Lack of available virtual memory on server {HOST.NAME}'
+              priority: AVERAGE
+              description: |
+                Memory available in 10 minutes less than 10.
+                Last value: {ITEM.LASTVALUE1}.
+      discovery_rules:
+        -
+          name: 'Network interface discovery'
+          key: net.if.discovery
+          delay: 1h
+          filter:
+            conditions:
+              -
+                macro: '{#IFNAME}'
+                value: '@Network interfaces for discovery'
+                formulaid: A
+          description: 'Discovery of network interfaces as defined in global regular expression "Network interfaces for discovery".'
+          item_prototypes:
+            -
+              name: 'Incoming network traffic on {#IFNAME}'
+              key: 'net.if.in[{#IFNAME}]'
+              history: 1w
+              units: bps
+              applications:
+                -
+                  name: 'Network interfaces'
+              preprocessing:
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '8'
+            -
+              name: 'Outgoing network traffic on {#IFNAME}'
+              key: 'net.if.out[{#IFNAME}]'
+              history: 1w
+              units: bps
+              applications:
+                -
+                  name: 'Network interfaces'
+              preprocessing:
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '8'
+          graph_prototypes:
+            -
+              name: 'Network traffic on {#IFNAME}'
+              ymin_type_1: FIXED
+              graph_items:
+                -
+                  drawtype: GRADIENT_LINE
+                  color: 00AA00
+                  item:
+                    host: 'Template OS Windows'
+                    key: 'net.if.in[{#IFNAME}]'
+                -
+                  sortorder: '1'
+                  drawtype: GRADIENT_LINE
+                  color: 3333FF
+                  item:
+                    host: 'Template OS Windows'
+                    key: 'net.if.out[{#IFNAME}]'
+        -
+          name: 'Windows service discovery'
+          key: service.discovery
+          delay: 1h
+          filter:
+            conditions:
+              -
+                macro: '{#SERVICE.NAME}'
+                value: '@Windows service names for discovery'
+                formulaid: A
+              -
+                macro: '{#SERVICE.STARTUPNAME}'
+                value: '@Windows service startup states for discovery'
+                formulaid: B
+          description: 'Discovery of Windows services of different types as defined in global regular expressions "Windows service names for discovery" and "Windows service startup states for discovery".'
+          item_prototypes:
+            -
+              name: 'State of service "{#SERVICE.NAME}" ({#SERVICE.DISPLAYNAME})'
+              key: 'service.info[{#SERVICE.NAME},state]'
+              history: 1w
+              applications:
+                -
+                  name: Services
+              application_prototypes:
+                -
+                  name: 'Startup {#SERVICE.STARTUPNAME} services'
+              valuemap:
+                name: 'Windows service state'
+              trigger_prototypes:
+                -
+                  expression: '{min(#3)}<>0'
+                  name: 'Service "{#SERVICE.NAME}" ({#SERVICE.DISPLAYNAME}) is not running (startup type {#SERVICE.STARTUPNAME})'
+                  priority: AVERAGE
+                  description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          name: 'Mounted filesystem discovery'
+          key: vfs.fs.discovery
+          delay: 1h
+          filter:
+            conditions:
+              -
+                macro: '{#FSTYPE}'
+                value: '@File systems for discovery'
+                formulaid: A
+          description: 'Discovery of file systems of different types as defined in global regular expression "File systems for discovery".'
+          item_prototypes:
+            -
+              name: 'Free disk space on {#FSNAME}'
+              key: 'vfs.fs.size[{#FSNAME},free]'
+              history: 1w
+              units: B
+              applications:
+                -
+                  name: Filesystems
+            -
+              name: 'Free disk space on {#FSNAME} (percentage)'
+              key: 'vfs.fs.size[{#FSNAME},pfree]'
+              history: 1w
+              value_type: FLOAT
+              units: '%'
+              applications:
+                -
+                  name: Filesystems
+              trigger_prototypes:
+                -
+                  expression: '{last(0)}<20'
+                  name: 'Free disk space is less than 20% on volume {#FSNAME}'
+                  priority: WARNING
+                  description: 'Last value: {ITEM.LASTVALUE1}.'
+            -
+              name: 'Total disk space on {#FSNAME}'
+              key: 'vfs.fs.size[{#FSNAME},total]'
+              delay: 1h
+              history: 1w
+              units: B
+              applications:
+                -
+                  name: Filesystems
+            -
+              name: 'Used disk space on {#FSNAME}'
+              key: 'vfs.fs.size[{#FSNAME},used]'
+              history: 1w
+              units: B
+              applications:
+                -
+                  name: Filesystems
+          graph_prototypes:
+            -
+              name: 'Disk space usage {#FSNAME}'
+              width: '600'
+              height: '340'
+              show_work_period: 'NO'
+              show_triggers: 'NO'
+              type: PIE
+              show_3d: 'YES'
+              graph_items:
+                -
+                  color: C80000
+                  type: GRAPH_SUM
+                  item:
+                    host: 'Template OS Windows'
+                    key: 'vfs.fs.size[{#FSNAME},total]'
+                -
+                  sortorder: '1'
+                  color: 00C800
+                  item:
+                    host: 'Template OS Windows'
+                    key: 'vfs.fs.size[{#FSNAME},free]'
+      dashboards:
+        -
+          name: 'System performance'
+          widgets:
+            -
+              type: GRAPH_CLASSIC
+              width: '12'
+              height: '5'
+              fields:
+                -
+                  type: INTEGER
+                  name: source_type
+                  value: '1'
+                -
+                  type: ITEM
+                  name: itemid
+                  value:
+                    key: 'proc.num[]'
+                    host: 'Template OS Windows'
+            -
+              type: GRAPH_CLASSIC
+              x: '12'
+              width: '12'
+              height: '5'
+              fields:
+                -
+                  type: INTEGER
+                  name: source_type
+                  value: '1'
+                -
+                  type: ITEM
+                  name: itemid
+                  value:
+                    key: 'perf_counter[\2\250]'
+                    host: 'Template OS Windows'
+  graphs:
+    -
+      name: 'CPU load'
+      graph_items:
+        -
+          sortorder: '1'
+          color: 199C0D
+          item:
+            host: 'Template OS Windows'
+            key: 'system.cpu.load[percpu,avg1]'
+        -
+          sortorder: '2'
+          color: F63100
+          item:
+            host: 'Template OS Windows'
+            key: 'system.cpu.load[percpu,avg5]'
+        -
+          sortorder: '3'
+          color: 2774A4
+          item:
+            host: 'Template OS Windows'
+            key: 'system.cpu.load[percpu,avg15]'
+    -
+      name: 'Memory usage'
+      graph_items:
+        -
+          sortorder: '1'
+          color: 199C0D
+          item:
+            host: 'Template OS Windows'
+            key: 'vm.memory.size[free]'
+  value_maps:
+    -
+      name: 'Windows service state'
+      mappings:
+        -
+          value: '0'
+          newvalue: Running
+        -
+          value: '1'
+          newvalue: Paused
+        -
+          value: '2'
+          newvalue: 'Start pending'
+        -
+          value: '3'
+          newvalue: 'Pause Pending'
+        -
+          value: '4'
+          newvalue: 'Continue pending'
+        -
+          value: '5'
+          newvalue: 'Stop Pending'
+        -
+          value: '6'
+          newvalue: Stopped
+        -
+          value: '7'
+          newvalue: Unknown
+        -
+          value: '255'
+          newvalue: 'No such service'
+    -
+      name: 'Zabbix Agent Status'
+      mappings:
+        -
+          value: '0'
+          newvalue: Down
+        -
+          value: '1'
+          newvalue: Up

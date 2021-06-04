@@ -1,0 +1,402 @@
+zabbix_export:
+  version: '5.2'
+  date: '2021-06-04T11:10:33Z'
+  groups:
+    -
+      name: A-OVR_TPLGPR
+  templates:
+    -
+      template: 'DMP - MUX IP'
+      name: 'DMP - MUX IP'
+      description: |
+        ## In English:
+        
+        Template for Zabbix 3.4 and above.
+        
+        Collects and displays  information about voltage, current, power, status, temperature, and battery usage.
+        
+        UPS MIB: 
+        http://www.oidview.com/mibs/0/UPS-MIB.html
+        
+        Software SGM Auto-Shutdown V4.1:
+        http://www.apc.com/shop/br/pt/products/Software-SGM-Auto-Shutdown-V4-1-para-Linux-s%C3%B3-Brasil-/P-SFSGM41L?isCurrentSite=true
+        
+        ---------
+        
+        ## Em Português:
+        
+        Template para Zabbix 3.4 ou superior.
+        
+        Coleta e exibe informações da tensão, corrente, potência, status, temperatura e uso da bateria.
+        
+        UPS MIB: 
+        http://www.oidview.com/mibs/0/UPS-MIB.html
+        
+        Software SGM Auto-Shutdown V4.1:
+        http://www.apc.com/shop/br/pt/products/Software-SGM-Auto-Shutdown-V4-1-para-Linux-s%C3%B3-Brasil-/P-SFSGM41L?isCurrentSite=true
+        
+        ---------
+        
+        ## Developed by:
+        
+        * Victor Igor (victor.igor.redes@gmail.com), sysadmin;
+        * Aécio Pires (http://aeciopires.com), sysadmin.
+        
+        Shared by **Dynavideo** (http://www.dynavideo.com.br)
+      groups:
+        -
+          name: A-OVR_TPLGPR
+      applications:
+        -
+          name: interfaces
+        -
+          name: system
+      items:
+        -
+          name: slot_01_input
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.8201.5.11.1.1.1.3.0
+          key: slot_01_input
+          delay: 15s
+          history: 15d
+          value_type: FLOAT
+          units: mbps
+          description: 'Entrada no Slot-1'
+          applications:
+            -
+              name: interfaces
+        -
+          name: slot_01_output
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.8201.5.11.1.1.1.4.0
+          key: slot_01_output
+          delay: 15s
+          history: 15d
+          value_type: FLOAT
+          units: mbps
+          description: 'Saida no Slot-1'
+          applications:
+            -
+              name: interfaces
+        -
+          name: slot_01_status
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.8201.5.11.1.1.1.1.0
+          key: slot_01_status
+          delay: 15s
+          history: 15d
+          description: |
+            0 - DOWN
+            1 - UP
+          applications:
+            -
+              name: interfaces
+        -
+          name: slot_02_input
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.8201.5.11.1.1.2.3.0
+          key: slot_02_input
+          delay: 15s
+          history: 15d
+          value_type: FLOAT
+          units: mbps
+          description: 'Entrada no Slot-2'
+          applications:
+            -
+              name: interfaces
+        -
+          name: slot_02_output
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.8201.5.11.1.1.2.4.0
+          key: slot_02_output
+          delay: 15s
+          history: 15d
+          value_type: FLOAT
+          units: mbps
+          description: 'Saida no slot-2'
+          applications:
+            -
+              name: interfaces
+        -
+          name: slot_02_status
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.8201.5.11.1.1.2.1.0
+          key: slot_02_status
+          delay: 15s
+          history: 15d
+          description: |
+            0 - DOWN
+            1 - UP
+          applications:
+            -
+              name: interfaces
+        -
+          name: slot_03_input
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.8201.5.11.1.1.3.3.0
+          key: slot_03_input
+          delay: 15s
+          history: 15d
+          value_type: FLOAT
+          units: mbps
+          description: 'Entrada n slot-3'
+          applications:
+            -
+              name: interfaces
+        -
+          name: slot_03_output
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.8201.5.11.1.1.3.4.0
+          key: slot_03_output
+          delay: 15s
+          history: 15d
+          value_type: FLOAT
+          units: mbps
+          description: 'Saida no Slot-3'
+          applications:
+            -
+              name: interfaces
+        -
+          name: slot_03_status
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.8201.5.11.1.1.3.1.0
+          key: slot_03_status
+          delay: 15s
+          history: 15d
+          description: |
+            0 - DOWN
+            1 - UP
+          applications:
+            -
+              name: interfaces
+        -
+          name: sysDescr
+          type: SNMP_AGENT
+          snmp_oid: sysDescr.0
+          key: sysDescr
+          delay: 60s
+          trends: '0'
+          value_type: TEXT
+          description: 'Descrição do Sistema'
+          applications:
+            -
+              name: system
+        -
+          name: sysLocation
+          type: SNMP_AGENT
+          snmp_oid: sysLocation.0
+          key: sysLocation
+          delay: 60s
+          trends: '0'
+          value_type: TEXT
+          description: 'Localização do Dispositivo'
+          applications:
+            -
+              name: system
+        -
+          name: sysName
+          type: SNMP_AGENT
+          snmp_oid: sysName.0
+          key: sysName
+          delay: 60s
+          trends: '0'
+          value_type: TEXT
+          description: 'Nome do dispositivo'
+          applications:
+            -
+              name: system
+        -
+          name: sysServices
+          type: SNMP_AGENT
+          snmp_oid: sysServices.0
+          key: sysServices
+          delay: 60s
+          description: 'Soma da quantidade de serviços disponíveis por esse dispositivo'
+          applications:
+            -
+              name: system
+        -
+          name: sysUpTime
+          type: SNMP_AGENT
+          snmp_oid: sysUpTime.0
+          key: sysUpTime
+          delay: 60s
+          history: 6d
+          trends: 30d
+          units: uptime
+          description: 'Tempo do sistema ligado'
+          applications:
+            -
+              name: system
+        -
+          name: transport_available_slot_01
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.8201.5.11.1.1.1.2.0
+          key: transport_available_slot_01
+          delay: 15s
+          history: 30d
+          units: 'TS IP'
+          description: 'Transporte disponível no Slot-1'
+          applications:
+            -
+              name: interfaces
+        -
+          name: transport_available_slot_02
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.8201.5.11.1.1.2.2.0
+          key: transport_available_slot_02
+          delay: 15s
+          history: 30d
+          units: 'TS IP'
+          description: 'Transporte Disponivel no Slot-2'
+          applications:
+            -
+              name: interfaces
+        -
+          name: transport_available_slot_03
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.8201.5.11.1.1.3.2.0
+          key: transport_available_slot_03
+          delay: 15s
+          history: 30d
+          units: 'TS IP'
+          description: 'Transporte Disponivel no slot-3'
+          applications:
+            -
+              name: interfaces
+      macros:
+        -
+          macro: '{$SNMP_COMMUNITY}'
+          value: public
+        -
+          macro: '{$SNMP_PORT}'
+          value: '161'
+      dashboards:
+        -
+          name: DMP
+          widgets:
+            -
+              type: GRAPH_CLASSIC
+              x: '16'
+              width: '8'
+              height: '4'
+              fields:
+                -
+                  type: INTEGER
+                  name: source_type
+                  value: '1'
+                -
+                  type: ITEM
+                  name: itemid
+                  value:
+                    key: sysUpTime
+                    host: 'DMP - MUX IP'
+            -
+              type: PLAIN_TEXT
+              width: '16'
+              height: '4'
+              fields:
+                -
+                  type: ITEM
+                  name: itemids
+                  value:
+                    key: sysDescr
+                    host: 'DMP - MUX IP'
+                -
+                  type: ITEM
+                  name: itemids
+                  value:
+                    key: sysLocation
+                    host: 'DMP - MUX IP'
+                -
+                  type: ITEM
+                  name: itemids
+                  value:
+                    key: sysName
+                    host: 'DMP - MUX IP'
+            -
+              type: GRAPH_CLASSIC
+              'y': '4'
+              width: '12'
+              height: '5'
+              fields:
+                -
+                  type: GRAPH
+                  name: graphid
+                  value:
+                    name: 'Frequency: Input x Output'
+                    host: 'DMP - MUX IP'
+            -
+              type: GRAPH_CLASSIC
+              x: '12'
+              'y': '4'
+              width: '12'
+              height: '5'
+              fields:
+                -
+                  type: GRAPH
+                  name: graphid
+                  value:
+                    name: 'Voltage x Battery Current'
+                    host: 'DMP - MUX IP'
+  graphs:
+    -
+      name: 'Frequency: Input x Output'
+      graph_items:
+        -
+          sortorder: '1'
+          color: 199C0D
+          item:
+            host: 'DMP - MUX IP'
+            key: slot_01_input
+        -
+          sortorder: '2'
+          color: F63100
+          item:
+            host: 'DMP - MUX IP'
+            key: slot_01_output
+        -
+          sortorder: '3'
+          color: 2774A4
+          item:
+            host: 'DMP - MUX IP'
+            key: slot_02_input
+        -
+          sortorder: '4'
+          color: F7941D
+          item:
+            host: 'DMP - MUX IP'
+            key: slot_02_output
+        -
+          sortorder: '5'
+          color: FC6EA3
+          item:
+            host: 'DMP - MUX IP'
+            key: slot_03_input
+        -
+          sortorder: '6'
+          color: 6C59DC
+          item:
+            host: 'DMP - MUX IP'
+            key: slot_03_output
+    -
+      name: 'Voltage x Battery Current'
+      graph_items:
+        -
+          sortorder: '1'
+          color: 199C0D
+          item:
+            host: 'DMP - MUX IP'
+            key: transport_available_slot_01
+        -
+          sortorder: '2'
+          color: F63100
+          item:
+            host: 'DMP - MUX IP'
+            key: transport_available_slot_02
+        -
+          sortorder: '3'
+          color: 2774A4
+          item:
+            host: 'DMP - MUX IP'
+            key: transport_available_slot_03

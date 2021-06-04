@@ -1,0 +1,325 @@
+zabbix_export:
+  version: '5.4'
+  date: '2021-05-28T01:14:26Z'
+  groups:
+    -
+      uuid: d8be3c764d3c48c180c59c4040180760
+      name: DATACOM
+  templates:
+    -
+      uuid: 9745fb2e1e1e49de884895ecdbb3f1c2
+      template: 'DATACOM DM2500'
+      name: 'DATACOM DM2500'
+      templates:
+        -
+          name: 'Template Module ICMP Ping'
+      groups:
+        -
+          name: DATACOM
+      items:
+        -
+          uuid: b1fe72021d5e434cb9051474c8160351
+          name: 'DM2500 - CPU0'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.25.3.3.1.2.196608
+          key: CPU0
+          units: '%'
+          description: 'Porcentagem da CPU no Core 0'
+          tags:
+            -
+              tag: Application
+              value: CPU
+        -
+          uuid: 603a7abb91ab41a4bc9ed00772428e5d
+          name: 'DM2500 - CPU1'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.25.3.3.1.2.196609
+          key: CPU1
+          units: '%'
+          description: 'Porcentagem da CPU no Core 1'
+          tags:
+            -
+              tag: Application
+              value: CPU
+        -
+          uuid: 20cc788cdd324875aabd6948832f0ee7
+          name: 'DM2500 - CPU2'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.25.3.3.1.2.196610
+          key: CPU2
+          units: '%'
+          description: 'Porcentagem da Utilização do CPU no Core 2'
+          tags:
+            -
+              tag: Application
+              value: CPU
+        -
+          uuid: 0f0c7912489e4e7383b64b339507e0e0
+          name: 'DM2500 - CPU3'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.25.3.3.1.2.196611
+          key: CPU3
+          units: '%'
+          description: 'Porcentagem da CPU no Core 3'
+          tags:
+            -
+              tag: Application
+              value: CPU
+        -
+          uuid: a19080e10d934f9c9eca5a190efa385e
+          name: 'Número de interfaces de rede'
+          type: SNMP_AGENT
+          snmp_oid: ifNumber.0
+          key: ifNumber
+          delay: 10m
+          description: 'Número de interfaces de rede'
+          tags:
+            -
+              tag: Application
+              value: Interfaces
+        -
+          uuid: fab6e73320354d4ca4f802ab6c55fc5b
+          name: 'DM2500 - memAvailReal'
+          type: SNMP_AGENT
+          snmp_oid: memAvailReal.0
+          key: memAvailReal.0
+          units: B
+          description: 'Memória Real Disponível'
+          preprocessing:
+            -
+              type: MULTIPLIER
+              parameters:
+                - '1024'
+          tags:
+            -
+              tag: Application
+              value: Mem
+        -
+          uuid: 0606e15dc0aa4c2d82831721cf311ac1
+          name: 'DM2500 - memCached'
+          type: SNMP_AGENT
+          snmp_oid: memCached.0
+          key: memCached.0
+          units: B
+          description: 'Memória em Cache'
+          preprocessing:
+            -
+              type: MULTIPLIER
+              parameters:
+                - '1024'
+          tags:
+            -
+              tag: Application
+              value: Mem
+        -
+          uuid: 57af7affdfa54e27b8d936db836041b9
+          name: 'DM2500 - memTotalFree'
+          type: SNMP_AGENT
+          snmp_oid: memTotalFree.0
+          key: memTotalFree.0
+          units: B
+          description: 'Memória total Livre'
+          preprocessing:
+            -
+              type: MULTIPLIER
+              parameters:
+                - '1024'
+          tags:
+            -
+              tag: Application
+              value: Mem
+          triggers:
+            -
+              uuid: 7b7c0487ad7b4f8fbf7b3869df0d3a69
+              expression: 'last(/DATACOM DM2500/memTotalFree.0,#2)<200'
+              name: '{HOST.IP} - {HOST.NAME} - Memory Available Low'
+              priority: WARNING
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: 8d4c1bec5fa841148140daf80816b761
+          name: 'DM2500 - CpuIdle'
+          type: SNMP_AGENT
+          snmp_oid: 'UCD-SNMP-MIB::ssCpuIdle.0'
+          key: ssCpuIdle.0
+          units: '%'
+          description: 'CPU Inativa'
+          tags:
+            -
+              tag: Application
+              value: CPU
+        -
+          uuid: d141da64ee1240eab378da9b499cb028
+          name: 'DM2500 - CpuSystem'
+          type: SNMP_AGENT
+          snmp_oid: ssCpySystem.0
+          key: ssCpuSystem.0
+          units: '%'
+          description: 'Utilização da CPU pelo Sistema'
+          tags:
+            -
+              tag: Application
+              value: CPU
+        -
+          uuid: b2e0f0f274ee43ccb43a239a4d9a5217
+          name: 'DM2500 - CpuUser'
+          type: SNMP_AGENT
+          snmp_oid: ssCpuUser.0
+          key: ssCpuUser.0
+          units: '%'
+          description: 'Utilização da CPU pelo Usuário'
+          tags:
+            -
+              tag: Application
+              value: CPU
+        -
+          uuid: 6022a0ed71b04eb6b43a6452e0a8035f
+          name: 'Device uptime'
+          type: SNMP_AGENT
+          snmp_oid: sysUpTime.0
+          key: sysUpTime
+          units: uptime
+          description: 'Tempo do Dispositivo Ligado'
+          preprocessing:
+            -
+              type: MULTIPLIER
+              parameters:
+                - '0.01'
+      discovery_rules:
+        -
+          uuid: f1026f726c24471c81514bc265643b26
+          name: 'Interfaces de rede'
+          type: SNMP_AGENT
+          snmp_oid: 'discovery[{#SNMPVALUE}, IF-MIB::ifDescr]'
+          key: ifDescr
+          delay: 10m
+          item_prototypes:
+            -
+              uuid: 5734d8f5d56b496db447d435d36daa54
+              name: 'Admin status de interface $1'
+              type: SNMP_AGENT
+              snmp_oid: 'ifAdminStatus.{#SNMPINDEX}'
+              key: 'ifAdminStatus[{#SNMPVALUE}]'
+              description: 'Status administrador da interface'
+              tags:
+                -
+                  tag: Application
+                  value: Interfaces
+            -
+              uuid: 4f05cb3e5d9d4c1a8d7ad100bb3ef4c8
+              name: 'Alias de interface $1'
+              type: SNMP_AGENT
+              snmp_oid: 'ifAlias.{#SNMPINDEX}'
+              key: 'ifAlias[{#SNMPVALUE}]'
+              delay: 10m
+              trends: '0'
+              value_type: CHAR
+              description: 'Apelido da Interface'
+              tags:
+                -
+                  tag: Application
+                  value: Interfaces
+            -
+              uuid: b46ce81063c74ed1bb887d7f68b66761
+              name: 'Descrição da interface $1'
+              type: SNMP_AGENT
+              snmp_oid: 'ifDescr.{#SNMPINDEX}'
+              key: 'ifDescr[{#SNMPVALUE}]'
+              delay: 10m
+              trends: '0'
+              value_type: CHAR
+              description: 'Descrição da Interface'
+              tags:
+                -
+                  tag: Application
+                  value: Interfaces
+            -
+              uuid: 7cbc00a367e14017bab01f7557c844ba
+              name: 'Erros de entrada na interface $1'
+              type: SNMP_AGENT
+              snmp_oid: 'ifInErrors.{#SNMPINDEX}'
+              key: 'ifInErrors[{#SNMPVALUE}]'
+              description: 'Erros de entrada na interface'
+              tags:
+                -
+                  tag: Application
+                  value: Interfaces
+            -
+              uuid: e3bedb90f0c04518810a6e87defe6634
+              name: 'O tráfego de entrada na interface $1'
+              type: SNMP_AGENT
+              snmp_oid: 'ifInOctets.{#SNMPINDEX}'
+              key: 'ifInOctets[{#SNMPVALUE}]'
+              units: bps
+              description: 'O tráfego de entrada na interface'
+              preprocessing:
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '8'
+              tags:
+                -
+                  tag: Application
+                  value: Interfaces
+            -
+              uuid: 3e2514505434496ab5c913c1f00d11be
+              name: 'Status operacional de interface $1'
+              type: SNMP_AGENT
+              snmp_oid: 'ifOperStatus.{#SNMPINDEX}'
+              key: 'ifOperStatus[{#SNMPVALUE}]'
+              description: 'Status operacional da Interface'
+              tags:
+                -
+                  tag: Application
+                  value: Interfaces
+              trigger_prototypes:
+                -
+                  uuid: 0eff84ca625b4accac6753c55de609be
+                  expression: '(last(/DATACOM DM2500/ifOperStatus[{#SNMPVALUE}],#1)<>last(/DATACOM DM2500/ifOperStatus[{#SNMPVALUE}],#2))=1 and min(/DATACOM DM2500/ifOperStatus[{#SNMPVALUE}],10s)=2'
+                  recovery_mode: RECOVERY_EXPRESSION
+                  recovery_expression: 'last(/DATACOM DM2500/ifOperStatus[{#SNMPVALUE}]) <>2'
+                  name: 'Status DOWN em {HOST.HOST} interface {#SNMPVALUE}'
+                  priority: INFO
+                  description: 'Last value: {ITEM.LASTVALUE1}.'
+            -
+              uuid: f86e2afaf1e04a5dbdf2b0a536fc2c7f
+              name: 'Erros de saída na interface $1'
+              type: SNMP_AGENT
+              snmp_oid: 'ifOutErrors.{#SNMPINDEX}'
+              key: 'ifOutErrors[{#SNMPVALUE}]'
+              description: 'Erros de saída na interface'
+              tags:
+                -
+                  tag: Application
+                  value: Interfaces
+            -
+              uuid: 821ac02248564187853da02c09a167bc
+              name: 'O tráfego de saída na interface $1'
+              type: SNMP_AGENT
+              snmp_oid: 'ifOutOctets.{#SNMPINDEX}'
+              key: 'ifOutOctets[{#SNMPVALUE}]'
+              units: bps
+              description: 'O tráfego de saída na interface'
+              preprocessing:
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '8'
+      macros:
+        -
+          macro: '{$SNMP_COMMUNITY}'
+          value: qnet1nfr4
+  triggers:
+    -
+      uuid: bf35ee28d8e24233868694c8d58d60a6
+      expression: '(last(/DATACOM DM2500/CPU0,#1:now-1m) + last(/DATACOM DM2500/CPU1,#1:now-1m) + last(/DATACOM DM2500/CPU2,#1:now-1m) + last(/DATACOM DM2500/CPU3,#1:now-1m)/4)>8'
+      name: '{HOST.IP} - {HOST.NAME} CPU Load High > 80% Usage'
+      priority: WARNING
+      description: 'Last value: {ITEM.LASTVALUE1}.'

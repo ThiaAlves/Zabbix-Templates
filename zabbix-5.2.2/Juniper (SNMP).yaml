@@ -1,0 +1,2217 @@
+zabbix_export:
+  version: '5.2'
+  date: '2021-06-04T11:10:56Z'
+  groups:
+    -
+      name: 'Routers'
+  templates:
+    -
+      template: Juniper
+      name: Juniper
+      groups:
+        -
+          name: 'Routers'
+      applications:
+        -
+          name: BGP4
+        -
+          name: BPG
+        -
+          name: 'Device Health'
+        -
+          name: General
+        -
+          name: Interfaces
+        -
+          name: 'Network interfaces'
+        -
+          name: Status
+        -
+          name: Temperature
+      items:
+        -
+          name: 'ICMP ping'
+          type: SIMPLE
+          key: icmpping
+          description: 'Retorno da verificação de disponibilidade do dispositivo por ping'
+          applications:
+            -
+              name: Status
+          valuemap:
+            name: 'Ping State'
+          triggers:
+            -
+              expression: '{max(#6)}=0'
+              name: 'Unavailable by ICMP ping'
+              priority: HIGH
+              description: |
+                Last six attemps returned timeout. Please Check device connectivity
+                Last value: {ITEM.LASTVALUE1}.
+        -
+          name: 'ICMP loss'
+          type: SIMPLE
+          key: icmppingloss
+          description: 'Perda de pacotes Ping'
+          applications:
+            -
+              name: Status
+          triggers:
+            -
+              expression: '{min(5m)}>{$ICMP_LOSS_WARN} and {min(5m)}<150'
+              name: 'High ICMP ping loss'
+              priority: WARNING
+              description: |
+                ICMP ping loss more than {$ICMP_LOSS_WARN}
+                Last value: {ITEM.LASTVALUE1}.
+              dependencies:
+                -
+                  name: 'Unavailable by ICMP ping'
+                  expression: '{Juniper:icmpping.max(#6)}=0'
+        -
+          name: 'ICMP response time'
+          type: SIMPLE
+          key: icmppingsec
+          description: 'Tempo de resposta por ping'
+          applications:
+            -
+              name: Status
+          triggers:
+            -
+              expression: '{avg(5m)}>{$ICMP_RESPONSE_TIME_WARN}'
+              name: 'High ICMP ping response time'
+              priority: WARNING
+              description: |
+                Response time more than {$ICMP_RESPONSE_TIME_WARN}
+                Last value: {ITEM.LASTVALUE1}.
+              dependencies:
+                -
+                  name: 'High ICMP ping loss'
+                  expression: '{Juniper:icmppingloss.min(5m)}>{$ICMP_LOSS_WARN} and {Juniper:icmppingloss.min(5m)}<150'
+                -
+                  name: 'Unavailable by ICMP ping'
+                  expression: '{Juniper:icmpping.max(#6)}=0'
+        -
+          name: jnxRedAlarmState
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.2636.3.4.2.3.1.0
+          key: jnxRedAlarmState
+          description: |
+            Estado de alarme vermelho no painel de interface.
+            unknown(1),
+            off(2),
+            on(3).
+          applications:
+            -
+              name: 'Device Health'
+          triggers:
+            -
+              expression: '{last(0)}<>2'
+              name: 'Red Alarm on router {HOST.HOST}'
+              priority: HIGH
+              description: |
+                Last value: {ITEM.LASTVALUE1}.
+                Check State.
+        -
+          name: jnxYellowAlarmState
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.2636.3.4.2.2.1.0
+          key: jnxYellowAlarmState
+          description: |
+            Estado de alarme amarelo no painel de interface.
+            unknown(1),
+            off(2),
+            on(3).
+          applications:
+            -
+              name: 'Device Health'
+          triggers:
+            -
+              expression: '{last(0)}<>2'
+              name: 'Yellow Alarm on router {HOST.HOST}'
+              priority: AVERAGE
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          name: 'Juniper Make/Model'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.2.1.1.1.0
+          key: juniper.make.model
+          delay: 10m
+          trends: '0'
+          value_type: TEXT
+          description: 'Descrição do modelo do dispositivo'
+        -
+          name: 'JunOS CPU % in use'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.2636.3.1.13.1.8.9.1.0.0
+          key: Junos.CPU
+          units: '%'
+          description: 'Porcentagem da CPU em Uso'
+        -
+          name: 'JunOS Memory % in use'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.2636.3.1.13.1.11.9.1.0.0
+          key: Junos.Mem
+          units: '%'
+          description: 'Porcentagem da Memoria em uso'
+        -
+          name: 'JunOS temperature'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.2636.3.1.13.1.7.9.1.0.0
+          key: Junos.Temp
+          units: C
+          description: 'Temperatura do dispositivo'
+          applications:
+            -
+              name: Temperature
+        -
+          name: 'Device contact details'
+          type: SNMP_AGENT
+          snmp_oid: sysContact.0
+          key: system.contact
+          delay: 1h
+          trends: '0'
+          value_type: CHAR
+          description: 'Detalhes de contado do dispositivo'
+          inventory_link: CONTACT
+          applications:
+            -
+              name: General
+        -
+          name: 'Device description'
+          type: SNMP_AGENT
+          snmp_oid: sysDescr.0
+          key: system.descr
+          delay: 1h
+          history: 2w
+          trends: '0'
+          value_type: CHAR
+          description: 'Descrição do dispositivo'
+          inventory_link: HARDWARE_FULL
+          applications:
+            -
+              name: General
+        -
+          name: 'Device location'
+          type: SNMP_AGENT
+          snmp_oid: sysLocation.0
+          key: system.location
+          delay: 1h
+          history: 2w
+          trends: '0'
+          value_type: CHAR
+          description: 'Localização do dispositivo'
+          inventory_link: LOCATION
+          applications:
+            -
+              name: General
+        -
+          name: 'Device name'
+          type: SNMP_AGENT
+          snmp_oid: sysName.0
+          key: system.name
+          delay: 1h
+          trends: '0'
+          value_type: CHAR
+          description: 'Nome do dispositivo'
+          inventory_link: NAME
+          applications:
+            -
+              name: General
+        -
+          name: 'Device Uptime'
+          type: SNMP_AGENT
+          snmp_oid: sysUpTime.0
+          key: system.uptime
+          trends: '0'
+          units: uptime
+          description: 'Tempo do sistema ligado'
+          applications:
+            -
+              name: Status
+          triggers:
+            -
+              expression: '{last()}<10m'
+              name: '{HOST.HOST} has been restarted'
+              priority: WARNING
+              description: 'Your Device has been restarted.'
+              dependencies:
+                -
+                  name: 'No SNMP data collection'
+                  expression: '{Juniper:zabbix[host,snmp,available].max({$SNMP_TIMEOUT})}=0'
+        -
+          name: 'SNMP availability'
+          type: INTERNAL
+          key: 'zabbix[host,snmp,available]'
+          trends: '0'
+          description: 'Disponibilidade SNMP'
+          applications:
+            -
+              name: Status
+          valuemap:
+            name: 'SMNP Available'
+          triggers:
+            -
+              expression: '{max({$SNMP_TIMEOUT})}=0'
+              name: 'No SNMP data collection'
+              priority: WARNING
+              description: |
+                Last value: {ITEM.LASTVALUE1}.
+                Please Check the connectivity.
+              dependencies:
+                -
+                  name: 'Unavailable by ICMP ping'
+                  expression: '{Juniper:icmpping.max(#6)}=0'
+      discovery_rules:
+        -
+          name: 'Juniper BGP Peer Enumeration'
+          type: SNMP_AGENT
+          snmp_oid: 'discovery[{#SNMPVALUE},1.3.6.1.2.1.15.3.1.2]'
+          key: discovery.bgp
+          delay: 10m
+          lifetime: 5d
+          item_prototypes:
+            -
+              name: 'bgpPeerState {#SNMPINDEX}'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.2.1.15.3.1.2.{#SNMPINDEX}'
+              key: 'bgpPeerState.[{#SNMPINDEX}]'
+              delay: 5m
+              value_type: FLOAT
+              description: 'O Estado de conexão do par BGP'
+          graph_prototypes:
+            -
+              name: 'BGP PEER STATE {#SNMPINDEX}'
+              graph_items:
+                -
+                  sortorder: '1'
+                  color: 199C0D
+                  item:
+                    host: Juniper
+                    key: 'bgpPeerState.[{#SNMPINDEX}]'
+        -
+          name: 'Juniper Interface Enumeration'
+          type: SNMP_AGENT
+          snmp_oid: 'discovery[{#SNMPVALUE},1.3.6.1.2.1.2.2.1.2]'
+          key: discovery.ifDescr
+          delay: 10m
+          lifetime: 5d
+          item_prototypes:
+            -
+              name: '{#SNMPVALUE} - Inbound discarded packets'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.2.1.2.2.1.13.{#SNMPINDEX}'
+              key: 'InDiscardedPackets.[{#SNMPINDEX}]'
+              description: 'Entrada de pacotes descartados'
+            -
+              name: '{#SNMPVALUE} - Inbound error packets'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.2.1.2.2.1.14.{#SNMPINDEX}'
+              key: 'InErrorPackets.[{#SNMPINDEX}]'
+              delay: 5m
+              description: 'Entrada de pacotes com erros'
+            -
+              name: '{#SNMPVALUE} - Inbound traffic'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.2.1.2.2.1.10.{#SNMPINDEX}'
+              key: 'InTraffic.[{#SNMPINDEX}]'
+              description: 'Tráfico de entrada na interface'
+              preprocessing:
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '8'
+            -
+              name: '{#SNMPVALUE} - Outbound discarded packets'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.2.1.2.2.1.19.{#SNMPINDEX}'
+              key: 'OutDiscardedPacks.[{#SNMPINDEX}]'
+              description: 'Saída de pacotes com erros'
+              preprocessing:
+                -
+                  type: SIMPLE_CHANGE
+                  parameters:
+                    - ''
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '1'
+            -
+              name: '{#SNMPVALUE} - Outbound error packets'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.2.1.2.2.1.20.{#SNMPINDEX}'
+              key: 'OutErrorPacks.[{#SNMPINDEX}]'
+              description: 'Saida de pacotes com erros'
+              preprocessing:
+                -
+                  type: SIMPLE_CHANGE
+                  parameters:
+                    - ''
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '1'
+            -
+              name: '{#SNMPVALUE} - Outbound traffic'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.2.1.2.2.1.16.{#SNMPINDEX}'
+              key: 'OutTraffic.[{#SNMPINDEX}]'
+              description: 'Tráfico de saída na interface'
+              preprocessing:
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '8'
+          graph_prototypes:
+            -
+              name: 'Interface {#SNMPVALUE} Discards and Errors'
+              graph_items:
+                -
+                  sortorder: '1'
+                  color: 199C0D
+                  item:
+                    host: Juniper
+                    key: 'InDiscardedPackets.[{#SNMPINDEX}]'
+                -
+                  sortorder: '2'
+                  color: F63100
+                  item:
+                    host: Juniper
+                    key: 'InErrorPackets.[{#SNMPINDEX}]'
+                -
+                  sortorder: '3'
+                  color: 2774A4
+                  item:
+                    host: Juniper
+                    key: 'OutDiscardedPacks.[{#SNMPINDEX}]'
+                -
+                  sortorder: '4'
+                  color: F7941D
+                  item:
+                    host: Juniper
+                    key: 'OutErrorPacks.[{#SNMPINDEX}]'
+            -
+              name: 'Interface {#SNMPVALUE} Traffic'
+              graph_items:
+                -
+                  sortorder: '1'
+                  color: 199C0D
+                  item:
+                    host: Juniper
+                    key: 'InTraffic.[{#SNMPINDEX}]'
+                -
+                  sortorder: '2'
+                  color: F63100
+                  item:
+                    host: Juniper
+                    key: 'OutTraffic.[{#SNMPINDEX}]'
+        -
+          name: 'Juniper IKE Peer Enumeration'
+          type: SNMP_AGENT
+          snmp_oid: 'discovery[{#SNMPVALUE},1.3.6.1.4.1.2636.3.52.1.1.2.1.14.1.4]'
+          key: discovery.ike
+          delay: 10m
+          lifetime: 5d
+          item_prototypes:
+            -
+              name: 'ikePeerState {#SNMPINDEX}'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.2636.3.52.1.1.2.1.6.1.4.{#SNMPINDEX}'
+              key: 'ikePeerState.[{#SNMPINDEX}]'
+              value_type: FLOAT
+              description: 'Estado de conexão dos pares ike'
+        -
+          name: 'Juniper IPSec Tunnel State Enumeration'
+          type: SNMP_AGENT
+          snmp_oid: 'discovery[{#SNMPVALUE},1.3.6.1.4.1.2636.3.39.1.5.1.2.1.1.4]'
+          key: discovery.IPSec
+          delay: 10m
+          lifetime: 5d
+          item_prototypes:
+            -
+              name: 'IPSec Tunnel State {#SNMPINDEX}'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.2636.3.39.1.5.1.2.1.1.4.{#SNMPINDEX}'
+              key: 'IPsecTunnelState.[{#SNMPINDEX}]'
+              delay: 5m
+              value_type: FLOAT
+              description: 'Estado do Tunel IPsec'
+        -
+          name: 'Juniper OSPF Neighbor State Enumeration'
+          type: SNMP_AGENT
+          snmp_oid: 'discovery[{#SNMPVALUE},1.3.6.1.2.1.14.10.1.6]'
+          key: discovery.ospf.nbr
+          delay: 10m
+          lifetime: 5d
+          item_prototypes:
+            -
+              name: 'ospfNbrState {#SNMPINDEX}'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.2.1.14.10.1.6.{#SNMPINDEX}'
+              key: 'ospfNbrState.[{#SNMPINDEX}]'
+              delay: 5m
+              value_type: FLOAT
+              description: 'Estado de conexão do ospfNbr'
+        -
+          name: 'JunOS Interfaces'
+          type: SNMP_AGENT
+          snmp_oid: 'discovery[{#SNMPVALUE},IF-MIB::ifDescr]'
+          key: ifDescr
+          delay: 5m
+          filter:
+            conditions:
+              -
+                macro: '{#SNMPVALUE}'
+                value: '^ge-1\/0\/[0-2]$|^ge-1\/1\/[0-2]$|^ge-1\/1\/1\.[0-9]{1,4}$|^(ae|reth|st)[0-9]$|^fxp[0-9]-[0-9]+$|^vlan.[0-9]+$|^irb.[0-9]+$'
+                formulaid: A
+          lifetime: 5d
+          item_prototypes:
+            -
+              name: '{#SNMPVALUE} - ifAdminStatus'
+              type: SNMP_AGENT
+              snmp_oid: 'ifAdminStatus.{#SNMPINDEX}'
+              key: 'ifAdminStatus[{#SNMPVALUE}]'
+              description: 'Estado administrador da interface'
+              applications:
+                -
+                  name: Interfaces
+              valuemap:
+                name: ifAdminStatus
+            -
+              name: '{#SNMPVALUE} - ifAlias'
+              type: SNMP_AGENT
+              snmp_oid: 'ifAlias.{#SNMPINDEX}'
+              key: 'ifAlias[{#SNMPVALUE}]'
+              delay: 10m
+              trends: '0'
+              value_type: CHAR
+              description: 'Apelido da interface'
+              applications:
+                -
+                  name: Interfaces
+            -
+              name: '{#SNMPVALUE} - ifHCInOctets'
+              type: SNMP_AGENT
+              snmp_oid: 'IF-MIB::ifHCInOctets.{#SNMPINDEX}'
+              key: 'ifHCInOctets[{#SNMPVALUE}]'
+              units: bps
+              description: 'Tráfego de entrada'
+              applications:
+                -
+                  name: Interfaces
+              preprocessing:
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '8'
+            -
+              name: '{#SNMPVALUE} - ifHCOutOctets'
+              type: SNMP_AGENT
+              snmp_oid: 'IF-MIB::ifHCOutOctets.{#SNMPINDEX}'
+              key: 'ifHCOutOctets[{#SNMPVALUE}]'
+              units: bps
+              description: 'Tráfego de saída'
+              applications:
+                -
+                  name: Interfaces
+              preprocessing:
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '8'
+            -
+              name: '{#SNMPVALUE} - ifInDiscards'
+              type: SNMP_AGENT
+              snmp_oid: 'IF-MIB::ifInDiscards.{#SNMPINDEX}'
+              key: 'ifInDiscards[{#SNMPVALUE}]'
+              description: 'Entrada de pacotes descartados'
+              applications:
+                -
+                  name: Interfaces
+            -
+              name: '{#SNMPVALUE} - ifInErrors'
+              type: SNMP_AGENT
+              snmp_oid: 'IF-MIB::ifInErrors.{#SNMPINDEX}'
+              key: 'ifInErrors[{#SNMPVALUE}]'
+              description: 'Entrada de pacotes com erros'
+              applications:
+                -
+                  name: Interfaces
+            -
+              name: '{#SNMPVALUE} - ifName'
+              type: SNMP_AGENT
+              snmp_oid: 'IF-MIB::ifName.{#SNMPINDEX}'
+              key: 'ifName[{#SNMPVALUE}]'
+              delay: 10m
+              trends: '0'
+              value_type: CHAR
+              description: 'Nome da interface'
+              applications:
+                -
+                  name: Interfaces
+            -
+              name: '{#SNMPVALUE} - ifOperStatus'
+              type: SNMP_AGENT
+              snmp_oid: 'IF-MIB::ifOperStatus.{#SNMPINDEX}'
+              key: 'ifOperStatus[{#SNMPVALUE}]'
+              description: 'Estado operacional da interface'
+              applications:
+                -
+                  name: Interfaces
+              valuemap:
+                name: ifOperStatus
+            -
+              name: '{#SNMPVALUE} - ifOutDiscards'
+              type: SNMP_AGENT
+              snmp_oid: 'IF-MIB::ifOutDiscards.{#SNMPINDEX}'
+              key: 'ifOutDiscars[{#SNMPVALUE}]'
+              description: 'Saida de pacotes descartados'
+              applications:
+                -
+                  name: Interfaces
+            -
+              name: '{#SNMPVALUE} - ifOutErrors'
+              type: SNMP_AGENT
+              snmp_oid: 'IF-MIB::ifOutErrors.{#SNMPINDEX}'
+              key: 'ifOutErrors[{#SNMPVALUE}]'
+              description: 'Saida de pacotes com erros'
+              applications:
+                -
+                  name: Interfaces
+          trigger_prototypes:
+            -
+              expression: '{Juniper:ifOperStatus[{#SNMPVALUE}].avg(7200)}<2 and {Juniper:ifOperStatus[{#SNMPVALUE}].last()}=2 and {Juniper:ifAlias[{#SNMPVALUE}].str(this_does_not_exist)}=0'
+              name: 'Interface status on {HOST.HOST}: {#SNMPVALUE}, {ITEM.VALUE2} : {ITEM.VALUE3}'
+              priority: HIGH
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+          graph_prototypes:
+            -
+              name: 'Interface {#SNMPVALUE} - {{HOST.HOST}:ifAlias[{#SNMPVALUE}].last(0)}'
+              graph_items:
+                -
+                  sortorder: '1'
+                  color: 199C0D
+                  item:
+                    host: Juniper
+                    key: 'ifHCInOctets[{#SNMPVALUE}]'
+                -
+                  sortorder: '2'
+                  color: F63100
+                  item:
+                    host: Juniper
+                    key: 'ifHCOutOctets[{#SNMPVALUE}]'
+                -
+                  sortorder: '3'
+                  color: 2774A4
+                  item:
+                    host: Juniper
+                    key: 'ifInDiscards[{#SNMPVALUE}]'
+                -
+                  sortorder: '4'
+                  color: F7941D
+                  item:
+                    host: Juniper
+                    key: 'ifInErrors[{#SNMPVALUE}]'
+                -
+                  sortorder: '5'
+                  color: FC6EA3
+                  item:
+                    host: Juniper
+                    key: 'ifOutDiscars[{#SNMPVALUE}]'
+                -
+                  sortorder: '6'
+                  color: 6C59DC
+                  item:
+                    host: Juniper
+                    key: 'ifOutErrors[{#SNMPVALUE}]'
+        -
+          name: 'JunOS Hardware'
+          type: SNMP_AGENT
+          snmp_oid: 'discovery[{#SNMPVALUE},.1.3.6.1.4.1.2636.3.1.14.1.2.9]'
+          key: jnxRedundancyL1Index
+          delay: 5m
+          lifetime: 5d
+          item_prototypes:
+            -
+              name: '{#SNMPVALUE} - 5 min load average'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.2636.3.1.13.1.21.9.{#SNMPVALUE}.0.0'
+              key: 'jnxOperating5MinLoadAvg.[{#SNMPVALUE}]'
+              description: 'Media de 5 Minutos da carga do JunOs'
+              applications:
+                -
+                  name: 'Device Health'
+            -
+              name: '{#SNMPVALUE} - Memory Usage'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.2636.3.1.13.1.11.9.{#SNMPVALUE}.0.0'
+              key: 'jnxOperatingBuffer.[{#SNMPVALUE}]'
+              units: '%'
+              description: 'Uso da Memória'
+              applications:
+                -
+                  name: 'Device Health'
+              trigger_prototypes:
+                -
+                  expression: '{last(0)}>70 and {last(0)}<95'
+                  name: '{HOST.HOST} {#SNMPVALUE} - Memory Usage above 70%'
+                  priority: AVERAGE
+                  description: |
+                    Memory Usage BETWEEN 70% e 95%.
+                    Last value: {ITEM.LASTVALUE1}.
+                -
+                  expression: '{last(0)}>95'
+                  name: '{HOST.HOST} {#SNMPVALUE} - Memory Usage above 95%'
+                  priority: HIGH
+                  description: |
+                    High Memory Usage, Check your device.
+                    Last value: {ITEM.LASTVALUE1}.
+            -
+              name: '{#SNMPVALUE} - CPU Usage'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.2636.3.1.13.1.8.9.{#SNMPVALUE}.0.0'
+              key: 'jnxOperatingCPU.[{#SNMPVALUE}]'
+              units: '%'
+              description: 'Uso da CPU'
+              applications:
+                -
+                  name: 'Device Health'
+            -
+              name: '{#SNMPVALUE} - Routing Engine temp'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.2636.3.1.13.1.7.9.{#SNMPVALUE}.0.0'
+              key: 'jnxOperatingTemp.[{#SNMPVALUE}]'
+              units: °C
+              description: 'Temperatura do roteamento'
+              applications:
+                -
+                  name: 'Device Health'
+              trigger_prototypes:
+                -
+                  expression: '{min(180)}>60'
+                  name: '{HOST.HOST} {#SNMPVALUE} - High temperature'
+                  priority: HIGH
+                  description: |
+                    Temperature more than 60°C 
+                    Last value: {ITEM.LASTVALUE1}.
+          trigger_prototypes:
+            -
+              expression: '{Juniper:jnxOperatingCPU.[{#SNMPVALUE}].min(180)}>80 and {Juniper:jnxOperatingCPU.[{#SNMPVALUE}].min(180)}<95 and {Juniper:jnxOperating5MinLoadAvg.[{#SNMPVALUE}].last()}>100'
+              name: '{HOST.HOST} {#SNMPVALUE} - CPU Usage above 80%'
+              priority: AVERAGE
+              description: |
+                CPU Usage above 80% of capacity
+                Last value: {ITEM.LASTVALUE1}.
+            -
+              expression: '{Juniper:jnxOperating5MinLoadAvg.[{#SNMPVALUE}].last(0)}>300 and {Juniper:jnxOperatingCPU.[{#SNMPVALUE}].last(0)}>95'
+              name: '{HOST.HOST} {#SNMPVALUE} - High CPU Usage (95%)'
+              priority: HIGH
+              description: |
+                CPU Usage above 95% of Capacity
+                Last value: {ITEM.LASTVALUE1}.
+          graph_prototypes:
+            -
+              name: 'JunOS Health {#SNMPVALUE}'
+              graph_items:
+                -
+                  sortorder: '1'
+                  color: 199C0D
+                  item:
+                    host: Juniper
+                    key: 'jnxOperating5MinLoadAvg.[{#SNMPVALUE}]'
+                -
+                  sortorder: '2'
+                  color: F63100
+                  item:
+                    host: Juniper
+                    key: 'jnxOperatingCPU.[{#SNMPVALUE}]'
+                -
+                  sortorder: '3'
+                  color: 2774A4
+                  item:
+                    host: Juniper
+                    key: 'jnxOperatingBuffer.[{#SNMPVALUE}]'
+                -
+                  sortorder: '4'
+                  color: F7941D
+                  item:
+                    host: Juniper
+                    key: 'jnxOperatingTemp.[{#SNMPVALUE}]'
+        -
+          name: 'JunOS BGP4'
+          type: EXTERNAL
+          key: 'LLD.py["-h", {HOST.CONN}, "-c", "{$SNMP_COMMUNITY}", "-mi", "{#PEERADDR}", "-m", "{#PREFXTBL}", "{#ADDRTYPE}", "{#ASNUM}"]'
+          delay: 5m
+          lifetime: 5d
+          item_prototypes:
+            -
+              name: 'Established time $2'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.2636.5.1.1.2.4.1.1.1.{#SNMPINDEX}'
+              key: 'jnxBgpM2PeerFsmEstablishedTime[{#ASNUM}, {#PEERADDR}]'
+              units: uptime
+              description: 'Tempo estabelecido'
+              applications:
+                -
+                  name: BGP4
+            -
+              name: 'Last recieved error $2'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.2636.5.1.1.2.2.1.1.1.{#SNMPINDEX}'
+              key: 'jnxBgpM2PeerLastErrorReceived[{#ASNUM}, {#PEERADDR}]'
+              trends: '0'
+              value_type: TEXT
+              description: 'Ultimo recebimento de erro'
+              applications:
+                -
+                  name: BGP4
+            -
+              name: 'Last sent error $2'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.2636.5.1.1.2.2.1.1.2.{#SNMPINDEX}'
+              key: 'jnxBgpM2PeerLastErrorSent[{#ASNUM}, {#PEERADDR}]'
+              trends: '0'
+              value_type: TEXT
+              description: 'Ultimo envio de erros'
+              applications:
+                -
+                  name: BGP4
+            -
+              name: 'Remote AS for peer $2'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.2636.5.1.1.2.1.1.1.13.{#SNMPINDEX}'
+              key: 'jnxBgpM2PeerRemoteAs[{#ASNUM}, {#PEERADDR}]'
+              trends: '0'
+              value_type: CHAR
+              description: 'Número do sistema remoto'
+              applications:
+                -
+                  name: BGP4
+            -
+              name: 'Operational status $2'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.2636.5.1.1.2.1.1.1.2.{#SNMPINDEX}'
+              key: 'jnxBgpM2PeerState[{#ASNUM}, {#PEERADDR}]'
+              description: 'Estado operacional do {#PEERADDR}'
+              applications:
+                -
+                  name: BGP4
+              valuemap:
+                name: BgpPeerState
+            -
+              name: 'Administrative status $2'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.2636.5.1.1.2.1.1.1.3.{#SNMPINDEX}'
+              key: 'jnxBgpM2PeerStatus[{#ASNUM}, {#PEERADDR}]'
+              description: 'Estado administrador da interface'
+              applications:
+                -
+                  name: BGP4
+              valuemap:
+                name: BgpPeerAdminStatus
+            -
+              name: 'Accepted receiving prefixes $2'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.2636.5.1.1.2.6.2.1.8.{#PREFXTBL}.{#ADDRTYPE}.1'
+              key: 'jnxBgpM2PrefixInPrefixesAccepted[{#ASNUM}, {#PEERADDR}]'
+              description: 'Prefixos de recebimento aceitos'
+              applications:
+                -
+                  name: BGP4
+            -
+              name: 'Active receiving prefixes $2'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.2636.5.1.1.2.6.2.1.8.{#PREFXTBL}.{#ADDRTYPE}.1'
+              key: 'jnxBgpM2PrefixInPrefixesActive[{#ASNUM}, {#PEERADDR}]'
+              description: 'Prefixos de recebimento ativos'
+              applications:
+                -
+                  name: BGP4
+            -
+              name: 'Rejected receiving prefixes $2'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.2636.5.1.1.2.6.2.1.9.{#PREFXTBL}.{#ADDRTYPE}.1'
+              key: 'jnxBgpM2PrefixInPrefixesRejected[{#ASNUM}, {#PEERADDR}]'
+              description: 'Prefixos Rejeitados recebidos'
+              applications:
+                -
+                  name: BGP4
+            -
+              name: 'All receiving prefixes $2'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.2636.5.1.1.2.6.2.1.7.{#PREFXTBL}.{#ADDRTYPE}.1'
+              key: 'jnxBgpM2PrefixInPrefixes[{#ASNUM}, {#PEERADDR}]'
+              delay: '120'
+              description: 'Todos os prefixos recebidos'
+              applications:
+                -
+                  name: BGP4
+            -
+              name: 'All advertising prefixes $2'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.2636.5.1.1.2.6.2.1.10.{#PREFXTBL}.{#ADDRTYPE}.1'
+              key: 'jnxBgpM2PrefixOutPrefixes[{#ASNUM}, {#PEERADDR}]'
+              delay: '120'
+              description: 'Todos os prefixos de anuncio'
+              applications:
+                -
+                  name: BGP4
+          trigger_prototypes:
+            -
+              expression: '{Juniper:jnxBgpM2PeerRemoteAs[{#ASNUM}, {#PEERADDR}].regexp({$BGP_PEER_AS})}=0 and {Juniper:jnxBgpM2PeerState[{#ASNUM}, {#PEERADDR}].last()}=6 and {Juniper:jnxBgpM2PrefixOutPrefixes[{#ASNUM}, {#PEERADDR}].last()}<0.8*{Juniper:jnxBgpM2PrefixOutPrefixes[{#ASNUM}, {#PEERADDR}].avg(86400)}'
+              name: '{HOST.HOST} BGP AS{#ASNUM} peer {#PEERADDR} has lost more than 20% of advertising prefixes'
+              status: DISABLED
+              discover: NO_DISCOVER
+              priority: WARNING
+            -
+              expression: '{Juniper:jnxBgpM2PeerRemoteAs[{#ASNUM}, {#PEERADDR}].regexp({$BGP_PEER_AS})}=1 and {Juniper:jnxBgpM2PeerState[{#ASNUM}, {#PEERADDR}].last()}=6 and {Juniper:jnxBgpM2PrefixOutPrefixes[{#ASNUM}, {#PEERADDR}].last()}<0.8*{Juniper:jnxBgpM2PrefixOutPrefixes[{#ASNUM}, {#PEERADDR}].avg(86400)}'
+              name: '{HOST.HOST} BGP AS{#ASNUM} peer {#PEERADDR} has lost more than 20% of advertising prefixes'
+              status: DISABLED
+              discover: NO_DISCOVER
+              priority: AVERAGE
+            -
+              expression: '{Juniper:jnxBgpM2PeerRemoteAs[{#ASNUM}, {#PEERADDR}].regexp({$BGP_PEER_AS})}=0 and {Juniper:jnxBgpM2PeerState[{#ASNUM}, {#PEERADDR}].last()}=6 and {Juniper:jnxBgpM2PrefixInPrefixesAccepted[{#ASNUM}, {#PEERADDR}].last()}<0.8*{Juniper:jnxBgpM2PrefixInPrefixesAccepted[{#ASNUM}, {#PEERADDR}].avg(86400)}'
+              name: '{HOST.HOST} BGP AS {#ASNUM} peer {#PEERADDR} has lost more than 20% of receiving prefixes'
+              status: DISABLED
+              discover: NO_DISCOVER
+              priority: WARNING
+            -
+              expression: '{Juniper:jnxBgpM2PeerRemoteAs[{#ASNUM}, {#PEERADDR}].regexp({$BGP_PEER_AS})}=1 and {Juniper:jnxBgpM2PeerState[{#ASNUM}, {#PEERADDR}].last()}=6 and {Juniper:jnxBgpM2PrefixInPrefixesAccepted[{#ASNUM}, {#PEERADDR}].last()}<0.8*{Juniper:jnxBgpM2PrefixInPrefixesAccepted[{#ASNUM}, {#PEERADDR}].avg(86400)}'
+              name: '{HOST.HOST} BGP AS{#ASNUM} peer {#PEERADDR} has lost more than 20% of receiving prefixes'
+              status: DISABLED
+              discover: NO_DISCOVER
+              priority: AVERAGE
+            -
+              expression: '{Juniper:jnxBgpM2PeerRemoteAs[{#ASNUM}, {#PEERADDR}].regexp({$BGP_PEER_AS})}=0 and {Juniper:jnxBgpM2PeerState[{#ASNUM}, {#PEERADDR}].last(#3)}<>6 and {Juniper:jnxBgpM2PeerStatus[{#ASNUM}, {#PEERADDR}].last(0)}=2'
+              name: '{HOST.HOST} BGP AS{#ASNUM} peer {#PEERADDR} is DOWN'
+              priority: WARNING
+              description: |
+                Session BGP is DOWN, Check your Device.
+                Last value: {ITEM.LASTVALUE2}.
+            -
+              expression: '{Juniper:jnxBgpM2PeerRemoteAs[{#ASNUM}, {#PEERADDR}].regexp({$BGP_PEER_AS})}=1 and {Juniper:jnxBgpM2PeerState[{#ASNUM}, {#PEERADDR}].last(#3)}<>6 and {Juniper:jnxBgpM2PeerStatus[{#ASNUM}, {#PEERADDR}].last(0)}=2'
+              name: '{HOST.HOST} BGP AS{#ASNUM} peer {#PEERADDR} is DOWN'
+              priority: AVERAGE
+              description: |
+                Session BGP is DOWN, Check your Device,
+                Last value: {ITEM.LASTVALUE2}.
+            -
+              expression: '{Juniper:jnxBgpM2PeerRemoteAs[{#ASNUM}, {#PEERADDR}].regexp({$BGP_PEER_AS})}=0 and {Juniper:jnxBgpM2PeerState[{#ASNUM}, {#PEERADDR}].last()}=6 and {Juniper:jnxBgpM2PrefixInPrefixes[{#ASNUM}, {#PEERADDR}].last()}=0'
+              name: '{HOST.HOST} No prefixes received for AS{#ASNUM} peer {#PEERADDR}'
+              status: DISABLED
+              discover: NO_DISCOVER
+              priority: WARNING
+            -
+              expression: '{Juniper:jnxBgpM2PeerRemoteAs[{#ASNUM}, {#PEERADDR}].regexp({$BGP_PEER_AS})}=1 and {Juniper:jnxBgpM2PeerState[{#ASNUM}, {#PEERADDR}].last()}=6 and {Juniper:jnxBgpM2PrefixInPrefixes[{#ASNUM}, {#PEERADDR}].last()}=0'
+              name: '{HOST.HOST} No prefixes received for AS{#ASNUM} peer {#PEERADDR}'
+              status: DISABLED
+              discover: NO_DISCOVER
+              priority: AVERAGE
+        -
+          name: 'Network Interfaces Discovery'
+          type: SNMP_AGENT
+          snmp_oid: 'discovery[{#IFOPERSTATUS},1.3.6.1.2.1.2.2.1.8,{#IFADMINSTATUS},1.3.6.1.2.1.2.2.1.7,{#IFALIAS},1.3.6.1.2.1.31.1.1.1.18,{#IFNAME},1.3.6.1.2.1.31.1.1.1.1,{#IFDESCR},1.3.6.1.2.1.2.2.1.2,{#IFTYPE},1.3.6.1.2.1.2.2.1.3]'
+          key: net.if.discovery
+          delay: 1h
+          filter:
+            conditions:
+              -
+                macro: '{#IFADMINSTATUS}'
+                value: (1|3)
+                formulaid: A
+              -
+                macro: '{#IFNAME}'
+                value: '@Network interfaces for discovery'
+                formulaid: B
+              -
+                macro: '{#IFOPERSTATUS}'
+                value: (1|2|3|4|5|7)
+                formulaid: C
+          lifetime: 5d
+          item_prototypes:
+            -
+              name: 'Interface {#IFNAME}({#IFALIAS}): Inbound packets discarded'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.2.1.2.2.1.13.{#SNMPINDEX}'
+              key: 'net.if.in.discards[ifInDiscards.{#SNMPINDEX}]'
+              delay: 5m
+              description: 'Entrada de pacotes descartados'
+              applications:
+                -
+                  name: 'Network interfaces'
+            -
+              name: 'Interface {#IFNAME}({#IFALIAS}): Inbound packets with errors'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.2.1.2.2.1.14.{#SNMPINDEX}'
+              key: 'net.if.in.errors[ifInErrors.{#SNMPINDEX}]'
+              delay: 3m
+              description: 'Entrada de pacotes com erros'
+              applications:
+                -
+                  name: 'Network interfaces'
+            -
+              name: 'Interface {#IFNAME}({#IFALIAS}): Bits received'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.2.1.31.1.1.1.6.{#SNMPINDEX}'
+              key: 'net.if.in[ifHCInOctets.{#SNMPINDEX}]'
+              delay: 3m
+              history: 180d
+              units: bps
+              description: 'Tráfego de entrada na interface {#IFNAME}'
+              applications:
+                -
+                  name: 'Network interfaces'
+              preprocessing:
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '8'
+            -
+              name: 'Interface {#IFNAME}({#IFALIAS}): Outbound packets discarded'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.2.1.2.2.1.19.{#SNMPINDEX}'
+              key: 'net.if.out.discards[ifOutDiscards.{#SNMPINDEX}]'
+              delay: 5m
+              description: 'Tráfego de saída de pacotes descartados'
+              applications:
+                -
+                  name: 'Network interfaces'
+            -
+              name: 'Interface {#IFNAME}({#IFALIAS}): Outbound packets with errors'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.2.1.2.2.1.20.{#SNMPINDEX}'
+              key: 'net.if.out.errors[ifOutErrors.{#SNMPINDEX}]'
+              description: 'Tráfego de saída de pacotes com erros'
+              applications:
+                -
+                  name: 'Network interfaces'
+            -
+              name: 'Interface {#IFNAME}({#IFALIAS}): Bits sent'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.2.1.31.1.1.1.10.{#SNMPINDEX}'
+              key: 'net.if.out[ifHCOutOctets.{#SNMPINDEX}]'
+              delay: 3m
+              history: 180d
+              units: bps
+              description: 'Tráfego de saída na interface {#IFNAME}'
+              applications:
+                -
+                  name: 'Network interfaces'
+              preprocessing:
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '8'
+            -
+              name: 'Interface {#IFNAME}({#IFALIAS}): Speed'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.2.1.31.1.1.1.15.{#SNMPINDEX}'
+              key: 'net.if.speed[ifHighSpeed.{#SNMPINDEX}]'
+              units: bps
+              description: 'Velocidade da interface em bps'
+              applications:
+                -
+                  name: 'Network interfaces'
+              preprocessing:
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '1000000'
+            -
+              name: 'Interface {#IFNAME}({#IFALIAS}): Operacional status'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.2.1.2.2.1.8.{#SNMPINDEX}'
+              key: 'net.if.status[ifOperStatus.{#SNMPINDEX}]'
+              description: 'Estado Operacional da interface'
+              applications:
+                -
+                  name: 'Network interfaces'
+              valuemap:
+                name: ifOperStatus
+              trigger_prototypes:
+                -
+                  expression: '{$IFCONTROL:"{#IFNAME}"}=1 and ({last()}=2 and {diff()}=1)'
+                  recovery_mode: RECOVERY_EXPRESSION
+                  recovery_expression: '{last()}<>2'
+                  name: 'Interface {#IFNAME}({#IFALIAS}): Link down'
+                  priority: AVERAGE
+                  description: |
+                    Lost Connection on {#IFNAME}
+                    Last value: {ITEM.LASTVALUE1}.
+            -
+              name: 'Interface {#IFNAME}({#IFALIAS}): Interface type'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.2.1.2.2.1.3.{#SNMPINDEX}'
+              key: 'net.if.type[ifType.{#SNMPINDEX}]'
+              delay: 1h
+              description: 'Tipo da interface'
+              applications:
+                -
+                  name: 'Network interfaces'
+              valuemap:
+                name: 'IF-MIB::ifType'
+          trigger_prototypes:
+            -
+              expression: '({Juniper:net.if.in[ifHCInOctets.{#SNMPINDEX}].avg(15m)}>({$IF_UTIL_MAX:"{#IFNAME}"}/100)*{Juniper:net.if.speed[ifHighSpeed.{#SNMPINDEX}].last()} or {Juniper:net.if.out[ifHCOutOctets.{#SNMPINDEX}].avg(15m)}>({$IF_UTIL_MAX:"{#IFNAME}"}/100)*{Juniper:net.if.speed[ifHighSpeed.{#SNMPINDEX}].last()}) and {Juniper:net.if.speed[ifHighSpeed.{#SNMPINDEX}].last()}>0'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: '{Juniper:net.if.in[ifHCInOctets.{#SNMPINDEX}].avg(15m)}<(({$IF_UTIL_MAX:"{#IFNAME}"}-3)/100)*{Juniper:net.if.speed[ifHighSpeed.{#SNMPINDEX}].last()} and {Juniper:net.if.out[ifHCOutOctets.{#SNMPINDEX}].avg(15m)}<(({$IF_UTIL_MAX:"{#IFNAME}"}-3)/100)*{Juniper:net.if.speed[ifHighSpeed.{#SNMPINDEX}].last()}'
+              name: 'Interface {#IFNAME}({#IFALIAS}): High bandwidth usage > {$IF_UTIL_MAX:"{#IFNAME}"}%'
+              priority: WARNING
+              description: |
+                Bandwidth usage is more than 90% in your Device.
+                Last value: {ITEM.LASTVALUE1}.
+              dependencies:
+                -
+                  name: 'Interface {#IFNAME}({#IFALIAS}): Link down'
+                  expression: '{$IFCONTROL:"{#IFNAME}"}=1 and ({Juniper:net.if.status[ifOperStatus.{#SNMPINDEX}].last()}=2 and {Juniper:net.if.status[ifOperStatus.{#SNMPINDEX}].diff()}=1)'
+                  recovery_expression: '{Juniper:net.if.status[ifOperStatus.{#SNMPINDEX}].last()}<>2'
+            -
+              expression: '{Juniper:net.if.in.errors[ifInErrors.{#SNMPINDEX}].avg(5m)}>{$IF_ERRORS_WARN:"{#IFNAME}"} or {Juniper:net.if.out.errors[ifOutErrors.{#SNMPINDEX}].avg(5m)}>{$IF_ERRORS_WARN:"{#IFNAME}"}'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: '{Juniper:net.if.in.errors[ifInErrors.{#SNMPINDEX}].avg(5m)}<{$IF_ERRORS_WARN:"{#IFNAME}"}*0.8 and {Juniper:net.if.out.errors[ifOutErrors.{#SNMPINDEX}].avg(5m)}<{$IF_ERRORS_WARN:"{#IFNAME}"}*0.8'
+              name: 'Interface {#IFNAME}({#IFALIAS}): High error rate'
+              priority: WARNING
+              description: |
+                Error Rate in Interface {#IFNAME}
+                Last value: {ITEM.LASTVALUE1}.
+              dependencies:
+                -
+                  name: 'Interface {#IFNAME}({#IFALIAS}): Link down'
+                  expression: '{$IFCONTROL:"{#IFNAME}"}=1 and ({Juniper:net.if.status[ifOperStatus.{#SNMPINDEX}].last()}=2 and {Juniper:net.if.status[ifOperStatus.{#SNMPINDEX}].diff()}=1)'
+                  recovery_expression: '{Juniper:net.if.status[ifOperStatus.{#SNMPINDEX}].last()}<>2'
+          graph_prototypes:
+            -
+              name: 'Interface {#IFNAME}({#IFALIAS}): Network traffic'
+              graph_items:
+                -
+                  sortorder: '1'
+                  color: 199C0D
+                  item:
+                    host: Juniper
+                    key: 'net.if.in[ifHCInOctets.{#SNMPINDEX}]'
+                -
+                  sortorder: '2'
+                  color: F63100
+                  item:
+                    host: Juniper
+                    key: 'net.if.out[ifHCOutOctets.{#SNMPINDEX}]'
+                -
+                  sortorder: '3'
+                  color: 2774A4
+                  item:
+                    host: Juniper
+                    key: 'net.if.in.discards[ifInDiscards.{#SNMPINDEX}]'
+                -
+                  sortorder: '4'
+                  color: F7941D
+                  item:
+                    host: Juniper
+                    key: 'net.if.in.errors[ifInErrors.{#SNMPINDEX}]'
+                -
+                  sortorder: '5'
+                  color: FC6EA3
+                  item:
+                    host: Juniper
+                    key: 'net.if.out.discards[ifOutDiscards.{#SNMPINDEX}]'
+                -
+                  sortorder: '6'
+                  color: 6C59DC
+                  item:
+                    host: Juniper
+                    key: 'net.if.out.errors[ifOutErrors.{#SNMPINDEX}]'
+      macros:
+        -
+          macro: '{$ICMP_LOSS_WARN}'
+          value: '20'
+        -
+          macro: '{$ICMP_RESPONSE_TIME_WARN}'
+          value: '0.15'
+        -
+          macro: '{$IFCONTROL}'
+          value: '1'
+        -
+          macro: '{$IF_ERRORS_WARN}'
+          value: '2'
+        -
+          macro: '{$IF_UTIL_MAX}'
+          value: '90'
+        -
+          macro: '{$SNMP_COMMUNITY}'
+          value: public
+        -
+          macro: '{$SNMP_COMUNITY}'
+          value: FillMeln
+        -
+          macro: '{$SNMP_TIMEOUT}'
+          value: 3m
+      dashboards:
+        -
+          name: Juniper
+          widgets:
+            -
+              type: GRAPH_CLASSIC
+              width: '8'
+              height: '5'
+              fields:
+                -
+                  type: GRAPH
+                  name: graphid
+                  value:
+                    name: 'CPU Utilization'
+                    host: Juniper
+            -
+              type: GRAPH_CLASSIC
+              x: '8'
+              width: '8'
+              height: '5'
+              fields:
+                -
+                  type: GRAPH
+                  name: graphid
+                  value:
+                    name: 'Memory Utilization'
+                    host: Juniper
+            -
+              type: GRAPH_CLASSIC
+              x: '16'
+              width: '8'
+              height: '5'
+              fields:
+                -
+                  type: GRAPH
+                  name: graphid
+                  value:
+                    name: Temperature
+                    host: Juniper
+            -
+              type: GRAPH_PROTOTYPE
+              'y': '5'
+              width: '24'
+              height: '31'
+              fields:
+                -
+                  type: INTEGER
+                  name: rows
+                  value: '10'
+                -
+                  type: GRAPH_PROTOTYPE
+                  name: graphid
+                  value:
+                    name: 'Interface {#SNMPVALUE} Discards and Errors'
+                    host: Juniper
+            -
+              type: GRAPH_PROTOTYPE
+              'y': '36'
+              width: '24'
+              height: '26'
+              fields:
+                -
+                  type: INTEGER
+                  name: rows
+                  value: '10'
+                -
+                  type: GRAPH_PROTOTYPE
+                  name: graphid
+                  value:
+                    name: 'Interface {#SNMPVALUE} Traffic'
+                    host: Juniper
+  graphs:
+    -
+      name: 'CPU Utilization'
+      graph_items:
+        -
+          sortorder: '1'
+          color: 199C0D
+          item:
+            host: Juniper
+            key: Junos.CPU
+    -
+      name: 'Memory Utilization'
+      graph_items:
+        -
+          sortorder: '1'
+          color: 199C0D
+          item:
+            host: Juniper
+            key: Junos.Mem
+    -
+      name: Temperature
+      graph_items:
+        -
+          sortorder: '1'
+          color: 199C0D
+          item:
+            host: Juniper
+            key: Junos.Temp
+  value_maps:
+    -
+      name: BgpPeerAdminStatus
+      mappings:
+        -
+          value: '1'
+          newvalue: stop
+        -
+          value: '2'
+          newvalue: start
+    -
+      name: BgpPeerState
+      mappings:
+        -
+          value: '1'
+          newvalue: idle
+        -
+          value: '2'
+          newvalue: connect
+        -
+          value: '3'
+          newvalue: active
+        -
+          value: '4'
+          newvalue: opensent
+        -
+          value: '5'
+          newvalue: openconfirm
+        -
+          value: '6'
+          newvalue: established
+    -
+      name: 'IF-MIB::ifType'
+      mappings:
+        -
+          value: '1'
+          newvalue: other
+        -
+          value: '2'
+          newvalue: regular1822
+        -
+          value: '3'
+          newvalue: hdh1822
+        -
+          value: '4'
+          newvalue: ddnX25
+        -
+          value: '5'
+          newvalue: rfc877x25
+        -
+          value: '6'
+          newvalue: ethernetCsmacd
+        -
+          value: '7'
+          newvalue: iso88023Csmacd
+        -
+          value: '8'
+          newvalue: iso88024TokenBus
+        -
+          value: '9'
+          newvalue: iso88025TokenRing
+        -
+          value: '10'
+          newvalue: iso88026Man
+        -
+          value: '11'
+          newvalue: starLan
+        -
+          value: '12'
+          newvalue: proteon10Mbit
+        -
+          value: '13'
+          newvalue: proteon80Mbit
+        -
+          value: '14'
+          newvalue: hyperchannel
+        -
+          value: '15'
+          newvalue: fddi
+        -
+          value: '16'
+          newvalue: lapb
+        -
+          value: '17'
+          newvalue: sdlc
+        -
+          value: '18'
+          newvalue: ds1
+        -
+          value: '19'
+          newvalue: e1
+        -
+          value: '20'
+          newvalue: basicISDN
+        -
+          value: '21'
+          newvalue: primaryISDN
+        -
+          value: '22'
+          newvalue: propPointToPointSerial
+        -
+          value: '23'
+          newvalue: ppp
+        -
+          value: '24'
+          newvalue: softwareLoopback
+        -
+          value: '25'
+          newvalue: eon
+        -
+          value: '26'
+          newvalue: ethernet3Mbit
+        -
+          value: '27'
+          newvalue: nsip
+        -
+          value: '28'
+          newvalue: slip
+        -
+          value: '29'
+          newvalue: ultra
+        -
+          value: '30'
+          newvalue: ds3
+        -
+          value: '31'
+          newvalue: sip
+        -
+          value: '32'
+          newvalue: frameRelay
+        -
+          value: '33'
+          newvalue: rs232
+        -
+          value: '34'
+          newvalue: para
+        -
+          value: '35'
+          newvalue: arcnet
+        -
+          value: '36'
+          newvalue: arcnetPlus
+        -
+          value: '37'
+          newvalue: atm
+        -
+          value: '38'
+          newvalue: miox25
+        -
+          value: '39'
+          newvalue: sonet
+        -
+          value: '40'
+          newvalue: x25ple
+        -
+          value: '41'
+          newvalue: iso88022llc
+        -
+          value: '42'
+          newvalue: localTalk
+        -
+          value: '43'
+          newvalue: smdsDxi
+        -
+          value: '44'
+          newvalue: frameRelayService
+        -
+          value: '45'
+          newvalue: v35
+        -
+          value: '46'
+          newvalue: hssi
+        -
+          value: '47'
+          newvalue: hippi
+        -
+          value: '48'
+          newvalue: modem
+        -
+          value: '49'
+          newvalue: aal5
+        -
+          value: '50'
+          newvalue: sonetPath
+        -
+          value: '51'
+          newvalue: sonetVT
+        -
+          value: '52'
+          newvalue: smdsIcip
+        -
+          value: '53'
+          newvalue: propVirtual
+        -
+          value: '54'
+          newvalue: propMultiplexor
+        -
+          value: '55'
+          newvalue: ieee80212
+        -
+          value: '56'
+          newvalue: fibreChannel
+        -
+          value: '57'
+          newvalue: hippiInterface
+        -
+          value: '58'
+          newvalue: frameRelayInterconnect
+        -
+          value: '59'
+          newvalue: aflane8023
+        -
+          value: '60'
+          newvalue: aflane8025
+        -
+          value: '61'
+          newvalue: cctEmul
+        -
+          value: '62'
+          newvalue: fastEther
+        -
+          value: '63'
+          newvalue: isdn
+        -
+          value: '64'
+          newvalue: v11
+        -
+          value: '65'
+          newvalue: v36
+        -
+          value: '66'
+          newvalue: g703at64k
+        -
+          value: '67'
+          newvalue: g703at2mb
+        -
+          value: '68'
+          newvalue: qllc
+        -
+          value: '69'
+          newvalue: fastEtherFX
+        -
+          value: '70'
+          newvalue: channel
+        -
+          value: '71'
+          newvalue: ieee80211
+        -
+          value: '72'
+          newvalue: ibm370parChan
+        -
+          value: '73'
+          newvalue: escon
+        -
+          value: '74'
+          newvalue: dlsw
+        -
+          value: '75'
+          newvalue: isdns
+        -
+          value: '76'
+          newvalue: isdnu
+        -
+          value: '77'
+          newvalue: lapd
+        -
+          value: '78'
+          newvalue: ipSwitch
+        -
+          value: '79'
+          newvalue: rsrb
+        -
+          value: '80'
+          newvalue: atmLogical
+        -
+          value: '81'
+          newvalue: ds0
+        -
+          value: '82'
+          newvalue: ds0Bundle
+        -
+          value: '83'
+          newvalue: bsc
+        -
+          value: '84'
+          newvalue: async
+        -
+          value: '85'
+          newvalue: cnr
+        -
+          value: '86'
+          newvalue: iso88025Dtr
+        -
+          value: '87'
+          newvalue: eplrs
+        -
+          value: '88'
+          newvalue: arap
+        -
+          value: '89'
+          newvalue: propCnls
+        -
+          value: '90'
+          newvalue: hostPad
+        -
+          value: '91'
+          newvalue: termPad
+        -
+          value: '92'
+          newvalue: frameRelayMPI
+        -
+          value: '93'
+          newvalue: x213
+        -
+          value: '94'
+          newvalue: adsl
+        -
+          value: '95'
+          newvalue: radsl
+        -
+          value: '96'
+          newvalue: sdsl
+        -
+          value: '97'
+          newvalue: vdsl
+        -
+          value: '98'
+          newvalue: iso88025CRFPInt
+        -
+          value: '99'
+          newvalue: myrinet
+        -
+          value: '100'
+          newvalue: voiceEM
+        -
+          value: '101'
+          newvalue: voiceFXO
+        -
+          value: '102'
+          newvalue: voiceFXS
+        -
+          value: '103'
+          newvalue: voiceEncap
+        -
+          value: '104'
+          newvalue: voiceOverIp
+        -
+          value: '105'
+          newvalue: atmDxi
+        -
+          value: '106'
+          newvalue: atmFuni
+        -
+          value: '107'
+          newvalue: atmIma
+        -
+          value: '108'
+          newvalue: pppMultilinkBundle
+        -
+          value: '109'
+          newvalue: ipOverCdlc
+        -
+          value: '110'
+          newvalue: ipOverClaw
+        -
+          value: '111'
+          newvalue: stackToStack
+        -
+          value: '112'
+          newvalue: virtualIpAddress
+        -
+          value: '113'
+          newvalue: mpc
+        -
+          value: '114'
+          newvalue: ipOverAtm
+        -
+          value: '115'
+          newvalue: iso88025Fiber
+        -
+          value: '116'
+          newvalue: tdlc
+        -
+          value: '117'
+          newvalue: gigabitEthernet
+        -
+          value: '118'
+          newvalue: hdlc
+        -
+          value: '119'
+          newvalue: lapf
+        -
+          value: '120'
+          newvalue: v37
+        -
+          value: '121'
+          newvalue: x25mlp
+        -
+          value: '122'
+          newvalue: x25huntGroup
+        -
+          value: '123'
+          newvalue: trasnpHdlc
+        -
+          value: '124'
+          newvalue: interleave
+        -
+          value: '125'
+          newvalue: fast
+        -
+          value: '126'
+          newvalue: ip
+        -
+          value: '127'
+          newvalue: docsCableMaclayer
+        -
+          value: '128'
+          newvalue: docsCableDownstream
+        -
+          value: '129'
+          newvalue: docsCableUpstream
+        -
+          value: '130'
+          newvalue: a12MppSwitch
+        -
+          value: '131'
+          newvalue: tunnel
+        -
+          value: '132'
+          newvalue: coffee
+        -
+          value: '133'
+          newvalue: ces
+        -
+          value: '134'
+          newvalue: atmSubInterface
+        -
+          value: '135'
+          newvalue: l2vlan
+        -
+          value: '136'
+          newvalue: l3ipvlan
+        -
+          value: '137'
+          newvalue: l3ipxvlan
+        -
+          value: '138'
+          newvalue: digitalPowerline
+        -
+          value: '139'
+          newvalue: mediaMailOverIp
+        -
+          value: '140'
+          newvalue: dtm
+        -
+          value: '141'
+          newvalue: dcn
+        -
+          value: '142'
+          newvalue: ipForward
+        -
+          value: '143'
+          newvalue: msdsl
+        -
+          value: '144'
+          newvalue: ieee1394
+        -
+          value: '145'
+          newvalue: if-gsn
+        -
+          value: '146'
+          newvalue: dvbRccMacLayer
+        -
+          value: '147'
+          newvalue: dvbRccDownstream
+        -
+          value: '148'
+          newvalue: dvbRccUpstream
+        -
+          value: '149'
+          newvalue: atmVirtual
+        -
+          value: '150'
+          newvalue: mplsTunnel
+        -
+          value: '151'
+          newvalue: srp
+        -
+          value: '152'
+          newvalue: voiceOverAtm
+        -
+          value: '153'
+          newvalue: voiceOverFrameRelay
+        -
+          value: '154'
+          newvalue: idsl
+        -
+          value: '155'
+          newvalue: compositeLink
+        -
+          value: '156'
+          newvalue: ss7SigLink
+        -
+          value: '157'
+          newvalue: propWirelessP2P
+        -
+          value: '158'
+          newvalue: frForward
+        -
+          value: '159'
+          newvalue: rfc1483
+        -
+          value: '160'
+          newvalue: usb
+        -
+          value: '161'
+          newvalue: ieee8023adLag
+        -
+          value: '162'
+          newvalue: bgppolicyaccounting
+        -
+          value: '163'
+          newvalue: frf16MfrBundle
+        -
+          value: '164'
+          newvalue: h323Gatekeeper
+        -
+          value: '165'
+          newvalue: h323Proxy
+        -
+          value: '166'
+          newvalue: mpls
+        -
+          value: '167'
+          newvalue: mfSigLink
+        -
+          value: '168'
+          newvalue: hdsl2
+        -
+          value: '169'
+          newvalue: shdsl
+        -
+          value: '170'
+          newvalue: ds1FDL
+        -
+          value: '171'
+          newvalue: pos
+        -
+          value: '172'
+          newvalue: dvbAsiIn
+        -
+          value: '173'
+          newvalue: dvbAsiOut
+        -
+          value: '174'
+          newvalue: plc
+        -
+          value: '175'
+          newvalue: nfas
+        -
+          value: '176'
+          newvalue: tr008
+        -
+          value: '177'
+          newvalue: gr303RDT
+        -
+          value: '178'
+          newvalue: gr303IDT
+        -
+          value: '179'
+          newvalue: isup
+        -
+          value: '180'
+          newvalue: propDocsWirelessMaclayer
+        -
+          value: '181'
+          newvalue: propDocsWirelessDownstream
+        -
+          value: '182'
+          newvalue: propDocsWirelessUpstream
+        -
+          value: '183'
+          newvalue: hiperlan2
+        -
+          value: '184'
+          newvalue: propBWAp2Mp
+        -
+          value: '185'
+          newvalue: sonetOverheadChannel
+        -
+          value: '186'
+          newvalue: digitalWrapperOverheadChannel
+        -
+          value: '187'
+          newvalue: aal2
+        -
+          value: '188'
+          newvalue: radioMAC
+        -
+          value: '189'
+          newvalue: atmRadio
+        -
+          value: '190'
+          newvalue: imt
+        -
+          value: '191'
+          newvalue: mvl
+        -
+          value: '192'
+          newvalue: reachDSL
+        -
+          value: '193'
+          newvalue: frDlciEndPt
+        -
+          value: '194'
+          newvalue: atmVciEndPt
+        -
+          value: '195'
+          newvalue: opticalChannel
+        -
+          value: '196'
+          newvalue: opticalTransport
+        -
+          value: '197'
+          newvalue: propAtm
+        -
+          value: '198'
+          newvalue: voiceOverCable
+        -
+          value: '199'
+          newvalue: infiniband
+        -
+          value: '200'
+          newvalue: teLink
+        -
+          value: '201'
+          newvalue: q2931
+        -
+          value: '202'
+          newvalue: virtualTg
+        -
+          value: '203'
+          newvalue: sipTg
+        -
+          value: '204'
+          newvalue: sipSig
+        -
+          value: '205'
+          newvalue: docsCableUpstreamChannel
+        -
+          value: '206'
+          newvalue: econet
+        -
+          value: '207'
+          newvalue: pon155
+        -
+          value: '208'
+          newvalue: pon622
+        -
+          value: '209'
+          newvalue: bridge
+        -
+          value: '210'
+          newvalue: linegroup
+        -
+          value: '211'
+          newvalue: voiceEMFGD
+        -
+          value: '212'
+          newvalue: voiceFGDEANA
+        -
+          value: '213'
+          newvalue: voiceDID
+        -
+          value: '214'
+          newvalue: mpegTransport
+        -
+          value: '215'
+          newvalue: sixToFour
+        -
+          value: '216'
+          newvalue: gtp
+        -
+          value: '217'
+          newvalue: pdnEtherLoop1
+        -
+          value: '218'
+          newvalue: pdnEtherLoop2
+        -
+          value: '219'
+          newvalue: opticalChannelGroup
+        -
+          value: '220'
+          newvalue: homepna
+        -
+          value: '221'
+          newvalue: gfp
+        -
+          value: '222'
+          newvalue: ciscoISLvlan
+        -
+          value: '223'
+          newvalue: actelisMetaLOOP
+        -
+          value: '224'
+          newvalue: fcipLink
+        -
+          value: '225'
+          newvalue: rpr
+        -
+          value: '226'
+          newvalue: qam
+        -
+          value: '227'
+          newvalue: lmp
+        -
+          value: '228'
+          newvalue: cblVectaStar
+        -
+          value: '229'
+          newvalue: docsCableMCmtsDownstream
+        -
+          value: '230'
+          newvalue: adsl2
+        -
+          value: '231'
+          newvalue: macSecControlledIF
+        -
+          value: '232'
+          newvalue: macSecUncontrolledIF
+        -
+          value: '233'
+          newvalue: aviciOpticalEther
+        -
+          value: '234'
+          newvalue: atmbond
+        -
+          value: '235'
+          newvalue: voiceFGDOS
+        -
+          value: '236'
+          newvalue: mocaVersion1
+        -
+          value: '237'
+          newvalue: ieee80216WMAN
+        -
+          value: '238'
+          newvalue: adsl2plus
+        -
+          value: '239'
+          newvalue: dvbRcsMacLayer
+        -
+          value: '240'
+          newvalue: dvbTdm
+        -
+          value: '241'
+          newvalue: dvbRcsTdma
+        -
+          value: '242'
+          newvalue: x86Laps
+        -
+          value: '243'
+          newvalue: wwanPP
+        -
+          value: '244'
+          newvalue: wwanPP2
+        -
+          value: '245'
+          newvalue: voiceEBS
+        -
+          value: '246'
+          newvalue: ifPwType
+        -
+          value: '247'
+          newvalue: ilan
+        -
+          value: '248'
+          newvalue: pip
+        -
+          value: '249'
+          newvalue: aluELP
+        -
+          value: '250'
+          newvalue: gpon
+        -
+          value: '251'
+          newvalue: vdsl2
+        -
+          value: '252'
+          newvalue: capwapDot11Profile
+        -
+          value: '253'
+          newvalue: capwapDot11Bss
+        -
+          value: '254'
+          newvalue: capwapWtpVirtualRadio
+        -
+          value: '255'
+          newvalue: bits
+        -
+          value: '256'
+          newvalue: docsCableUpstreamRfPort
+        -
+          value: '257'
+          newvalue: cableDownstreamRfPort
+        -
+          value: '258'
+          newvalue: vmwareVirtualNic
+        -
+          value: '259'
+          newvalue: ieee802154
+        -
+          value: '260'
+          newvalue: otnOdu
+        -
+          value: '261'
+          newvalue: otnOtu
+        -
+          value: '262'
+          newvalue: ifVfiType
+        -
+          value: '263'
+          newvalue: g9981
+        -
+          value: '264'
+          newvalue: g9982
+        -
+          value: '265'
+          newvalue: g9983
+        -
+          value: '266'
+          newvalue: aluEpon
+        -
+          value: '267'
+          newvalue: aluEponOnu
+        -
+          value: '268'
+          newvalue: aluEponPhysicalUni
+        -
+          value: '269'
+          newvalue: aluEponLogicalLink
+        -
+          value: '270'
+          newvalue: aluGponOnu
+        -
+          value: '271'
+          newvalue: aluGponPhysicalUni
+        -
+          value: '272'
+          newvalue: vmwareNicTeam
+        -
+          value: '277'
+          newvalue: docsOfdmDownstream
+        -
+          value: '278'
+          newvalue: docsOfdmaUpstream
+        -
+          value: '279'
+          newvalue: gfast
+        -
+          value: '280'
+          newvalue: sdci
+        -
+          value: '281'
+          newvalue: xboxWireless
+        -
+          value: '282'
+          newvalue: fastdsl
+        -
+          value: '283'
+          newvalue: docsCableScte55d1FwdOob
+        -
+          value: '284'
+          newvalue: docsCableScte55d1RetOob
+        -
+          value: '285'
+          newvalue: docsCableScte55d2DsOob
+        -
+          value: '286'
+          newvalue: docsCableScte55d2UsOob
+        -
+          value: '287'
+          newvalue: docsCableNdf
+        -
+          value: '288'
+          newvalue: docsCableNdr
+        -
+          value: '289'
+          newvalue: ptm
+        -
+          value: '290'
+          newvalue: ghn
+    -
+      name: ifAdminStatus
+      mappings:
+        -
+          value: '1'
+          newvalue: Up
+        -
+          value: '2'
+          newvalue: Down
+        -
+          value: '3'
+          newvalue: Testing
+    -
+      name: ifOperStatus
+      mappings:
+        -
+          value: '1'
+          newvalue: Up
+        -
+          value: '2'
+          newvalue: Down
+        -
+          value: '3'
+          newvalue: Testing
+        -
+          value: '4'
+          newvalue: Unknown
+        -
+          value: '5'
+          newvalue: Domant
+        -
+          value: '6'
+          newvalue: NotPresent
+        -
+          value: '7'
+          newvalue: LowerlayerDown
+    -
+      name: 'Ping State'
+      mappings:
+        -
+          value: '0'
+          newvalue: Down
+        -
+          value: '1'
+          newvalue: Up
+    -
+      name: 'SMNP Available'
+      mappings:
+        -
+          value: '0'
+          newvalue: 'Not Available'
+        -
+          value: '1'
+          newvalue: Available
+        -
+          value: '2'
+          newvalue: Unknown

@@ -1,0 +1,65 @@
+zabbix_export:
+  version: '5.2'
+  date: '2021-06-04T11:14:03Z'
+  groups:
+    -
+      name: Templates
+  templates:
+    -
+      template: 'Power Supply S6700 SNMP'
+      name: 'Power Supply S6700 SNMP'
+      groups:
+        -
+          name: Templates
+      applications:
+        -
+          name: 'Power Supply'
+      discovery_rules:
+        -
+          name: 'Power Supply Status'
+          type: SNMP_AGENT
+          snmp_oid: 'discovery[{#ENT_NAME},1.3.6.1.2.1.47.1.1.1.1.7]'
+          key: hwPowerSupplyStatus
+          delay: 5m
+          filter:
+            evaltype: OR
+            conditions:
+              -
+                macro: '{#ENT_NAME}'
+                value: '.*PWR'
+                formulaid: A
+          lifetime: 3d
+          item_prototypes:
+            -
+              name: 'Status Power Supply'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.2011.5.25.31.1.1.1.1.2.{#SNMPINDEX}'
+              key: 'Status[hwPowerSupplyStatus.{#ENT_NAME}]'
+              delay: 3m
+              description: 'Estado da fonte de energia'
+              applications:
+                -
+                  name: 'Power Supply'
+              valuemap:
+                name: 'PowerSupply Huawei'
+              trigger_prototypes:
+                -
+                  expression: '{last()}=2'
+                  recovery_mode: RECOVERY_EXPRESSION
+                  recovery_expression: '{last()}=3'
+                  name: 'Problema no Slot {#ENT_NAME}'
+                  priority: HIGH
+                  description: |
+                    Power Supply Status is DOWN.
+                    Last value: {ITEM.LASTVALUE1}.
+                  manual_close: 'YES'
+  value_maps:
+    -
+      name: 'PowerSupply Huawei'
+      mappings:
+        -
+          value: '2'
+          newvalue: Down
+        -
+          value: '3'
+          newvalue: Up

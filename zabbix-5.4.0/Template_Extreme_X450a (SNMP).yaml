@@ -1,0 +1,299 @@
+zabbix_export:
+  version: '5.4'
+  date: '2021-05-28T03:44:03Z'
+  groups:
+    -
+      uuid: 809a07437a8e4507a1718d48a9f21272
+      name: 'Templates SNMP'
+  templates:
+    -
+      uuid: 174a3dfa33b644f9b43df0c4f768f0eb
+      template: Template_Extreme_X450a
+      name: Template_Extreme_X450a
+      groups:
+        -
+          name: 'Templates SNMP'
+      items:
+        -
+          uuid: 12ca9535bbe24945a849f23bddc2b21b
+          name: 'CPU Utilization Threshold'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.1916.1.32.1.5.0
+          key: extremeCpuMonitorThreshold
+          delay: 10m
+          value_type: FLOAT
+          units: '%'
+          tags:
+            -
+              tag: Application
+              value: CPU
+        -
+          uuid: f6108c95ef6244a6ac30234871d0298a
+          name: 'CPU utilization'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.1916.1.32.1.2.0
+          key: extremeCpuMonitorTotalUtilization
+          value_type: FLOAT
+          units: '%'
+          tags:
+            -
+              tag: Application
+              value: CPU
+        -
+          uuid: 3f7b23046b0847699e8d01a675c3193d
+          name: 'Device Temperature'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.1916.1.1.1.8.0
+          key: extremeCurrentTemperature
+          delay: 3m
+          value_type: FLOAT
+          units: °C
+          tags:
+            -
+              tag: Application
+              value: Temperature
+        -
+          uuid: 2886071d4f274911960230077c9d7333
+          name: 'Over Temperature Status'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.1916.1.1.1.7.0
+          key: extremeOverTemperatureAlarm
+          tags:
+            -
+              tag: Application
+              value: Temperature
+          triggers:
+            -
+              uuid: 16b9a502156a461989c49d41a64e4d21
+              expression: last(/Template_Extreme_X450a/extremeOverTemperatureAlarm)=1
+              name: 'Over Temperature in device Enclosure'
+              priority: AVERAGE
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: ff928175a7e44e2b9e9d982ed262adb8
+          name: 'Operational Status of Primary Power Supply'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.1916.1.1.1.10.0
+          key: extremePrimaryPowerOperational
+          tags:
+            -
+              tag: Application
+              value: 'Power Supplies'
+          triggers:
+            -
+              uuid: c39452c7011b4269bfc490aed511d300
+              expression: last(/Template_Extreme_X450a/extremePrimaryPowerOperational)=2
+              name: 'Primary Power Supply is nonoperational'
+              priority: AVERAGE
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: 76b55564c0b749c999c0fc1bcb0d8345
+          name: 'Primary Software Revision'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.1916.1.1.1.13.0
+          key: extremePrimarySoftwareRev
+          delay: 1h
+          trends: '0'
+          value_type: CHAR
+          tags:
+            -
+              tag: Application
+              value: General
+        -
+          uuid: f0a24675120a4f6cbe94b3a8651ebf08
+          name: 'Status of Redundant Power Supply'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.1916.1.1.1.12.0
+          key: extremeRedundantPowerAlarm
+          tags:
+            -
+              tag: Application
+              value: 'Power Supplies'
+          triggers:
+            -
+              uuid: a802e5cff76d459c9e35f753791cd69c
+              expression: last(/Template_Extreme_X450a/extremeRedundantPowerAlarm)=2
+              name: 'Redundant Power Supply is in problem status'
+              priority: AVERAGE
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: 887b2be5f0494289af8bc72d316e95ef
+          name: 'Operational Status of Redundant Power Supply'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.1916.1.1.1.11.0
+          key: extremeRedundantPowerStatus
+          tags:
+            -
+              tag: Application
+              value: 'Power Supplies'
+          triggers:
+            -
+              uuid: c389dfff9d3745699086d414ca6b2c7e
+              expression: last(/Template_Extreme_X450a/extremeRedundantPowerStatus)=1
+              name: 'Redundant Power Supply does not present'
+              priority: AVERAGE
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+            -
+              uuid: 2a4ac11fbbcc449aa6c468d8863a9165
+              expression: last(/Template_Extreme_X450a/extremeRedundantPowerStatus)=3
+              name: 'Redundant Power Supply is not OK'
+              priority: AVERAGE
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: 7fdf356dc66241e6995e59610f9a7b72
+          name: 'Secondary Software Revision'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.1916.1.1.1.14.0
+          key: extremeSecondarySoftwareRev
+          delay: 1h
+          trends: '0'
+          value_type: CHAR
+          tags:
+            -
+              tag: Application
+              value: General
+        -
+          uuid: 27b1d37f77be47d0bc32bec4c426b9a8
+          name: 'System ID'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.1916.1.1.1.16.0
+          key: extremeSystemID
+          delay: 1h
+          trends: '0'
+          value_type: CHAR
+          tags:
+            -
+              tag: Application
+              value: General
+      discovery_rules:
+        -
+          uuid: 74940a3c666a402589e9fb1a3fb13ab0
+          name: CPU
+          type: SNMP_AGENT
+          snmp_oid: 'discovery[{#SNMPVALUE},.1.3.6.1.4.1.1916.1.32.1.4.1.1]'
+          key: extremeCpuMonitorSystemSlotld
+          delay: 3m
+          item_prototypes:
+            -
+              uuid: faed8311b4c1493bbcd1ad0f0bb8f148
+              name: 'CPU #$1 Utilização (5min)'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.1916.1.32.1.4.1.9.{#SNMPINDEX}'
+              key: 'extremeCpuMonitorSystemUtilization5mins[{#SNMPINDEX}]'
+              value_type: FLOAT
+              tags:
+                -
+                  tag: Application
+                  value: CPU
+          trigger_prototypes:
+            -
+              uuid: 1f1500a4070544ac8d3238b25a91df51
+              expression: 'last(/Template_Extreme_X450a/extremeCpuMonitorSystemUtilization5mins[{#SNMPINDEX}])>=last(/Template_Extreme_X450a/extremeCpuMonitorThreshold)'
+              name: 'High CPU #{#SNMPVALUE} Usage'
+              priority: AVERAGE
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: 7d3ca7cb8d0f431aaf9df3424b27221c
+          name: FAN
+          type: SNMP_AGENT
+          snmp_oid: 'discovery[{#SNMPVALUE},.1.3.6.1.4.1.1916.1.1.1.9.1.3]'
+          key: extremeFanEntPhysicalIndex
+          delay: 3m
+          item_prototypes:
+            -
+              uuid: 7aca06b657a24adfb942838843ffff7b
+              name: 'Status of FAN #$1'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.1916.1.1.1.9.1.2.{#SNMPINDEX}'
+              key: 'extremeFanOperational[{#SNMPVALUE}]'
+              tags:
+                -
+                  tag: Application
+                  value: 'FAN Trays'
+              trigger_prototypes:
+                -
+                  uuid: 04a6865b67b54ff2bf2b74ddf2b1ede6
+                  expression: 'last(/Template_Extreme_X450a/extremeFanOperational[{#SNMPVALUE}])=2'
+                  name: 'Status of FAN #{#SNMPVALUE} is failed'
+                  priority: AVERAGE
+                  description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: 23247a23479747b3904b29d625c3beb2
+          name: Memory
+          type: SNMP_AGENT
+          snmp_oid: 'discovery[{#SNMPVALUE},.1.3.6.1.4.1.1916.1.32.2.2.1.1]'
+          key: extremeMemoryMonitorSystemSlotld
+          item_prototypes:
+            -
+              uuid: ebc54d3cbbbe464180900987064de798
+              name: 'Free Memory #$1'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.1916.1.32.2.2.1.3.{#SNMPINDEX}'
+              key: 'extremeMemoryMonitorSystemFree[{#SNMPVALUE}]'
+              units: B
+              preprocessing:
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '1024'
+              tags:
+                -
+                  tag: Application
+                  value: Memory
+            -
+              uuid: dcaa1b1c7a6a4777b1749fa3b8249685
+              name: 'Total Memory #$1'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.1916.1.32.2.2.1.2.{#SNMPINDEX}'
+              key: 'extremeMemoryMonitorSystemTotal[{#SNMPVALUE}]'
+              delay: 10m
+              units: B
+              preprocessing:
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '1024'
+              tags:
+                -
+                  tag: Application
+                  value: Memory
+            -
+              uuid: 6a9ceb9e997a40dfa10432a21f62f1a4
+              name: 'Used Memory #$1'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.1916.1.32.2.2.1.4.{#SNMPINDEX}'
+              key: 'extremeMemoryMonitorSystemUsage[{#SNMPVALUE}]'
+              units: B
+              preprocessing:
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '1024'
+              tags:
+                -
+                  tag: Application
+                  value: Memory
+            -
+              uuid: 4deb452d4e034eab902dc0971f194bb7
+              name: 'Used Memory #$1 by Applications'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.1916.1.32.2.2.1.5.{#SNMPINDEX}'
+              key: 'extremeMemoryMonitorUserUsage[{#SNMPVALUE}]'
+              delay: 3m
+              units: B
+              preprocessing:
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '1024'
+              tags:
+                -
+                  tag: Application
+                  value: Memory
+          trigger_prototypes:
+            -
+              uuid: dfe44262c04c4c9b83f83474f1fe7225
+              expression: 'last(/Template_Extreme_X450a/extremeMemoryMonitorSystemFree[{#SNMPVALUE}])<=last(/Template_Extreme_X450a/extremeMemoryMonitorSystemTotal[{#SNMPVALUE}])*0.05'
+              name: 'High Memory #{#SNMPVALUE}: Usage'
+              priority: AVERAGE
+              description: 'Last value: {ITEM.LASTVALUE1}.'

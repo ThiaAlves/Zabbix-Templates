@@ -1,0 +1,427 @@
+zabbix_export:
+  version: '5.4'
+  date: '2021-05-28T03:40:00Z'
+  groups:
+    -
+      uuid: 0bfb6f1f60614073a7c57825645ade77
+      name: 'Switchs Huawei'
+  templates:
+    -
+      uuid: 627e0d9256b8495e930b404dcf236451
+      template: 'Template Switch Huawei S5720-6730'
+      name: 'Template Switch Huawei S5720-6730'
+      description: 'Template Principal de monitoramento de banda dos Switches Huawei do Backbone.'
+      templates:
+        -
+          name: 'Power Supply S6700 SNMP'
+        -
+          name: 'Template Module ICMP Ping'
+      groups:
+        -
+          name: 'Switchs Huawei'
+      items:
+        -
+          uuid: bc562ee029fb4789a5e4cca93794150c
+          name: 'Device contact details'
+          type: SNMP_AGENT
+          snmp_oid: sysContact.0
+          key: sys.contact
+          delay: 1h
+          trends: '0'
+          value_type: TEXT
+          tags:
+            -
+              tag: Application
+              value: General
+        -
+          uuid: e28f2c05f24e49088836f1da96d729e9
+          name: 'Device description'
+          type: SNMP_AGENT
+          snmp_oid: sysDescr.0
+          key: sys.descr
+          delay: 1h
+          trends: '0'
+          value_type: TEXT
+          tags:
+            -
+              tag: Application
+              value: General
+        -
+          uuid: f059e4d23ac6407f98418e7d0dd81f4d
+          name: 'Device name'
+          type: SNMP_AGENT
+          snmp_oid: sysName.0
+          key: sys.name
+          delay: 1h
+          trends: '0'
+          value_type: TEXT
+          tags:
+            -
+              tag: Application
+              value: General
+        -
+          uuid: 9352431f149c498da0c14921d6faf95e
+          name: 'Device uptime'
+          type: SNMP_AGENT
+          snmp_oid: sysUpTime.0
+          key: sys.uptime
+          delay: 10m
+          history: 7d
+          trends: '0'
+          units: uptime
+          tags:
+            -
+              tag: Application
+              value: Status
+        -
+          uuid: 11832c77257741d29749ed97e2f6f8e0
+          name: 'Device location'
+          type: SNMP_AGENT
+          snmp_oid: sysLocation.0
+          key: sysLocation
+          delay: 1h
+          trends: '0'
+          value_type: TEXT
+          tags:
+            -
+              tag: Application
+              value: General
+        -
+          uuid: f9ae65e658be4311a63d7f87def9a381
+          name: 'SNMP availability'
+          type: INTERNAL
+          key: 'zabbix[host,snmp,available]'
+          delay: 3m
+          trends: '0'
+          tags:
+            -
+              tag: Application
+              value: Status
+      discovery_rules:
+        -
+          uuid: f490ba5cd61f4944b4c2df7f95ab596f
+          name: 'FAN Discovery'
+          type: SNMP_AGENT
+          snmp_oid: 'discovery[{#SNMPVALUE},1.3.6.1.4.1.2011.5.25.31.1.1.10.1.1]'
+          key: discovery.fans
+          lifetime: 5d
+          item_prototypes:
+            -
+              uuid: d7800cec7dea4b868e9be79b92b8ed55
+              name: '#{#SNMPVALUE}: Fan status'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.2011.5.25.31.1.1.10.1.7.{#SNMPINDEX}'
+              key: 'sensor.fan.status[hwEntityFanState.{#SNMPINDEX}]'
+              delay: 3m
+              tags:
+                -
+                  tag: Application
+                  value: Fans
+              trigger_prototypes:
+                -
+                  uuid: b85eef7596f6431d93e32ef65f7e6dc2
+                  expression: 'count(/Template Switch Huawei S5720-6730/sensor.fan.status[hwEntityFanState.{#SNMPINDEX}],#1,"eq","{$FAN_CRIT_STATUS}")=1'
+                  name: '#{#SNMPVALUE}: Fan is in critical state'
+                  priority: AVERAGE
+                  description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: 502cb1d491d543329135c9e58272db2c
+          name: 'Entity Discovery'
+          type: SNMP_AGENT
+          snmp_oid: 'discovery[{#ENT_CLASS},1.3.6.1.2.1.47.1.1.1.1.5,{#ENT_NAME},1.3.6.1.2.1.47.1.1.1.1.7]'
+          key: entity.discovey
+          filter:
+            conditions:
+              -
+                macro: '{#ENT_CLASS}'
+                value: '3'
+                formulaid: A
+          lifetime: 5d
+          item_prototypes:
+            -
+              uuid: 527d93d8d2f1469c8b77c9500c376d03
+              name: '{#ENT_NAME}: Hardware model name'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.2.1.47.1.1.1.1.2.{#SNMPINDEX}'
+              key: 'system.hw.model[entPhysicalDescr.{#SNMPINDEX}]'
+              delay: 1h
+              trends: '0'
+              value_type: CHAR
+              tags:
+                -
+                  tag: Application
+                  value: Inventory
+        -
+          uuid: ff11c62bc4424953849d0702e6baa050
+          name: 'MPU Discovery'
+          type: SNMP_AGENT
+          snmp_oid: 'discovery[{#ENT_NAME},1.3.6.1.2.1.47.1.1.1.1.7]'
+          key: mpu.discovery
+          filter:
+            conditions:
+              -
+                macro: '{#ENT_NAME}'
+                value: 'MPU.*'
+                formulaid: A
+          item_prototypes:
+            -
+              uuid: b67dfe3f14f34002b52d574c410ce4c7
+              name: '{#ENT_NAME}: Temperature'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.2011.5.25.31.1.1.1.1.11.{#SNMPINDEX}'
+              key: 'sensor.temp.value[hwEntityTemperature.{#SNMPINDEX}]'
+              delay: 3m
+              value_type: FLOAT
+              units: °C
+              tags:
+                -
+                  tag: Application
+                  value: Temperature
+              trigger_prototypes:
+                -
+                  uuid: 3ae49b40bd824ccd859ca5e3de8d7de8
+                  expression: 'avg(/Template Switch Huawei S5720-6730/sensor.temp.value[hwEntityTemperature.{#SNMPINDEX}],5m)>{$TEMP_CRIT:"50"}'
+                  recovery_mode: RECOVERY_EXPRESSION
+                  recovery_expression: 'max(/Template Switch Huawei S5720-6730/sensor.temp.value[hwEntityTemperature.{#SNMPINDEX}],5m)<{$TEMP_CRIT:"50"}-3'
+                  name: '{#ENT_NAME}: Temperature is above critical threshold: > {$TEMP_CRIT:""}'
+                  priority: HIGH
+                  description: 'Last value: {ITEM.LASTVALUE1}.'
+                -
+                  uuid: e44d002b2bcb4f3a8279bac5e2f83622
+                  expression: 'avg(/Template Switch Huawei S5720-6730/sensor.temp.value[hwEntityTemperature.{#SNMPINDEX}],5m)<{$TEMP_CRIT_LOW:""}'
+                  recovery_mode: RECOVERY_EXPRESSION
+                  recovery_expression: 'min(/Template Switch Huawei S5720-6730/sensor.temp.value[hwEntityTemperature.{#SNMPINDEX}],5m)>{$TEMP_CRIT_LOW:""}+3'
+                  name: '{#ENT_NAME}: Temperature is too low: < 5'
+                  priority: AVERAGE
+                  description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: 8a06b59ed32a4c0bba34db8113867bf9
+          name: 'Network Interfaces Discovery'
+          type: SNMP_AGENT
+          snmp_oid: 'discovery[{#IFOPERSTATUS},1.3.6.1.2.1.2.2.1.8,{#IFADMINSTATUS},1.3.6.1.2.1.2.2.1.7,{#IFALIAS},1.3.6.1.2.1.31.1.1.1.18,{#IFNAME},1.3.6.1.2.1.31.1.1.1.1,{#IFDESCR},1.3.6.1.2.1.2.2.1.2,{#IFTYPE},1.3.6.1.2.1.2.2.1.3]'
+          key: net.if.discovery
+          filter:
+            conditions:
+              -
+                macro: '{#IFADMINSTATUS}'
+                value: (1|3)
+                formulaid: A
+              -
+                macro: '{#IFNAME}'
+                value: '@Network interfaces for discovery'
+                formulaid: B
+              -
+                macro: '{#IFOPERSTATUS}'
+                value: (1|3|4|5|7)
+                formulaid: C
+          lifetime: 5d
+          item_prototypes:
+            -
+              uuid: 337959f92d984d13af5149d04f6263df
+              name: 'Interface {#IFNAME}({#IFALIAS}): Inbound packets discarded'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.2.1.2.2.1.13.{#SNMPINDEX}'
+              key: 'net.if.in.discards[ifInDiscards.{#SNMPINDEX}]'
+              delay: 5m
+              preprocessing:
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+              tags:
+                -
+                  tag: Application
+                  value: 'Network interfaces'
+            -
+              uuid: dbc7f9d9345c40929a358bff65275255
+              name: 'Interface {#IFNAME}({#IFALIAS}): Inbound packets with errors'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.2.1.2.2.1.14.{#SNMPINDEX}'
+              key: 'net.if.in.errors[ifInErrors.{#SNMPINDEX}]'
+              delay: 3m
+              preprocessing:
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+              tags:
+                -
+                  tag: Application
+                  value: 'Network interfaces'
+            -
+              uuid: 82e672ee592d43dfa66852c6ed995238
+              name: 'Interface {#IFNAME}({#IFALIAS}): Bits received'
+              type: SNMP_AGENT
+              snmp_oid: 'ifHCInOctets.{#SNMPINDEX}'
+              key: 'net.if.in[ifHCInOctets.{#SNMPINDEX}]'
+              delay: 3m
+              units: bps
+              preprocessing:
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '8'
+              tags:
+                -
+                  tag: Application
+                  value: 'Network interfaces'
+            -
+              uuid: 6c3ab722f57a46648b5d945fcd8d81e8
+              name: 'Interface {#IFNAME}({#IFALIAS}): Outbound packets discarded'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.2.1.2.2.1.19.{#SNMPINDEX}'
+              key: 'net.if.out.discards[ifOutDiscards.{#SNMPINDEX}]'
+              delay: 5m
+              preprocessing:
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+              tags:
+                -
+                  tag: Application
+                  value: 'Network interfaces'
+            -
+              uuid: dbac96cb308943e4b26be031d3f29f69
+              name: 'Interface {#IFNAME}({#IFALIAS}): Outbound packets with errors'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.2.1.2.2.1.20.{#SNMPINDEX}'
+              key: 'net.if.out.errors[ifOutErrors.{#SNMPINDEX}]'
+              delay: 3m
+              preprocessing:
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+              tags:
+                -
+                  tag: Application
+                  value: 'Network interfaces'
+            -
+              uuid: 636bbf67195f47c3997602f0740b5df5
+              name: 'Interface {#IFNAME}({#IFALIAS}): Bits sent'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.2.1.31.1.1.1.10.{#SNMPINDEX}'
+              key: 'net.if.out[ifHCOutOctets.{#SNMPINDEX}]'
+              delay: 3m
+              units: bps
+              preprocessing:
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '8'
+              tags:
+                -
+                  tag: Application
+                  value: 'Network interfaces'
+            -
+              uuid: a0a7dcee4885464cb6a922076bfa175e
+              name: 'Interface {#IFNAME}({#IFALIAS}): Speed'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.2.1.31.1.1.1.15.{#SNMPINDEX}'
+              key: 'net.if.speed[ifHighSpeed.{#SNMPINDEX}]'
+              delay: 5m
+              units: bps
+              preprocessing:
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '1000000'
+              tags:
+                -
+                  tag: Application
+                  value: 'Network interfaces'
+            -
+              uuid: 8b37cb449ac04f93a2056a6a4646cceb
+              name: 'Interface {#IFNAME}({#IFALIAS}): Operational status'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.2.1.2.2.1.8.{#SNMPINDEX}'
+              key: 'net.if.status[ifOperStatus.{#SNMPINDEX}]'
+              history: 2w
+              trends: '0'
+              tags:
+                -
+                  tag: Application
+                  value: 'Network interfaces'
+              trigger_prototypes:
+                -
+                  uuid: f5738eb65e944fdfae3ec20325bad822
+                  expression: '{$IFCONTROL:"{#IFNAME}"}=1 and (last(/Template Switch Huawei S5720-6730/net.if.status[ifOperStatus.{#SNMPINDEX}])=2 and (last(/Template Switch Huawei S5720-6730/net.if.status[ifOperStatus.{#SNMPINDEX}],#1)<>last(/Template Switch Huawei S5720-6730/net.if.status[ifOperStatus.{#SNMPINDEX}],#2))=1)'
+                  recovery_mode: RECOVERY_EXPRESSION
+                  recovery_expression: 'last(/Template Switch Huawei S5720-6730/net.if.status[ifOperStatus.{#SNMPINDEX}])<>2'
+                  name: 'Interface {#IFNAME}({#IFALIAS}): Link down'
+                  priority: AVERAGE
+                  description: 'Last value: {ITEM.LASTVALUE1}.'
+            -
+              uuid: 30e10591d8b34abca9519ce81611e95b
+              name: 'Interface {#IFNAME}({#IFALIAS}): Interface type'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.2.1.2.2.1.3.{#SNMPINDEX}'
+              key: 'net.if.type[ifType.{#SNMPINDEX}]'
+              delay: 1h
+              tags:
+                -
+                  tag: Application
+                  value: 'Network interfaces'
+          trigger_prototypes:
+            -
+              uuid: a31f309cb24142dbaaa456b53b6f9104
+              expression: '(min(/Template Switch Huawei S5720-6730/net.if.in[ifHCInOctets.{#SNMPINDEX}],600s)>({$IF_UTIL_MAX:"{#IFNAME}"}/100)*last(/Template Switch Huawei S5720-6730/net.if.speed[ifHighSpeed.{#SNMPINDEX}]) or min(/Template Switch Huawei S5720-6730/net.if.out[ifHCOutOctets.{#SNMPINDEX}],600s)>({$IF_UTIL_MAX:"{#IFNAME}"}/100)*last(/Template Switch Huawei S5720-6730/net.if.speed[ifHighSpeed.{#SNMPINDEX}])) and last(/Template Switch Huawei S5720-6730/net.if.speed[ifHighSpeed.{#SNMPINDEX}])>0'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'min(/Template Switch Huawei S5720-6730/net.if.in[ifHCInOctets.{#SNMPINDEX}],600s)<(({$IF_UTIL_MAX:"{#IFNAME}"}-3)/100)*last(/Template Switch Huawei S5720-6730/net.if.speed[ifHighSpeed.{#SNMPINDEX}]) and min(/Template Switch Huawei S5720-6730/net.if.out[ifHCOutOctets.{#SNMPINDEX}],600s)<(({$IF_UTIL_MAX:"{#IFNAME}"}-3)/100)*last(/Template Switch Huawei S5720-6730/net.if.speed[ifHighSpeed.{#SNMPINDEX}])'
+              name: 'Interface {#IFNAME}({#IFALIAS}): High bandwidth usage > {$IF_UTIL_MAX:"{#IFNAME}"}%'
+              priority: WARNING
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+            -
+              uuid: 9169fe1000c74bb7a3b4a1e2f2ebaa69
+              expression: 'avg(/Template Switch Huawei S5720-6730/net.if.in.errors[ifInErrors.{#SNMPINDEX}],5m)>{$IF_ERRORS_WARN:"{#IFNAME}"} or avg(/Template Switch Huawei S5720-6730/net.if.out.errors[ifOutErrors.{#SNMPINDEX}],5m)>{$IF_ERRORS_WARN:"{#IFNAME}"}'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'avg(/Template Switch Huawei S5720-6730/net.if.in.errors[ifInErrors.{#SNMPINDEX}],5m)<{$IF_ERRORS_WARN:"{#IFNAME}"}*0.8 and avg(/Template Switch Huawei S5720-6730/net.if.out.errors[ifOutErrors.{#SNMPINDEX}],5m)<{$IF_ERRORS_WARN:"{#IFNAME}"}*0.8'
+              name: 'Interface {#IFNAME}({#IFALIAS}): High error rate'
+              priority: WARNING
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+      macros:
+        -
+          macro: '{$CPU_UTIL_MAX}'
+          value: '90'
+        -
+          macro: '{$FAN_CRIT_STATUS}'
+          value: '2'
+        -
+          macro: '{$IFCONTROL}'
+          value: '1'
+        -
+          macro: '{$IF_ERRORS_WARN}'
+          value: '2'
+        -
+          macro: '{$IF_UTIL_MAX}'
+          value: '90'
+        -
+          macro: '{$MEMORY_UTIL_MAX}'
+          value: '90'
+        -
+          macro: '{$SNMP_TIMEOUT}'
+          value: 3m
+        -
+          macro: '{$STORAGE_UTIL_CRIT}'
+          value: '90'
+        -
+          macro: '{$STORAGE_UTIL_WARN}'
+          value: '80'
+        -
+          macro: '{$TEMP_CRIT}'
+          value: '90'
+        -
+          macro: '{$TEMP_CRIT_LOW}'
+          value: '5'
+        -
+          macro: '{$TEMP_WARN}'
+          value: '90'

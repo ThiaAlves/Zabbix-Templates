@@ -1,0 +1,207 @@
+zabbix_export:
+  version: '5.4'
+  date: '2021-05-28T02:26:58Z'
+  groups:
+    -
+      uuid: 57b7ae836ca64446ba2c296389c009b7
+      name: Templates/Modules
+  templates:
+    -
+      uuid: 5f577b9e34a8444c920e8199170f7fe6
+      template: 'Linux memory by Zabbix agent active'
+      name: 'Linux memory by Zabbix agent active'
+      description: 'Template tooling version used: 0.38'
+      groups:
+        -
+          name: Templates/Modules
+      items:
+        -
+          uuid: 824d5c6e62c04f2d8b6e73aeca87be1e
+          name: 'Free swap space'
+          type: ZABBIX_ACTIVE
+          key: 'system.swap.size[,free]'
+          history: 7d
+          units: B
+          description: 'The free space of swap volume/file in bytes.'
+          tags:
+            -
+              tag: Application
+              value: Memory
+        -
+          uuid: f3b551caf6b44511a44f5ebb07ba5917
+          name: 'Free swap space in %'
+          type: ZABBIX_ACTIVE
+          key: 'system.swap.size[,pfree]'
+          history: 7d
+          value_type: FLOAT
+          units: '%'
+          description: 'The free space of swap volume/file in percent.'
+          tags:
+            -
+              tag: Application
+              value: Memory
+        -
+          uuid: 0b1a37ddf8db402491ac856980437a45
+          name: 'Total swap space'
+          type: ZABBIX_ACTIVE
+          key: 'system.swap.size[,total]'
+          history: 7d
+          units: B
+          description: 'The total space of swap volume/file in bytes.'
+          tags:
+            -
+              tag: Application
+              value: Memory
+        -
+          uuid: 156ef93f80d7499198909fc3fbc84672
+          name: 'Available memory'
+          type: ZABBIX_ACTIVE
+          key: 'vm.memory.size[available]'
+          history: 7d
+          units: B
+          description: 'Available memory, in Linux, available = free + buffers + cache. On other platforms calculation may vary. See also: https://www.zabbix.com/documentation/current/manual/appendix/items/vm.memory.size_params'
+          tags:
+            -
+              tag: Application
+              value: Memory
+        -
+          uuid: 79d2b01adaf14794826f78c860867fc5
+          name: 'Available memory in %'
+          type: ZABBIX_ACTIVE
+          key: 'vm.memory.size[pavailable]'
+          history: 7d
+          value_type: FLOAT
+          units: '%'
+          description: 'Available memory as percentage of total. See also: https://www.zabbix.com/documentation/current/manual/appendix/items/vm.memory.size_params'
+          tags:
+            -
+              tag: Application
+              value: Memory
+        -
+          uuid: e1bc17b4c3d7499b954fe10e5feb35e1
+          name: 'Total memory'
+          type: ZABBIX_ACTIVE
+          key: 'vm.memory.size[total]'
+          history: 7d
+          units: B
+          description: 'Total memory in Bytes'
+          tags:
+            -
+              tag: Application
+              value: Memory
+        -
+          uuid: bb6cff2714e94a05a73aea5760e168c6
+          name: 'Memory utilization'
+          type: DEPENDENT
+          key: vm.memory.utilization
+          delay: '0'
+          history: 7d
+          value_type: FLOAT
+          units: '%'
+          description: 'Memory used percentage is calculated as (100-pavailable)'
+          preprocessing:
+            -
+              type: JAVASCRIPT
+              parameters:
+                - 'return (100-value);'
+          master_item:
+            key: 'vm.memory.size[pavailable]'
+          tags:
+            -
+              tag: Application
+              value: Memory
+          triggers:
+            -
+              uuid: e7473d66446b48cd98e34e9295ff8f94
+              expression: 'min(/Linux memory by Zabbix agent active/vm.memory.utilization,5m)>{$MEMORY.UTIL.MAX}'
+              name: 'High memory utilization ( >{$MEMORY.UTIL.MAX}% for 5m)'
+              priority: AVERAGE
+              description: |
+                The system is running out of free memory.
+                Last value: {ITEM.LASTVALUE1}.
+              dependencies:
+                -
+                  name: 'Lack of available memory ( < {$MEMORY.AVAILABLE.MIN} of {ITEM.VALUE2})'
+                  expression: 'min(/Linux memory by Zabbix agent active/vm.memory.size[available],5m)<{$MEMORY.AVAILABLE.MIN} and last(/Linux memory by Zabbix agent active/vm.memory.size[total])>0'
+      macros:
+        -
+          macro: '{$MEMORY.AVAILABLE.MIN}'
+          value: 20M
+          description: 'This macro is used as a threshold in memory available trigger.'
+        -
+          macro: '{$MEMORY.UTIL.MAX}'
+          value: '90'
+          description: 'This macro is used as a threshold in memory utilization trigger.'
+        -
+          macro: '{$SWAP.PFREE.MIN.WARN}'
+          value: '50'
+  triggers:
+    -
+      uuid: 776d4da3c81849a585cdff422f922e60
+      expression: 'min(/Linux memory by Zabbix agent active/system.swap.size[,pfree],5m)<{$SWAP.PFREE.MIN.WARN} and last(/Linux memory by Zabbix agent active/system.swap.size[,total])>0'
+      name: 'High swap space usage ( less than {$SWAP.PFREE.MIN.WARN}% free)'
+      opdata: 'Free: {ITEM.LASTVALUE1}, total: {ITEM.LASTVALUE2}'
+      priority: WARNING
+      description: |
+        This trigger is ignored, if there is no swap configured.
+        Last value: {ITEM.LASTVALUE1}.
+      dependencies:
+        -
+          name: 'High memory utilization ( >{$MEMORY.UTIL.MAX}% for 5m)'
+          expression: 'min(/Linux memory by Zabbix agent active/vm.memory.utilization,5m)>{$MEMORY.UTIL.MAX}'
+        -
+          name: 'Lack of available memory ( < {$MEMORY.AVAILABLE.MIN} of {ITEM.VALUE2})'
+          expression: 'min(/Linux memory by Zabbix agent active/vm.memory.size[available],5m)<{$MEMORY.AVAILABLE.MIN} and last(/Linux memory by Zabbix agent active/vm.memory.size[total])>0'
+    -
+      uuid: 6a9281b98f8041ac806082135422320b
+      expression: 'min(/Linux memory by Zabbix agent active/vm.memory.size[available],5m)<{$MEMORY.AVAILABLE.MIN} and last(/Linux memory by Zabbix agent active/vm.memory.size[total])>0'
+      name: 'Lack of available memory ( < {$MEMORY.AVAILABLE.MIN} of {ITEM.VALUE2})'
+      opdata: 'Available: {ITEM.LASTVALUE1}, total: {ITEM.LASTVALUE2}'
+      priority: AVERAGE
+      description: 'Last value: {ITEM.LASTVALUE1}.'
+  graphs:
+    -
+      uuid: a4654a31b6664d02bf8ec0a4ac4d968b
+      name: 'Memory usage'
+      ymin_type_1: FIXED
+      graph_items:
+        -
+          drawtype: BOLD_LINE
+          color: 1A7C11
+          item:
+            host: 'Linux memory by Zabbix agent active'
+            key: 'vm.memory.size[total]'
+        -
+          sortorder: '1'
+          drawtype: GRADIENT_LINE
+          color: 2774A4
+          item:
+            host: 'Linux memory by Zabbix agent active'
+            key: 'vm.memory.size[available]'
+    -
+      uuid: ead8371cd5194410820f03d0a5732233
+      name: 'Memory utilization'
+      ymin_type_1: FIXED
+      ymax_type_1: FIXED
+      graph_items:
+        -
+          drawtype: GRADIENT_LINE
+          color: 1A7C11
+          item:
+            host: 'Linux memory by Zabbix agent active'
+            key: vm.memory.utilization
+    -
+      uuid: d3169f2fa1b341e3a7527a305814a0ab
+      name: 'Swap usage'
+      graph_items:
+        -
+          color: 1A7C11
+          item:
+            host: 'Linux memory by Zabbix agent active'
+            key: 'system.swap.size[,free]'
+        -
+          sortorder: '1'
+          color: 2774A4
+          item:
+            host: 'Linux memory by Zabbix agent active'
+            key: 'system.swap.size[,total]'

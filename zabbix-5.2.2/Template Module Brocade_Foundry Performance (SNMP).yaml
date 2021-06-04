@@ -1,0 +1,93 @@
+zabbix_export:
+  version: '5.2'
+  date: '2021-06-04T11:20:34Z'
+  groups:
+    -
+      name: Templates/Modules
+  templates:
+    -
+      template: 'Template Module Brocade_Foundry Performance SNMPv2'
+      name: 'Template Module Brocade_Foundry Performance SNMPv2'
+      description: |
+        Template Module Brocade_Foundry Performance version: 0.15
+        MIBs used:
+        FOUNDRY-SN-AGENT-MIB
+      groups:
+        -
+          name: Templates/Modules
+      applications:
+        -
+          name: CPU
+        -
+          name: Memory
+      items:
+        -
+          name: 'CPU utilization'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.1991.1.1.2.1.52.0
+          key: 'system.cpu.util[snAgGblCpuUtil1MinAvg.0]'
+          delay: 3m
+          history: 30d
+          value_type: FLOAT
+          units: '%'
+          description: |
+            MIB: FOUNDRY-SN-AGENT-MIB
+            The statistics collection of 1 minute CPU utilization.
+          applications:
+            -
+              name: CPU
+          triggers:
+            -
+              expression: '{avg(5m)}>{$CPU_UTIL_MAX}'
+              name: 'High CPU utilization'
+              priority: AVERAGE
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          name: 'Memory utilization'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.1991.1.1.2.1.53.0
+          key: 'vm.memory.pused[snAgGblDynMemUtil.0]'
+          delay: 3m
+          history: 30d
+          value_type: FLOAT
+          units: '%'
+          description: |
+            MIB: FOUNDRY-SN-AGENT-MIB
+            The system dynamic memory utilization, in unit of percentage.
+            Deprecated: Refer to snAgSystemDRAMUtil.
+            For NI platforms, refer to snAgentBrdMemoryUtil100thPercent
+          applications:
+            -
+              name: Memory
+          triggers:
+            -
+              expression: '{avg(5m)}>{$MEMORY_UTIL_MAX}'
+              name: 'High memory utilization'
+              priority: AVERAGE
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+      macros:
+        -
+          macro: '{$CPU_UTIL_MAX}'
+          value: '90'
+        -
+          macro: '{$MEMORY_UTIL_MAX}'
+          value: '90'
+  graphs:
+    -
+      name: 'CPU utilization'
+      graph_items:
+        -
+          sortorder: '1'
+          color: 199C0D
+          item:
+            host: 'Template Module Brocade_Foundry Performance SNMPv2'
+            key: 'system.cpu.util[snAgGblCpuUtil1MinAvg.0]'
+    -
+      name: 'Memory Utilization'
+      graph_items:
+        -
+          sortorder: '1'
+          color: 199C0D
+          item:
+            host: 'Template Module Brocade_Foundry Performance SNMPv2'
+            key: 'vm.memory.pused[snAgGblDynMemUtil.0]'

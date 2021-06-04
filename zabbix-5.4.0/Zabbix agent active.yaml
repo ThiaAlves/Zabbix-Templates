@@ -1,0 +1,92 @@
+zabbix_export:
+  version: '5.4'
+  date: '2021-05-28T04:04:16Z'
+  groups:
+    -
+      uuid: 57b7ae836ca64446ba2c296389c009b7
+      name: Templates/Modules
+  templates:
+    -
+      uuid: 650bec3f2f364a478b82317396949459
+      template: 'Zabbix agent active'
+      name: 'Zabbix agent active'
+      description: |
+        Use this template instead of 'Template Module Zabbix agent' for agents running in active mode only.
+        
+        Template tooling version used: 0.38
+      groups:
+        -
+          name: Templates/Modules
+      items:
+        -
+          uuid: ca27c17d8ca34643a7db8b99d2cc3025
+          name: 'Host name of Zabbix agent running'
+          type: ZABBIX_ACTIVE
+          key: agent.hostname
+          delay: 1h
+          history: 7d
+          trends: '0'
+          value_type: CHAR
+          preprocessing:
+            -
+              type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1d
+          tags:
+            -
+              tag: Application
+              value: 'Monitoring agent'
+        -
+          uuid: 0f86ec6cde2249f7946c678f9fd2665a
+          name: 'Zabbix agent ping'
+          type: ZABBIX_ACTIVE
+          key: agent.ping
+          history: 7d
+          description: 'The agent always returns 1 for this item. It could be used in combination with nodata() for availability check.'
+          valuemap:
+            name: 'Zabbix agent ping status'
+          tags:
+            -
+              tag: Application
+              value: Status
+          triggers:
+            -
+              uuid: 6bbb74c522d44baea8c6ceb666423da2
+              expression: 'nodata(/Zabbix agent active/agent.ping,{$AGENT.NODATA_TIMEOUT})=1'
+              name: 'Zabbix agent is not available (or nodata for {$AGENT.NODATA_TIMEOUT})'
+              priority: AVERAGE
+              description: |
+                For active agents, nodata() with agent.ping is used with {$AGENT.NODATA_TIMEOUT} as time threshold.
+                Last value: {ITEM.LASTVALUE1}.
+              manual_close: 'YES'
+        -
+          uuid: 41fb0f76fa1d464f8ab67f744fc29e8b
+          name: 'Version of Zabbix agent running'
+          type: ZABBIX_ACTIVE
+          key: agent.version
+          delay: 1h
+          history: 7d
+          trends: '0'
+          value_type: CHAR
+          preprocessing:
+            -
+              type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1d
+          tags:
+            -
+              tag: Application
+              value: 'Monitoring agent'
+      macros:
+        -
+          macro: '{$AGENT.NODATA_TIMEOUT}'
+          value: 30m
+          description: 'No data timeout for active agents. Consider to keep it relatively high.'
+      valuemaps:
+        -
+          uuid: 9bf3eef7e8d8402ca6f826b377ea2db6
+          name: 'Zabbix agent ping status'
+          mappings:
+            -
+              value: '1'
+              newvalue: Up

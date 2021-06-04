@@ -1,0 +1,99 @@
+zabbix_export:
+  version: '5.4'
+  date: '2021-05-28T03:18:19Z'
+  groups:
+    -
+      uuid: 99f926e71d2042cbbf66b8695d0e74c2
+      name: 'SEM GRUPO'
+  templates:
+    -
+      uuid: 09093e9bcb7047ec9c831b3906c52978
+      template: 'Template - LLD Housekeeper'
+      name: 'Template - LLD Housekeeper'
+      description: |
+        Desenvolvido por: Diego Cavalcante - 07/01/2018
+        Monitora métricas de registros excluidos pelo Houskeeper.
+        Monitora o tempo decorrido do Housekeeper.
+      groups:
+        -
+          name: 'SEM GRUPO'
+      items:
+        -
+          uuid: 389a1ec3433a4776b7ef15881aeb8938
+          name: 'Tempo decorrido do ultimo (Housekeeper)'
+          type: ZABBIX_ACTIVE
+          key: 'discovery.housekeeper[TEMPO]'
+          delay: 3m
+          history: 15d
+          trends: 90d
+          value_type: FLOAT
+          units: s
+          description: 'Monitora o tempo gasto até a finalização do ultimo Housekeeper.'
+          tags:
+            -
+              tag: Application
+              value: '★ Housekeeper ★ Tempo'
+          triggers:
+            -
+              uuid: 2acbb6cf3ed54a1ba79f2ee81a6ae465
+              expression: 'last(/Template - LLD Housekeeper/discovery.housekeeper[TEMPO])>1m'
+              name: 'Ultimo Housekeeper ({ITEM.LASTVALUE}) Tempo'
+              priority: WARNING
+              description: |
+                O tempo gasto pelo ultimo Housekeeper foi alto.
+                Pode indicar alto processamento de dados sendo deletados.
+                
+                Limite: 1m.
+                Last value: {ITEM.LASTVALUE1}.
+              manual_close: 'YES'
+      discovery_rules:
+        -
+          uuid: 33001e4cade141e5bbd4af15ada373b7
+          name: '★ Descoberta ★ Housekeeper'
+          type: ZABBIX_ACTIVE
+          key: 'discovery.housekeeper[JSON]'
+          delay: 3m
+          lifetime: 1d
+          description: 'Descoberta de métricas do Housekeeper.'
+          item_prototypes:
+            -
+              uuid: 79ba0b9ff061464fa7ca4f2b59ebe14c
+              name: 'Registros Excluidos em ({#HOUSEKEEPER})'
+              type: ZABBIX_ACTIVE
+              key: 'discovery.housekeeper[TABELA,{#HOUSEKEEPER}]'
+              delay: 3m
+              history: 15d
+              trends: 90d
+              description: |
+                Coleta o total de registros deletados na ultima execução do Housekeeper.
+                Tabela: {#HOUSEKEEPER}
+              tags:
+                -
+                  tag: Application
+                  value: '★ Housekeeper ★ Métricas'
+          graph_prototypes:
+            -
+              uuid: 4a6093c07b1d4629804516ebc0ab7da5
+              name: '★ Housekeeper ★ Métricas em ({#HOUSEKEEPER})'
+              graph_items:
+                -
+                  drawtype: GRADIENT_LINE
+                  color: '666666'
+                  yaxisside: RIGHT
+                  calc_fnc: ALL
+                  item:
+                    host: 'Template - LLD Housekeeper'
+                    key: 'discovery.housekeeper[TABELA,{#HOUSEKEEPER}]'
+  graphs:
+    -
+      uuid: 66260c99a1df4724ba349bc41723f897
+      name: '★ Housekeeper ★ Tempo Decorrido'
+      graph_items:
+        -
+          drawtype: GRADIENT_LINE
+          color: 1A7C11
+          yaxisside: RIGHT
+          calc_fnc: ALL
+          item:
+            host: 'Template - LLD Housekeeper'
+            key: 'discovery.housekeeper[TEMPO]'

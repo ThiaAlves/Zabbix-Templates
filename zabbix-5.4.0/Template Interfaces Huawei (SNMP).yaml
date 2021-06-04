@@ -1,0 +1,156 @@
+zabbix_export:
+  version: '5.4'
+  date: '2021-05-28T03:38:45Z'
+  groups:
+    -
+      uuid: 7df96b18c230490a9a0a9e2307226338
+      name: Templates
+  templates:
+    -
+      uuid: e1875eafff3d4198bdd1e8e7689aa925
+      template: 'Template SNMP Interfaces Huawei'
+      name: 'Template SNMP Interfaces Huawei'
+      templates:
+        -
+          name: 'Template Module ICMP Ping'
+      groups:
+        -
+          name: Templates
+      items:
+        -
+          uuid: 25f83bb4b3d74a4788f3fd4656224f5c
+          name: 'Number of network interfaces'
+          type: SNMP_AGENT
+          snmp_oid: ifNumber.0
+          key: ifNumber
+          tags:
+            -
+              tag: Application
+              value: Interfaces
+        -
+          uuid: 0ad52928f95e4933b05c8a3e1c49e256
+          name: 'SNMP availability'
+          type: INTERNAL
+          key: 'zabbix[host,snmp,available]'
+          tags:
+            -
+              tag: Application
+              value: Status
+          triggers:
+            -
+              uuid: a0c92d13b6e3437d9be750c982fe162d
+              expression: 'last(/Template SNMP Interfaces Huawei/zabbix[host,snmp,available])=0'
+              name: 'No SNMP data collection'
+              priority: HIGH
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+      discovery_rules:
+        -
+          uuid: 9a2e4b8b9c014ac58d3ffcabf610af6d
+          name: 'Network interfaces'
+          type: SNMP_AGENT
+          snmp_oid: 'discovery[{#SNMPVALUE},IF-MIB::ifName]'
+          key: ifName
+          item_prototypes:
+            -
+              uuid: 31de5d84ae52481ebdfa8b79436d9075
+              name: 'Admin status de interface $1'
+              type: SNMP_AGENT
+              snmp_oid: 'ifAdminStatus.{#SNMPINDEX}'
+              key: 'ifAdminStatus[{#SNMPVALUE}]'
+              tags:
+                -
+                  tag: Application
+                  value: Interfaces
+            -
+              uuid: 9535a3367fb3489da204ba9faabc3fd1
+              name: 'Incoming traffic on interface $1'
+              type: SNMP_AGENT
+              snmp_oid: 'ifInOctets.{#SNMPINDEX}'
+              key: 'ifInOctets[{#SNMPVALUE}]'
+              delay: 3m
+              units: bps
+              preprocessing:
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '8'
+              tags:
+                -
+                  tag: Application
+                  value: Interfaces
+            -
+              uuid: 2bf4992949bc454f9da7ad97071c6239
+              name: 'Name of interface $1'
+              type: SNMP_AGENT
+              snmp_oid: 'ifName.{#SNMPINDEX}'
+              key: 'ifName[{#SNMPVALUE}]'
+              delay: 10m
+              trends: '0'
+              value_type: CHAR
+              tags:
+                -
+                  tag: Application
+                  value: Interfaces
+            -
+              uuid: d5ab8a78b6fe4f7fadd1deca56cc2985
+              name: 'Operational status of interface $1'
+              type: SNMP_AGENT
+              snmp_oid: 'ifOperStatus.{#SNMPINDEX}'
+              key: 'ifOperStatus[{#SNMPVALUE}]'
+              tags:
+                -
+                  tag: Application
+                  value: Interfaces
+              trigger_prototypes:
+                -
+                  uuid: ddc917c1b5c04cb9aa52d3f90a067b04
+                  expression: '(last(/Template SNMP Interfaces Huawei/ifOperStatus[{#SNMPVALUE}],#1)<>last(/Template SNMP Interfaces Huawei/ifOperStatus[{#SNMPVALUE}],#2))=1 and max(/Template SNMP Interfaces Huawei/ifOperStatus[{#SNMPVALUE}],10s)=2'
+                  name: 'Operational status DOWN {HOST.HOST} interface {#SNMPVALUE}'
+                  priority: INFO
+                  description: 'Last value: {ITEM.LASTVALUE1}.'
+            -
+              uuid: c0e2bb32d05b4acda64b8fe25a49528c
+              name: 'Outgoing traffic on interface $1'
+              type: SNMP_AGENT
+              snmp_oid: 'ifOutOctets.{#SNMPINDEX}'
+              key: 'ifOutOctets[{#SNMPVALUE}]'
+              delay: 3m
+              units: bps
+              preprocessing:
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '8'
+              tags:
+                -
+                  tag: Application
+                  value: Interfaces
+          graph_prototypes:
+            -
+              uuid: 2684e4ea80764b488867c2a36f96b75c
+              name: 'Traffic on interface {#SNMPVALUE}'
+              graph_items:
+                -
+                  sortorder: '1'
+                  color: 199C0D
+                  item:
+                    host: 'Template SNMP Interfaces Huawei'
+                    key: 'ifInOctets[{#SNMPVALUE}]'
+                -
+                  sortorder: '2'
+                  color: F63100
+                  item:
+                    host: 'Template SNMP Interfaces Huawei'
+                    key: 'ifOutOctets[{#SNMPVALUE}]'
+      macros:
+        -
+          macro: '{$SNMP_COMMUNITY}'
+          value: public

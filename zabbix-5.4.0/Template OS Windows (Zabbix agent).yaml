@@ -1,0 +1,421 @@
+zabbix_export:
+  version: '5.4'
+  date: '2021-05-28T03:30:36Z'
+  groups:
+    -
+      uuid: 846977d1dfed4968bc5f8bdb363285bc
+      name: 'Templates/Operating systems'
+  templates:
+    -
+      uuid: aea23489ce3a49b6806ebb28e0cda430
+      template: 'Template OS Windows'
+      name: 'Template OS Windows'
+      templates:
+        -
+          name: 'Template Module ICMP Ping'
+      groups:
+        -
+          name: 'Templates/Operating systems'
+      items:
+        -
+          uuid: d76829f56d0f4b0b8c84a43a454a0472
+          name: 'Host name of zabbix_agentd running'
+          key: agent.hostname
+          delay: 1h
+          trends: '0'
+          value_type: CHAR
+          tags:
+            -
+              tag: Application
+              value: 'Zabbix agent'
+          triggers:
+            -
+              uuid: d2bf580d7eaa46e5b16d89d88d6e2357
+              expression: '(last(/Template OS Windows/agent.hostname,#1)<>last(/Template OS Windows/agent.hostname,#2))>0'
+              name: 'Host name of zabbix_agentd was changed on {HOST.HOST}'
+              priority: INFO
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: fee8fdd9d0a54005b0af2b590acc66ca
+          name: 'Agent ping'
+          key: agent.ping
+          tags:
+            -
+              tag: Application
+              value: 'Zabbix agent'
+          triggers:
+            -
+              uuid: d1a9624bc4e848d5bad5c828b080f6f9
+              expression: 'nodata(/Template OS Windows/agent.ping,5m)=1'
+              name: 'Zabbix agent on {HOST.HOST} is unreachable for 5 minutes'
+              priority: AVERAGE
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: 7464e4758b944df984d8e5a0b866eea6
+          name: 'Version of zabbix_agent(d) running'
+          key: agent.version
+          delay: 1h
+          trends: '0'
+          value_type: CHAR
+          tags:
+            -
+              tag: Application
+              value: 'Zabbix agent'
+          triggers:
+            -
+              uuid: 5b7ae40ce10c4df5b7f1f22b566892fc
+              expression: '(last(/Template OS Windows/agent.version,#1)<>last(/Template OS Windows/agent.version,#2))>0'
+              name: 'Version of zabbix_agent(d) was changed on {HOST.HOST}'
+              priority: INFO
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: 8b44f29240d24db6822a4d81b05d53e6
+          name: 'File read bytes per second'
+          key: 'perf_counter[\2\16]'
+          value_type: FLOAT
+          units: Bps
+          tags:
+            -
+              tag: Application
+              value: Filesystems
+            -
+              tag: Application
+              value: Performance
+        -
+          uuid: 2c37a51af0274eb7a79ff011d5f25ecf
+          name: 'File write bytes per second'
+          key: 'perf_counter[\2\18]'
+          value_type: FLOAT
+          units: Bps
+          tags:
+            -
+              tag: Application
+              value: Filesystems
+            -
+              tag: Application
+              value: Performance
+        -
+          uuid: b30341cb2f2b409abea094a9ecf34a45
+          name: 'Number of threads'
+          key: 'perf_counter[\2\250]'
+          tags:
+            -
+              tag: Application
+              value: OS
+        -
+          uuid: b231457ac2374143b4137fce3047841a
+          name: 'Average disk read queue length'
+          key: 'perf_counter[\234(_Total)\1402]'
+          value_type: FLOAT
+          tags:
+            -
+              tag: Application
+              value: Performance
+        -
+          uuid: d372349b8a9646e39e892fe16ceb77f9
+          name: 'Average disk write queue length'
+          key: 'perf_counter[\234(_Total)\1404]'
+          value_type: FLOAT
+          tags:
+            -
+              tag: Application
+              value: Filesystems
+            -
+              tag: Application
+              value: Performance
+        -
+          uuid: 2015f6b766a54d39bb9f22367f932631
+          name: 'Number of processes'
+          key: 'proc.num[]'
+          tags:
+            -
+              tag: Application
+              value: Processes
+          triggers:
+            -
+              uuid: f1c34637fceb49b2b025028b58282798
+              expression: 'avg(/Template OS Windows/proc.num[],5m)>300'
+              name: 'Too many processes on {HOST.HOST}'
+              priority: AVERAGE
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: c744aea7827347e3aa7bb18292208d79
+          name: 'Processor load (1 min average)'
+          key: 'system.cpu.load[percpu,avg1]'
+          value_type: FLOAT
+          tags:
+            -
+              tag: Application
+              value: CPU
+            -
+              tag: Application
+              value: Performance
+          triggers:
+            -
+              uuid: e172129b4d69408ea81bbed771bca3d4
+              expression: 'avg(/Template OS Windows/system.cpu.load[percpu,avg1],5m)>5'
+              name: 'Processor load is too high on {HOST.HOST}'
+              priority: AVERAGE
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: 177a8ea04c7640f9a49f3b249e8f78a2
+          name: 'Processor load (5 min average)'
+          key: 'system.cpu.load[percpu,avg5]'
+          value_type: FLOAT
+          tags:
+            -
+              tag: Application
+              value: CPU
+            -
+              tag: Application
+              value: Performance
+        -
+          uuid: 3b6a03955d5d4f81bf2acfb7ad63fe45
+          name: 'Processor load (15 min average)'
+          key: 'system.cpu.load[percpu,avg15]'
+          value_type: FLOAT
+          tags:
+            -
+              tag: Application
+              value: CPU
+            -
+              tag: Application
+              value: Performance
+        -
+          uuid: 86e17b29c0b44a5c9eeb2289a6596501
+          name: 'Free swap space'
+          key: 'system.swap.size[,free]'
+          units: B
+          tags:
+            -
+              tag: Application
+              value: Memory
+        -
+          uuid: 69e29c7002d84cb6bac15d245b4b22a5
+          name: 'Total swap space'
+          key: 'system.swap.size[,total]'
+          delay: 1h
+          units: B
+          tags:
+            -
+              tag: Application
+              value: Memory
+        -
+          uuid: a30304bac9d840cab65902c895c1192a
+          name: 'System information'
+          key: system.uname
+          delay: 1h
+          trends: '0'
+          value_type: CHAR
+          tags:
+            -
+              tag: Application
+              value: General
+            -
+              tag: Application
+              value: OS
+          triggers:
+            -
+              uuid: 0f1f73bfacc74a898bcf7f04b0fee39f
+              expression: '(last(/Template OS Windows/system.uname,#1)<>last(/Template OS Windows/system.uname,#2))>0'
+              name: 'Host information was changed on {HOST.HOST}'
+              priority: AVERAGE
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: 01aa033e66d34ce5b7f089606f4c165a
+          name: 'System uptime'
+          key: system.uptime
+          units: uptime
+          tags:
+            -
+              tag: Application
+              value: General
+          triggers:
+            -
+              uuid: 9f12675d6f1a48708f7a5fc53d67047b
+              expression: 'change(/Template OS Windows/system.uptime)<0'
+              name: '{HOST.NAME} has just been restarted'
+              priority: AVERAGE
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: c0d29fc74d914a33893dca0d6dc835c1
+          name: 'Free memory'
+          key: 'vm.memory.size[free]'
+          units: B
+          tags:
+            -
+              tag: Application
+              value: Memory
+          triggers:
+            -
+              uuid: 4c76c1a7838b486b967e98fe28342cf0
+              expression: 'last(/Template OS Windows/vm.memory.size[free])<10000'
+              name: 'Lack of free memory on server {HOST.HOST}'
+              priority: AVERAGE
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: 79e68be4f698458d8bdcc2d45e701e02
+          name: 'Total memory'
+          key: 'vm.memory.size[total]'
+          delay: 1h
+          units: B
+          tags:
+            -
+              tag: Application
+              value: Memory
+        -
+          uuid: 23d24da78e1b4f428554535c82a58514
+          name: 'Free virtual memory, in %'
+          key: 'vm.vmemory.size[pavailable]'
+          value_type: FLOAT
+          units: '%'
+          tags:
+            -
+              tag: Application
+              value: Memory
+          triggers:
+            -
+              uuid: 7f4a13e25aec4e03afca7fb7d5ab1ef5
+              expression: 'min(/Template OS Windows/vm.vmemory.size[pavailable],10m)<10'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'min(/Template OS Windows/vm.vmemory.size[pavailable],10m)>20'
+              name: 'Lack of available virtual memory on server {HOST.HOST}'
+              priority: AVERAGE
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+      discovery_rules:
+        -
+          uuid: 3e1f89b4b53d425a924840530a4c5a9b
+          name: 'Network Interfaces Discovery'
+          key: net.if.discovery
+          delay: 1h
+          filter:
+            conditions:
+              -
+                macro: '{#IFNAME}'
+                value: '@Network interfaces for discovery'
+                formulaid: A
+          item_prototypes:
+            -
+              uuid: 32f32badb40542cb89d005f527336cd3
+              name: 'Incoming network traffic on {#IFNAME}'
+              key: 'net.if.in[{#IFNAME}]'
+              units: bps
+              preprocessing:
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '8'
+              tags:
+                -
+                  tag: Application
+                  value: 'Network interfaces'
+            -
+              uuid: fdcdeff2cf4549a38295df62371c4342
+              name: 'Outgoing network traffic on {#IFNAME}'
+              key: 'net.if.out[{#IFNAME}]'
+              units: bps
+              preprocessing:
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '8'
+              tags:
+                -
+                  tag: Application
+                  value: 'Network interfaces'
+        -
+          uuid: c3979e8f05df4372bdaf7161d6e85643
+          name: 'Windows service discovery'
+          key: service.discovery
+          delay: 1h
+          filter:
+            conditions:
+              -
+                macro: '{#SERVICE.NAME}'
+                value: '@Windows service names for discovery'
+                formulaid: A
+              -
+                macro: '{#SERVICE.STARTUPNAME}'
+                value: '@Windows service startup states for discovery'
+                formulaid: B
+          item_prototypes:
+            -
+              uuid: 82fad2695e204cbcbd1bc134ddd85db9
+              name: 'State of service "{#SERVICE.NAME}" ({#SERVICE.DISPLAYNAME})'
+              key: 'service.info[{#SERVICE.NAME},state]'
+              tags:
+                -
+                  tag: Application
+                  value: Services
+              trigger_prototypes:
+                -
+                  uuid: b573eb13b5cc471990955f010e5294b1
+                  expression: 'min(/Template OS Windows/service.info[{#SERVICE.NAME},state],#3)<>0'
+                  name: 'Service "{#SERVICE.NAME}" ({#SERVICE.DISPLAYNAME}) is not running (startup type {#SERVICE.STARTUPNAME})'
+                  priority: AVERAGE
+                  description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: fb15a63c85ad405bb9f5681d19036088
+          name: 'Mounted filesystem discovery'
+          key: vfs.fs.discovery
+          delay: 1h
+          filter:
+            conditions:
+              -
+                macro: '{#FSTYPE}'
+                value: '@File systems for discovery'
+                formulaid: A
+          item_prototypes:
+            -
+              uuid: 1ee4a016d60b4a4e849f30510b251b3b
+              name: 'Free disk space on {#FSNAME}'
+              key: 'vfs.fs.size[{#FSNAME},free]'
+              units: B
+              tags:
+                -
+                  tag: Application
+                  value: Filesystems
+            -
+              uuid: d2a23b12107947b39ac0c8953ba815eb
+              name: 'Free disk space on {#FSNAME} (percentage)'
+              key: 'vfs.fs.size[{#FSNAME},pfree]'
+              value_type: FLOAT
+              units: '%'
+              tags:
+                -
+                  tag: Application
+                  value: Filesystems
+              trigger_prototypes:
+                -
+                  uuid: 11ca2b2a439a48f2b6ff54fccdd9b0ed
+                  expression: 'last(/Template OS Windows/vfs.fs.size[{#FSNAME},pfree])<20'
+                  name: 'Free disk space is less than 20% on volume {#FSNAME}'
+                  priority: WARNING
+                  description: 'Last value: {ITEM.LASTVALUE1}.'
+            -
+              uuid: 2150f6e0341e4f82b675e89fb993d231
+              name: 'Total disk space on {#FSNAME}'
+              key: 'vfs.fs.size[{#FSNAME},total]'
+              delay: 1h
+              units: B
+              tags:
+                -
+                  tag: Application
+                  value: Filesystems
+            -
+              uuid: 975b1dc69438431bbbc8b177f267ca51
+              name: 'Used disk space on {#FSNAME}'
+              key: 'vfs.fs.size[{#FSNAME},used]'
+              units: B
+              tags:
+                -
+                  tag: Application
+                  value: Filesystems

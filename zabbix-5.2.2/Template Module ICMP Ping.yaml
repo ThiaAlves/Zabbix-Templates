@@ -1,0 +1,129 @@
+zabbix_export:
+  version: '5.2'
+  date: '2021-06-04T11:21:45Z'
+  groups:
+    -
+      name: Templates/Modules
+  templates:
+    -
+      template: 'Template Module ICMP Ping'
+      name: 'Template Module ICMP Ping'
+      description: 'Template Module ICMP Ping version: 0.15'
+      groups:
+        -
+          name: Templates/Modules
+      applications:
+        -
+          name: Status
+      items:
+        -
+          name: 'ICMP ping'
+          type: SIMPLE
+          key: icmpping
+          history: 1w
+          description: 'Retorno de disponibilidade do dispositivo por PING'
+          applications:
+            -
+              name: Status
+          valuemap:
+            name: 'Ping State'
+          triggers:
+            -
+              expression: '{max(#2)}=0'
+              name: 'Unavailable by ICMP ping'
+              priority: HIGH
+              description: |
+                Last value: {ITEM.LASTVALUE1}.
+                Last three attempts returned timeout.  Please check device connectivity.
+        -
+          name: 'ICMP loss'
+          type: SIMPLE
+          key: icmppingloss
+          delay: 2m
+          history: 1w
+          value_type: FLOAT
+          units: '%'
+          description: 'Porcentagem de perda de pacotes por PING'
+          applications:
+            -
+              name: Status
+          triggers:
+            -
+              expression: '{min(5m)}>{$ICMP_LOSS_WARN} and {min(5m)}<150'
+              name: 'High ICMP ping loss'
+              priority: WARNING
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+              dependencies:
+                -
+                  name: 'Unavailable by ICMP ping'
+                  expression: '{Template Module ICMP Ping:icmpping.max(#2)}=0'
+        -
+          name: 'ICMP response time'
+          type: SIMPLE
+          key: icmppingsec
+          history: 1w
+          value_type: FLOAT
+          units: s
+          description: 'Tempo de resposta do dispositivo por PING'
+          applications:
+            -
+              name: Status
+          triggers:
+            -
+              expression: '{avg(5m)}>{$ICMP_RESPONSE_TIME_WARN}'
+              name: 'High ICMP ping response time'
+              priority: WARNING
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+              dependencies:
+                -
+                  name: 'High ICMP ping loss'
+                  expression: '{Template Module ICMP Ping:icmppingloss.min(5m)}>{$ICMP_LOSS_WARN} and {Template Module ICMP Ping:icmppingloss.min(5m)}<150'
+                -
+                  name: 'Unavailable by ICMP ping'
+                  expression: '{Template Module ICMP Ping:icmpping.max(#2)}=0'
+      macros:
+        -
+          macro: '{$ICMP_LOSS_WARN}'
+          value: '20'
+        -
+          macro: '{$ICMP_RESPONSE_TIME_WARN}'
+          value: '0.15'
+  graphs:
+    -
+      name: 'ICMP loss'
+      graph_items:
+        -
+          sortorder: '1'
+          color: 199C0D
+          item:
+            host: 'Template Module ICMP Ping'
+            key: icmppingloss
+    -
+      name: 'ICMP ping'
+      graph_items:
+        -
+          sortorder: '1'
+          drawtype: GRADIENT_LINE
+          color: 199C0D
+          item:
+            host: 'Template Module ICMP Ping'
+            key: icmpping
+    -
+      name: 'ICMP response time'
+      graph_items:
+        -
+          sortorder: '1'
+          color: 199C0D
+          item:
+            host: 'Template Module ICMP Ping'
+            key: icmppingsec
+  value_maps:
+    -
+      name: 'Ping State'
+      mappings:
+        -
+          value: '0'
+          newvalue: Down
+        -
+          value: '1'
+          newvalue: Up

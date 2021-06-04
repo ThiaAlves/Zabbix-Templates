@@ -1,0 +1,126 @@
+zabbix_export:
+  version: '5.4'
+  date: '2021-05-28T02:07:29Z'
+  groups:
+    -
+      uuid: 57b7ae836ca64446ba2c296389c009b7
+      name: Templates/Modules
+  templates:
+    -
+      uuid: 8278f5e79ef2420cab500a147cc72009
+      template: 'Linux block devices SNMP'
+      name: 'Linux block devices SNMP'
+      description: |
+        MIBs used:
+        UCD-DISKIO-MIB
+        
+        Template tooling version used: 0.38
+      groups:
+        -
+          name: Templates/Modules
+      discovery_rules:
+        -
+          uuid: a85f20bbf86045438460bf439422aaec
+          name: 'Block devices discovery'
+          type: SNMP_AGENT
+          snmp_oid: 'discovery[{#DEVNAME},1.3.6.1.4.1.2021.13.15.1.1.2]'
+          key: 'vfs.dev.discovery[snmp]'
+          delay: 1h
+          filter:
+            evaltype: AND
+            conditions:
+              -
+                macro: '{#DEVNAME}'
+                value: '{$VFS.DEV.DEVNAME.MATCHES}'
+                formulaid: A
+              -
+                macro: '{#DEVNAME}'
+                value: '{$VFS.DEV.DEVNAME.NOT_MATCHES}'
+                operator: NOT_MATCHES_REGEX
+                formulaid: B
+          description: 'Block devices are discovered from UCD-DISKIO-MIB::diskIOTable (http://net-snmp.sourceforge.net/docs/mibs/ucdDiskIOMIB.html#diskIOTable)'
+          item_prototypes:
+            -
+              uuid: ed71e7a243594c3bb0c2055b5cfb6f62
+              name: '{#DEVNAME}: Disk read rate'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.2021.13.15.1.1.5.{#SNMPINDEX}'
+              key: 'vfs.dev.read.rate[diskIOReads.{#SNMPINDEX}]'
+              history: 7d
+              value_type: FLOAT
+              units: '!r/s'
+              description: |
+                MIB: UCD-DISKIO-MIB
+                The number of read accesses from this device since boot.
+              preprocessing:
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+              tags:
+                -
+                  tag: Application
+                  value: 'Disk {#DEVNAME}'
+            -
+              uuid: 5e96a297e7e54c0ba4607949c854edc8
+              name: '{#DEVNAME}: Disk utilization'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.2021.13.15.1.1.9.{#SNMPINDEX}'
+              key: 'vfs.dev.util[diskIOLA1.{#SNMPINDEX}]'
+              history: 7d
+              value_type: FLOAT
+              units: '%'
+              description: |
+                MIB: UCD-DISKIO-MIB
+                The 1 minute average load of disk (%)
+              tags:
+                -
+                  tag: Application
+                  value: 'Disk {#DEVNAME}'
+            -
+              uuid: a060b61ad4f24be299c0a9b2582dda87
+              name: '{#DEVNAME}: Disk write rate'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.2021.13.15.1.1.6.{#SNMPINDEX}'
+              key: 'vfs.dev.write.rate[diskIOWrites.{#SNMPINDEX}]'
+              history: 7d
+              value_type: FLOAT
+              units: '!w/s'
+              description: |
+                MIB: UCD-DISKIO-MIB
+                The number of write accesses from this device since boot.
+              preprocessing:
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+              tags:
+                -
+                  tag: Application
+                  value: 'Disk {#DEVNAME}'
+          graph_prototypes:
+            -
+              uuid: 15f4080e061d4b86a253709d56f444a5
+              name: '{#DEVNAME}: Disk read/write rates'
+              graph_items:
+                -
+                  color: 1A7C11
+                  item:
+                    host: 'Linux block devices SNMP'
+                    key: 'vfs.dev.read.rate[diskIOReads.{#SNMPINDEX}]'
+                -
+                  sortorder: '1'
+                  drawtype: GRADIENT_LINE
+                  color: 2774A4
+                  item:
+                    host: 'Linux block devices SNMP'
+                    key: 'vfs.dev.write.rate[diskIOWrites.{#SNMPINDEX}]'
+      macros:
+        -
+          macro: '{$VFS.DEV.DEVNAME.MATCHES}'
+          value: .+
+          description: 'This macro is used in block devices discovery. Can be overridden on the host or linked template level'
+        -
+          macro: '{$VFS.DEV.DEVNAME.NOT_MATCHES}'
+          value: '^(loop[0-9]*|sd[a-z][0-9]+|nbd[0-9]+|sr[0-9]+|fd[0-9]+|dm-[0-9]+|ram[0-9]+|ploop[a-z0-9]+|md[0-9]*|hcp[0-9]*|zram[0-9]*)'
+          description: 'This macro is used in block devices discovery. Can be overridden on the host or linked template level'

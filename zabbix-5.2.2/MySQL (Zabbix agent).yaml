@@ -1,0 +1,1594 @@
+zabbix_export:
+  version: '5.2'
+  date: '2021-06-04T11:11:14Z'
+  groups:
+    -
+      name: Templates/Databases
+  templates:
+    -
+      template: 'MySQL by Zabbix agent'
+      name: 'MySQL by Zabbix agent'
+      description: |
+        Requirements for template operation:
+        1.Install Zabbix agent and MySQL client.
+        2.Copy template_db_mysql.conf into folder with Zabbix agent configuration (/etc/zabbix/zabbix_agentd.d/ by default). Don't forget restart zabbix-agent. 
+        3.Create MySQL user for monitoring. For example:
+        CREATE USER 'zbx_monitor'@'%' IDENTIFIED BY '<password>';
+        GRANT REPLICATION CLIENT,PROCESS,SHOW DATABASES,SHOW VIEW ON *.* TO 'zbx_monitor'@'%';
+        For more information read the MYSQL documentation https://dev.mysql.com/doc/refman/8.0/en/grant.html , please. 
+        4.Create .my.cnf in home directory of Zabbix agent for Linux (/var/lib/zabbix by default ) or my.cnf in c:\ for Windows. For example:
+        [client]
+        user='zbx_monitor'
+        password='<password>'
+        
+        
+        You can discuss this template or leave feedback on our forum https://www.zabbix.com/forum/zabbix-suggestions-and-feedback/384189-discussion-thread-for-official-zabbix-template-db-mysql
+        
+        Template tooling version used: 0.38
+      groups:
+        -
+          name: Templates/Databases
+      applications:
+        -
+          name: MySQL
+        -
+          name: 'Zabbix raw items'
+      items:
+        -
+          name: 'MySQL: Aborted clients per second'
+          type: DEPENDENT
+          key: mysql.aborted_clients.rate
+          delay: '0'
+          history: 7d
+          value_type: FLOAT
+          description: 'O número de conexões que são abortadas por causa do cliente não ter fechado corretamente.'
+          applications:
+            -
+              name: MySQL
+          preprocessing:
+            -
+              type: XMLPATH
+              parameters:
+                - '/resultset/row[field/text()=''Aborted_clients'']/field[@name=''Value'']/text()'
+            -
+              type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+          master_item:
+            key: 'mysql.get_status_variables["{$MYSQL.HOST}","{$MYSQL.PORT}"]'
+        -
+          name: 'MySQL: Aborted connections per second'
+          type: DEPENDENT
+          key: mysql.aborted_connects.rate
+          delay: '0'
+          history: 7d
+          value_type: FLOAT
+          description: 'O número de tentativas falhas para se conectar ao MySQL server.'
+          applications:
+            -
+              name: MySQL
+          preprocessing:
+            -
+              type: XMLPATH
+              parameters:
+                - '/resultset/row[field/text()=''Aborted_connects'']/field[@name=''Value'']/text()'
+            -
+              type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+          master_item:
+            key: 'mysql.get_status_variables["{$MYSQL.HOST}","{$MYSQL.PORT}"]'
+          triggers:
+            -
+              expression: '{min(5m)}>{$MYSQL.ABORTED_CONN.MAX.WARN}'
+              name: 'MySQL: Server has aborted connections (over {$MYSQL.ABORTED_CONN.MAX.WARN} for 5m)'
+              priority: AVERAGE
+              description: 'O número de falhas na tentativa de conectar ao MySQL server é maior que {$MYSQL.ABORTED_CONN.MAX.WARN} nos últimos 5 minutos.'
+              dependencies:
+                -
+                  name: 'MySQL: Refused connections (max_connections limit reached)'
+                  expression: '{MySQL by Zabbix agent:mysql.connection_errors_max_connections.rate.last()}>0'
+        -
+          name: 'MySQL: Binlog cache disk use'
+          type: DEPENDENT
+          key: mysql.binlog_cache_disk_use
+          delay: '0'
+          history: 7d
+          value_type: FLOAT
+          description: 'Número de transações que usaram um cache de disco temporário porque não cabiam no cache de log binário regular, sendo maior que binlog_cache_size.'
+          applications:
+            -
+              name: MySQL
+          preprocessing:
+            -
+              type: XMLPATH
+              parameters:
+                - '/resultset/row[field/text()=''Binlog_cache_disk_use'']/field[@name=''Value'']/text()'
+            -
+              type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 6h
+          master_item:
+            key: 'mysql.get_status_variables["{$MYSQL.HOST}","{$MYSQL.PORT}"]'
+        -
+          name: 'MySQL: Buffer pool efficiency'
+          type: CALCULATED
+          key: mysql.buffer_pool_efficiency
+          value_type: FLOAT
+          units: '%'
+          params: |
+            last(mysql.innodb_buffer_pool_reads) / 
+            ( last(mysql.innodb_buffer_pool_read_requests) + 
+            ( last(mysql.innodb_buffer_pool_read_requests) = 0 ) ) * 100 * 
+            ( last(mysql.innodb_buffer_pool_read_requests) > 0 )
+          description: 'Mostra a eficácia com que o buffer pool está atendendo às leituras.'
+          applications:
+            -
+              name: MySQL
+        -
+          name: 'MySQL: Buffer pool utilization'
+          type: CALCULATED
+          key: mysql.buffer_pool_utilization
+          history: 7d
+          value_type: FLOAT
+          units: '%'
+          params: |
+            ( last(mysql.innodb_buffer_pool_pages_total) - 
+            last(mysql.innodb_buffer_pool_pages_free) ) / 
+            ( last(mysql.innodb_buffer_pool_pages_total) + 
+            ( last(mysql.innodb_buffer_pool_pages_total) = 0 ) ) * 100 * 
+            ( last(mysql.innodb_buffer_pool_pages_total) > 0 )
+          description: 'Proporção de páginas usadas em relação ao total de páginas no buffer pool.'
+          applications:
+            -
+              name: MySQL
+          triggers:
+            -
+              expression: '{max(5m)}<{$MYSQL.BUFF_UTIL.MIN.WARN}'
+              name: 'MySQL: Buffer pool utilization is too low (less {$MYSQL.BUFF_UTIL.MIN.WARN}% for 5m)'
+              priority: WARNING
+              description: 'A utilização do buffer pool é menor que {$MYSQL.BUFF_UTIL.MIN.WARN}% nos últimos 5 minutos.'
+        -
+          name: 'MySQL: Bytes received'
+          type: DEPENDENT
+          key: mysql.bytes_received.rate
+          delay: '0'
+          history: 7d
+          value_type: FLOAT
+          units: Bps
+          description: 'O número de bytes recebidos por todos os clientes'
+          applications:
+            -
+              name: MySQL
+          preprocessing:
+            -
+              type: XMLPATH
+              parameters:
+                - '/resultset/row[field/text()=''Bytes_received'']/field[@name=''Value'']/text()'
+            -
+              type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+          master_item:
+            key: 'mysql.get_status_variables["{$MYSQL.HOST}","{$MYSQL.PORT}"]'
+        -
+          name: 'MySQL: Bytes sent'
+          type: DEPENDENT
+          key: mysql.bytes_sent.rate
+          delay: '0'
+          history: 7d
+          value_type: FLOAT
+          units: Bps
+          description: 'O número de bytes enviados para todos os clientes.'
+          applications:
+            -
+              name: MySQL
+          preprocessing:
+            -
+              type: XMLPATH
+              parameters:
+                - '/resultset/row[field/text()=''Bytes_sent'']/field[@name=''Value'']/text()'
+            -
+              type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+          master_item:
+            key: 'mysql.get_status_variables["{$MYSQL.HOST}","{$MYSQL.PORT}"]'
+        -
+          name: 'MySQL: Command Delete per second'
+          type: DEPENDENT
+          key: mysql.com_delete.rate
+          delay: '0'
+          history: 7d
+          value_type: FLOAT
+          description: 'Indica o número de vezes que a operação ''DELETE'' foi executada'
+          applications:
+            -
+              name: MySQL
+          preprocessing:
+            -
+              type: XMLPATH
+              parameters:
+                - '/resultset/row[field/text()=''Com_delete'']/field[@name=''Value'']/text()'
+            -
+              type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+          master_item:
+            key: 'mysql.get_status_variables["{$MYSQL.HOST}","{$MYSQL.PORT}"]'
+        -
+          name: 'MySQL: Command Insert per second'
+          type: DEPENDENT
+          key: mysql.com_insert.rate
+          delay: '0'
+          history: 7d
+          value_type: FLOAT
+          description: 'O número de vezes que a operação ''INSERT'' foi executada.'
+          applications:
+            -
+              name: MySQL
+          preprocessing:
+            -
+              type: XMLPATH
+              parameters:
+                - '/resultset/row[field/text()=''Com_insert'']/field[@name=''Value'']/text()'
+            -
+              type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+          master_item:
+            key: 'mysql.get_status_variables["{$MYSQL.HOST}","{$MYSQL.PORT}"]'
+        -
+          name: 'MySQL: Command Select per second'
+          type: DEPENDENT
+          key: mysql.com_select.rate
+          delay: '0'
+          history: 7d
+          value_type: FLOAT
+          description: 'O número de vezes que a operação ''SELECT'' foi executada'
+          applications:
+            -
+              name: MySQL
+          preprocessing:
+            -
+              type: XMLPATH
+              parameters:
+                - '/resultset/row[field/text()=''Com_select'']/field[@name=''Value'']/text()'
+            -
+              type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+          master_item:
+            key: 'mysql.get_status_variables["{$MYSQL.HOST}","{$MYSQL.PORT}"]'
+        -
+          name: 'MySQL: Command Update per second'
+          type: DEPENDENT
+          key: mysql.com_update.rate
+          delay: '0'
+          history: 7d
+          value_type: FLOAT
+          description: 'O número de vezes que a operação ''UPDATE'' foi executada'
+          applications:
+            -
+              name: MySQL
+          preprocessing:
+            -
+              type: XMLPATH
+              parameters:
+                - '/resultset/row[field/text()=''Com_update'']/field[@name=''Value'']/text()'
+            -
+              type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+          master_item:
+            key: 'mysql.get_status_variables["{$MYSQL.HOST}","{$MYSQL.PORT}"]'
+        -
+          name: 'MySQL: Connections per second'
+          type: DEPENDENT
+          key: mysql.connections.rate
+          delay: '0'
+          history: 7d
+          value_type: FLOAT
+          description: 'O número de tentativas de conexão ao MySQL server.'
+          applications:
+            -
+              name: MySQL
+          preprocessing:
+            -
+              type: XMLPATH
+              parameters:
+                - '/resultset/row[field/text()=''Connections'']/field[@name=''Value'']/text()'
+            -
+              type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+          master_item:
+            key: 'mysql.get_status_variables["{$MYSQL.HOST}","{$MYSQL.PORT}"]'
+        -
+          name: 'MySQL: Connection errors accept per second'
+          type: DEPENDENT
+          key: mysql.connection_errors_accept.rate
+          delay: '0'
+          history: 7d
+          value_type: FLOAT
+          description: 'Número de erros que ocorreram durante chamadas de ''accept'''
+          applications:
+            -
+              name: MySQL
+          preprocessing:
+            -
+              type: XMLPATH
+              parameters:
+                - '/resultset/row[field/text()=''Connection_errors_accept'']/field[@name=''Value'']/text()'
+            -
+              type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+          master_item:
+            key: 'mysql.get_status_variables["{$MYSQL.HOST}","{$MYSQL.PORT}"]'
+        -
+          name: 'MySQL: Connection errors internal per second'
+          type: DEPENDENT
+          key: mysql.connection_errors_internal.rate
+          delay: '0'
+          history: 7d
+          value_type: FLOAT
+          description: 'Número de conexões recusadas.'
+          applications:
+            -
+              name: MySQL
+          preprocessing:
+            -
+              type: XMLPATH
+              parameters:
+                - '/resultset/row[field/text()=''Connection_errors_internal'']/field[@name=''Value'']/text()'
+            -
+              type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+          master_item:
+            key: 'mysql.get_status_variables["{$MYSQL.HOST}","{$MYSQL.PORT}"]'
+        -
+          name: 'MySQL: Connection errors max connections per second'
+          type: DEPENDENT
+          key: mysql.connection_errors_max_connections.rate
+          delay: '0'
+          history: 7d
+          value_type: FLOAT
+          description: 'Número de conexões recusadas por causa do limite de max_connections atingida'
+          applications:
+            -
+              name: MySQL
+          preprocessing:
+            -
+              type: XMLPATH
+              parameters:
+                - '/resultset/row[field/text()=''Connection_errors_max_connections'']/field[@name=''Value'']/text()'
+            -
+              type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+          master_item:
+            key: 'mysql.get_status_variables["{$MYSQL.HOST}","{$MYSQL.PORT}"]'
+          triggers:
+            -
+              expression: '{last()}>0'
+              name: 'MySQL: Refused connections (max_connections limit reached)'
+              priority: AVERAGE
+              description: 'Número máximo de conexões atingido'
+        -
+          name: 'MySQL: Connection errors peer address per second'
+          type: DEPENDENT
+          key: mysql.connection_errors_peer_address.rate
+          delay: '0'
+          history: 7d
+          value_type: FLOAT
+          description: 'Número de erros enquanto procurando pela conexão IP'
+          applications:
+            -
+              name: MySQL
+          preprocessing:
+            -
+              type: XMLPATH
+              parameters:
+                - '/resultset/row[field/text()=''Connection_errors_peer_address'']/field[@name=''Value'']/text()'
+            -
+              type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+          master_item:
+            key: 'mysql.get_status_variables["{$MYSQL.HOST}","{$MYSQL.PORT}"]'
+        -
+          name: 'MySQL: Connection errors select per second'
+          type: DEPENDENT
+          key: mysql.connection_errors_select.rate
+          delay: '0'
+          history: 7d
+          value_type: FLOAT
+          description: 'Número de erros durante chamadas de ''select()'' ou poll() .'
+          applications:
+            -
+              name: MySQL
+          preprocessing:
+            -
+              type: XMLPATH
+              parameters:
+                - '/resultset/row[field/text()=''Connection_errors_select'']/field[@name=''Value'']/text()'
+            -
+              type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+          master_item:
+            key: 'mysql.get_status_variables["{$MYSQL.HOST}","{$MYSQL.PORT}"]'
+        -
+          name: 'MySQL: Connection errors tcpwrap per second'
+          type: DEPENDENT
+          key: mysql.connection_errors_tcpwrap.rate
+          delay: '0'
+          history: 7d
+          value_type: FLOAT
+          description: 'Número de conexões para libwrap library recusadas'
+          applications:
+            -
+              name: MySQL
+          preprocessing:
+            -
+              type: XMLPATH
+              parameters:
+                - '/resultset/row[field/text()=''Connection_errors_tcpwrap'']/field[@name=''Value'']/text()'
+            -
+              type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+          master_item:
+            key: 'mysql.get_status_variables["{$MYSQL.HOST}","{$MYSQL.PORT}"]'
+        -
+          name: 'MySQL: Created tmp tables on disk per second'
+          type: DEPENDENT
+          key: mysql.created_tmp_disk_tables.rate
+          delay: '0'
+          history: 7d
+          value_type: FLOAT
+          description: 'O número interno on-disk tabelas temporárias creadas pelo servidor enquanto executa statements.'
+          applications:
+            -
+              name: MySQL
+          preprocessing:
+            -
+              type: XMLPATH
+              parameters:
+                - '/resultset/row[field/text()=''Created_tmp_disk_tables'']/field[@name=''Value'']/text()'
+            -
+              type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+          master_item:
+            key: 'mysql.get_status_variables["{$MYSQL.HOST}","{$MYSQL.PORT}"]'
+          triggers:
+            -
+              expression: '{min(5m)}>{$MYSQL.CREATED_TMP_DISK_TABLES.MAX.WARN}'
+              name: 'MySQL: Number of on-disk temporary tables created per second is high (over {$MYSQL.CREATED_TMP_DISK_TABLES.MAX.WARN} for 5m)'
+              priority: WARNING
+              description: 'Possivelmente a aplicação usando o banco de dados precisa de uma otimização'
+        -
+          name: 'MySQL: Created tmp files on disk per second'
+          type: DEPENDENT
+          key: mysql.created_tmp_files.rate
+          delay: '0'
+          history: 7d
+          value_type: FLOAT
+          description: 'Quantidade de arquivos temporários mysqld criados'
+          applications:
+            -
+              name: MySQL
+          preprocessing:
+            -
+              type: XMLPATH
+              parameters:
+                - '/resultset/row[field/text()=''Created_tmp_files'']/field[@name=''Value'']/text()'
+            -
+              type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+          master_item:
+            key: 'mysql.get_status_variables["{$MYSQL.HOST}","{$MYSQL.PORT}"]'
+          triggers:
+            -
+              expression: '{min(5m)}>{$MYSQL.CREATED_TMP_FILES.MAX.WARN}'
+              name: 'MySQL: Number of temporary files created per second is high (over {$MYSQL.CREATED_TMP_FILES.MAX.WARN} for 5m)'
+              priority: WARNING
+              description: 'Possivelmente a aplicação usando o banco de dados precisa de uma otimização'
+        -
+          name: 'MySQL: Created tmp tables on memory per second'
+          type: DEPENDENT
+          key: mysql.created_tmp_tables.rate
+          delay: '0'
+          history: 7d
+          value_type: FLOAT
+          description: 'O número interno de criação de tabelas temporárias pelo servidor enquanto executa statements.'
+          applications:
+            -
+              name: MySQL
+          preprocessing:
+            -
+              type: XMLPATH
+              parameters:
+                - '/resultset/row[field/text()=''Created_tmp_tables'']/field[@name=''Value'']/text()'
+            -
+              type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+          master_item:
+            key: 'mysql.get_status_variables["{$MYSQL.HOST}","{$MYSQL.PORT}"]'
+          triggers:
+            -
+              expression: '{min(5m)}>{$MYSQL.CREATED_TMP_TABLES.MAX.WARN}'
+              name: 'MySQL: Number of internal temporary tables created per second is high (over {$MYSQL.CREATED_TMP_TABLES.MAX.WARN} for 5m)'
+              priority: WARNING
+              description: 'prossivelmente a aplicação usando o banco de dados precisa de uma otimização'
+        -
+          name: 'MySQL: Get status variables'
+          key: 'mysql.get_status_variables["{$MYSQL.HOST}","{$MYSQL.PORT}"]'
+          trends: '0'
+          value_type: TEXT
+          description: 'O item que puxa todas as informações do template'
+          applications:
+            -
+              name: 'Zabbix raw items'
+        -
+          name: 'MySQL: InnoDB buffer pool pages free'
+          type: DEPENDENT
+          key: mysql.innodb_buffer_pool_pages_free
+          delay: '0'
+          history: 7d
+          description: 'O espaço total do InnoDB buffer pool nas páginas.'
+          applications:
+            -
+              name: MySQL
+          preprocessing:
+            -
+              type: XMLPATH
+              parameters:
+                - '/resultset/row[field/text()=''Innodb_buffer_pool_pages_free'']/field[@name=''Value'']/text()'
+          master_item:
+            key: 'mysql.get_status_variables["{$MYSQL.HOST}","{$MYSQL.PORT}"]'
+        -
+          name: 'MySQL: InnoDB buffer pool pages total'
+          type: DEPENDENT
+          key: mysql.innodb_buffer_pool_pages_total
+          delay: '0'
+          history: 7d
+          description: 'O espaço total do InnoDB buffer pool, nas páginas'
+          applications:
+            -
+              name: MySQL
+          preprocessing:
+            -
+              type: XMLPATH
+              parameters:
+                - '/resultset/row[field/text()=''Innodb_buffer_pool_pages_total'']/field[@name=''Value'']/text()'
+            -
+              type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+          master_item:
+            key: 'mysql.get_status_variables["{$MYSQL.HOST}","{$MYSQL.PORT}"]'
+        -
+          name: 'MySQL: InnoDB buffer pool reads'
+          type: DEPENDENT
+          key: mysql.innodb_buffer_pool_reads
+          delay: '0'
+          history: 7d
+          description: 'The number of logical reads that InnoDB could not satisfy from the buffer pool, and had to read directly from disk.'
+          applications:
+            -
+              name: 'Zabbix raw items'
+          preprocessing:
+            -
+              type: XMLPATH
+              parameters:
+                - '/resultset/row[field/text()=''Innodb_buffer_pool_reads'']/field[@name=''Value'']/text()'
+          master_item:
+            key: 'mysql.get_status_variables["{$MYSQL.HOST}","{$MYSQL.PORT}"]'
+        -
+          name: 'MySQL: InnoDB buffer pool reads per second'
+          type: DEPENDENT
+          key: mysql.innodb_buffer_pool_reads.rate
+          delay: '0'
+          history: 7d
+          value_type: FLOAT
+          description: 'The number of logical reads per second that InnoDB could not satisfy from the buffer pool, and had to read directly from disk.'
+          applications:
+            -
+              name: MySQL
+          preprocessing:
+            -
+              type: XMLPATH
+              parameters:
+                - '/resultset/row[field/text()=''Innodb_buffer_pool_reads'']/field[@name=''Value'']/text()'
+            -
+              type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+          master_item:
+            key: 'mysql.get_status_variables["{$MYSQL.HOST}","{$MYSQL.PORT}"]'
+        -
+          name: 'MySQL: InnoDB buffer pool read requests'
+          type: DEPENDENT
+          key: mysql.innodb_buffer_pool_read_requests
+          delay: '0'
+          history: 7d
+          description: 'O número lógico de leitura de requisições'
+          applications:
+            -
+              name: 'Zabbix raw items'
+          preprocessing:
+            -
+              type: XMLPATH
+              parameters:
+                - '/resultset/row[field/text()=''Innodb_buffer_pool_read_requests'']/field[@name=''Value'']/text()'
+          master_item:
+            key: 'mysql.get_status_variables["{$MYSQL.HOST}","{$MYSQL.PORT}"]'
+        -
+          name: 'MySQL: InnoDB buffer pool read requests per second'
+          type: DEPENDENT
+          key: mysql.innodb_buffer_pool_read_requests.rate
+          delay: '0'
+          history: 7d
+          value_type: FLOAT
+          description: 'O número lógico de leitura de requisições por segundo.'
+          applications:
+            -
+              name: MySQL
+          preprocessing:
+            -
+              type: XMLPATH
+              parameters:
+                - '/resultset/row[field/text()=''Innodb_buffer_pool_read_requests'']/field[@name=''Value'']/text()'
+            -
+              type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+          master_item:
+            key: 'mysql.get_status_variables["{$MYSQL.HOST}","{$MYSQL.PORT}"]'
+        -
+          name: 'MySQL: Innodb buffer pool wait free'
+          type: DEPENDENT
+          key: mysql.innodb_buffer_pool_wait_free
+          delay: '0'
+          history: 7d
+          value_type: FLOAT
+          description: 'Number of times InnoDB waited for a free page before reading or creating a page. Normally, writes to the InnoDB buffer pool happen in the background. When no clean pages are available, dirty pages are flushed first in order to free some up. This counts the numbers of wait for this operation to finish. If this value is not small, look at increasing innodb_buffer_pool_size.'
+          applications:
+            -
+              name: MySQL
+          preprocessing:
+            -
+              type: XMLPATH
+              parameters:
+                - '/resultset/row[field/text()=''Innodb_buffer_pool_wait_free'']/field[@name=''Value'']/text()'
+            -
+              type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 6h
+          master_item:
+            key: 'mysql.get_status_variables["{$MYSQL.HOST}","{$MYSQL.PORT}"]'
+        -
+          name: 'MySQL: Calculated value of innodb_log_file_size'
+          type: CALCULATED
+          key: mysql.innodb_log_file_size
+          value_type: FLOAT
+          params: '(last(mysql.innodb_os_log_written) - last(mysql.innodb_os_log_written,1h)) / {$MYSQL.INNODB_LOG_FILES}'
+          description: 'Innodb_log_file_size é o tamanho em bytes de cada arquivo de redo log do InnoDB no grupo de log. O tamanho combinado não pode ser superior a 512 GB. Valores maiores significam menos I/ O de disco devido a menos atividade de ponto de verificação de limpeza, mas também recuperação mais lenta de uma falha.'
+          applications:
+            -
+              name: MySQL
+          preprocessing:
+            -
+              type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 6h
+        -
+          name: 'MySQL: Innodb number open files'
+          type: DEPENDENT
+          key: mysql.innodb_num_open_files
+          delay: '0'
+          history: 7d
+          value_type: FLOAT
+          description: 'Número de arquivos abertos mantidos no InnoDB.'
+          applications:
+            -
+              name: MySQL
+          preprocessing:
+            -
+              type: XMLPATH
+              parameters:
+                - '/resultset/row[field/text()=''Innodb_num_open_files'']/field[@name=''Value'']/text()'
+            -
+              type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 6h
+          master_item:
+            key: 'mysql.get_status_variables["{$MYSQL.HOST}","{$MYSQL.PORT}"]'
+        -
+          name: 'MySQL: Innodb log written'
+          type: DEPENDENT
+          key: mysql.innodb_os_log_written
+          delay: '0'
+          history: 7d
+          value_type: FLOAT
+          units: B
+          description: 'Número de bytes escrevendo no InnoDB log.'
+          applications:
+            -
+              name: MySQL
+          preprocessing:
+            -
+              type: XMLPATH
+              parameters:
+                - '/resultset/row[field/text()=''Innodb_os_log_written'']/field[@name=''Value'']/text()'
+          master_item:
+            key: 'mysql.get_status_variables["{$MYSQL.HOST}","{$MYSQL.PORT}"]'
+        -
+          name: 'MySQL: InnoDB row lock time'
+          type: DEPENDENT
+          key: mysql.innodb_row_lock_time
+          delay: '0'
+          history: 7d
+          value_type: FLOAT
+          units: s
+          description: 'O número total gasto adquirindo travas paro InnoDB tables, em milisegundos'
+          applications:
+            -
+              name: MySQL
+          preprocessing:
+            -
+              type: XMLPATH
+              parameters:
+                - '/resultset/row[field/text()=''Innodb_row_lock_time'']/field[@name=''Value'']/text()'
+            -
+              type: MULTIPLIER
+              parameters:
+                - '0.001'
+            -
+              type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+          master_item:
+            key: 'mysql.get_status_variables["{$MYSQL.HOST}","{$MYSQL.PORT}"]'
+        -
+          name: 'MySQL: InnoDB row lock time max'
+          type: DEPENDENT
+          key: mysql.innodb_row_lock_time_max
+          delay: '0'
+          history: 7d
+          value_type: FLOAT
+          units: s
+          description: 'O máximo de vezes adquirindo travas no InnoDB tables, em milisegundos.'
+          applications:
+            -
+              name: MySQL
+          preprocessing:
+            -
+              type: XMLPATH
+              parameters:
+                - '/resultset/row[field/text()=''Innodb_row_lock_time_max'']/field[@name=''Value'']/text()'
+            -
+              type: MULTIPLIER
+              parameters:
+                - '0.001'
+            -
+              type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+          master_item:
+            key: 'mysql.get_status_variables["{$MYSQL.HOST}","{$MYSQL.PORT}"]'
+        -
+          name: 'MySQL: InnoDB row lock waits'
+          type: DEPENDENT
+          key: mysql.innodb_row_lock_waits
+          delay: '0'
+          history: 7d
+          description: 'O número de operações do InnoDB mantidas para esperar pelo fechamento'
+          applications:
+            -
+              name: MySQL
+          preprocessing:
+            -
+              type: XMLPATH
+              parameters:
+                - '/resultset/row[field/text()=''Innodb_row_lock_waits'']/field[@name=''Value'']/text()'
+          master_item:
+            key: 'mysql.get_status_variables["{$MYSQL.HOST}","{$MYSQL.PORT}"]'
+        -
+          name: 'MySQL: Max used connections'
+          type: DEPENDENT
+          key: mysql.max_used_connections
+          delay: '0'
+          history: 7d
+          description: 'O número máximo de conexões que ocorrem simultaneamente depois do servidor iniciar.'
+          applications:
+            -
+              name: MySQL
+          preprocessing:
+            -
+              type: XMLPATH
+              parameters:
+                - '/resultset/row[field/text()=''Max_used_connections'']/field[@name=''Value'']/text()'
+            -
+              type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+          master_item:
+            key: 'mysql.get_status_variables["{$MYSQL.HOST}","{$MYSQL.PORT}"]'
+        -
+          name: 'MySQL: Open tables'
+          type: DEPENDENT
+          key: mysql.open_tables
+          delay: '0'
+          history: 7d
+          value_type: FLOAT
+          description: 'O número de tabelas que são abertas.'
+          applications:
+            -
+              name: MySQL
+          preprocessing:
+            -
+              type: XMLPATH
+              parameters:
+                - '/resultset/row[field/text()=''Open_tables'']/field[@name=''Value'']/text()'
+            -
+              type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 6h
+          master_item:
+            key: 'mysql.get_status_variables["{$MYSQL.HOST}","{$MYSQL.PORT}"]'
+        -
+          name: 'MySQL: Open table definitions'
+          type: DEPENDENT
+          key: mysql.open_table_definitions
+          delay: '0'
+          history: 7d
+          value_type: FLOAT
+          description: 'O número do cache da tabela de definição.'
+          applications:
+            -
+              name: MySQL
+          preprocessing:
+            -
+              type: XMLPATH
+              parameters:
+                - '/resultset/row[field/text()=''Open_table_definitions'']/field[@name=''Value'']/text()'
+            -
+              type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 6h
+          master_item:
+            key: 'mysql.get_status_variables["{$MYSQL.HOST}","{$MYSQL.PORT}"]'
+        -
+          name: 'MySQL: Status'
+          key: 'mysql.ping["{$MYSQL.HOST}","{$MYSQL.PORT}"]'
+          description: 'Status do MySQL'
+          applications:
+            -
+              name: MySQL
+          preprocessing:
+            -
+              type: JAVASCRIPT
+              parameters:
+                - 'return value.indexOf(''is alive'') !== -1 ? 1 : 0;'
+            -
+              type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 10m
+          triggers:
+            -
+              expression: '{last()}=0'
+              name: 'MySQL: Service is down'
+              priority: HIGH
+              description: 'MySQL em estado de DOWN.'
+        -
+          name: 'MySQL: Queries per second'
+          type: DEPENDENT
+          key: mysql.queries.rate
+          delay: '0'
+          history: 7d
+          value_type: FLOAT
+          description: 'O número de declarações executadas pelo servidor. Essa variável inclui declarações executadas com programas stored.'
+          applications:
+            -
+              name: MySQL
+          preprocessing:
+            -
+              type: XMLPATH
+              parameters:
+                - '/resultset/row[field/text()=''Queries'']/field[@name=''Value'']/text()'
+            -
+              type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+          master_item:
+            key: 'mysql.get_status_variables["{$MYSQL.HOST}","{$MYSQL.PORT}"]'
+        -
+          name: 'MySQL: Questions per second'
+          type: DEPENDENT
+          key: mysql.questions.rate
+          delay: '0'
+          history: 7d
+          value_type: FLOAT
+          description: 'O número de declaraões executadas pelo servidor. Inclui somente declarações enviadas para o servidor por clientes sem declãraçoes executadas em programas de guarnição.'
+          applications:
+            -
+              name: MySQL
+          preprocessing:
+            -
+              type: XMLPATH
+              parameters:
+                - '/resultset/row[field/text()=''Questions'']/field[@name=''Value'']/text()'
+            -
+              type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+          master_item:
+            key: 'mysql.get_status_variables["{$MYSQL.HOST}","{$MYSQL.PORT}"]'
+        -
+          name: 'MySQL: Slow queries per second'
+          type: DEPENDENT
+          key: mysql.slow_queries.rate
+          delay: '0'
+          history: 7d
+          value_type: FLOAT
+          description: 'O número de queries que passam mais do que long_query_time seconds.'
+          applications:
+            -
+              name: MySQL
+          preprocessing:
+            -
+              type: XMLPATH
+              parameters:
+                - '/resultset/row[field/text()=''Slow_queries'']/field[@name=''Value'']/text()'
+            -
+              type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+          master_item:
+            key: 'mysql.get_status_variables["{$MYSQL.HOST}","{$MYSQL.PORT}"]'
+          triggers:
+            -
+              expression: '{min(5m)}>{$MYSQL.SLOW_QUERIES.MAX.WARN}'
+              name: 'MySQL: Server has slow queries (over {$MYSQL.SLOW_QUERIES.MAX.WARN} for 5m)'
+              priority: WARNING
+              description: 'O número de slow queries é maior que {$MYSQL.SLOW_QUERIES.MAX.WARN} nos últimos 5 minutos.'
+        -
+          name: 'MySQL: Thread cached'
+          type: DEPENDENT
+          key: mysql.threads_cached
+          delay: '0'
+          history: 7d
+          description: 'O número de threads no threads cache.'
+          applications:
+            -
+              name: MySQL
+          preprocessing:
+            -
+              type: XMLPATH
+              parameters:
+                - '/resultset/row[field/text()=''Threads_cached'']/field[@name=''Value'']/text()'
+          master_item:
+            key: 'mysql.get_status_variables["{$MYSQL.HOST}","{$MYSQL.PORT}"]'
+        -
+          name: 'MySQL: Threads connected'
+          type: DEPENDENT
+          key: mysql.threads_connected
+          delay: '0'
+          history: 7d
+          description: 'O número atual de conexões abertas.'
+          applications:
+            -
+              name: MySQL
+          preprocessing:
+            -
+              type: XMLPATH
+              parameters:
+                - '/resultset/row[field/text()=''Threads_connected'']/field[@name=''Value'']/text()'
+          master_item:
+            key: 'mysql.get_status_variables["{$MYSQL.HOST}","{$MYSQL.PORT}"]'
+        -
+          name: 'MySQL: Threads created per second'
+          type: DEPENDENT
+          key: mysql.threads_created.rate
+          delay: '0'
+          history: 7d
+          value_type: FLOAT
+          description: 'O número de threads criados lidadas pela conexão. If Threads_created é grande, voce deve querer aumentar o thread_cache_size value. O cache perdido pode ser calculado como Threads_created/Connections.'
+          applications:
+            -
+              name: MySQL
+          preprocessing:
+            -
+              type: XMLPATH
+              parameters:
+                - '/resultset/row[field/text()=''Threads_created'']/field[@name=''Value'']/text()'
+            -
+              type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+          master_item:
+            key: 'mysql.get_status_variables["{$MYSQL.HOST}","{$MYSQL.PORT}"]'
+        -
+          name: 'MySQL: Threads running'
+          type: DEPENDENT
+          key: mysql.threads_running
+          delay: '0'
+          history: 7d
+          description: 'O número de threads que naõ estão dormindo.'
+          applications:
+            -
+              name: MySQL
+          preprocessing:
+            -
+              type: XMLPATH
+              parameters:
+                - '/resultset/row[field/text()=''Threads_running'']/field[@name=''Value'']/text()'
+          master_item:
+            key: 'mysql.get_status_variables["{$MYSQL.HOST}","{$MYSQL.PORT}"]'
+        -
+          name: 'MySQL: Uptime'
+          type: DEPENDENT
+          key: mysql.uptime
+          delay: '0'
+          history: 7d
+          units: uptime
+          description: 'Tempo ativo do do serviço MySQL.'
+          applications:
+            -
+              name: MySQL
+          preprocessing:
+            -
+              type: XMLPATH
+              parameters:
+                - '/resultset/row[field/text()=''Uptime'']/field[@name=''Value'']/text()'
+          master_item:
+            key: 'mysql.get_status_variables["{$MYSQL.HOST}","{$MYSQL.PORT}"]'
+          triggers:
+            -
+              expression: '{nodata(30m)}=1'
+              name: 'MySQL: Failed to fetch info data (or no data for 30m)'
+              priority: INFO
+              description: 'Zabbix não recebeu dados do MySQL por 30 minutos'
+              dependencies:
+                -
+                  name: 'MySQL: Service is down'
+                  expression: '{MySQL by Zabbix agent:mysql.ping["{$MYSQL.HOST}","{$MYSQL.PORT}"].last()}=0'
+            -
+              expression: '{last()}<10m'
+              name: 'MySQL: Service has been restarted (uptime < 10m)'
+              priority: INFO
+              description: 'Serviço MySQL foi reiniciado'
+        -
+          name: 'MySQL: Version'
+          key: 'mysql.version["{$MYSQL.HOST}","{$MYSQL.PORT}"]'
+          delay: 15m
+          trends: '0'
+          value_type: CHAR
+          description: 'Versão do MySQL'
+          applications:
+            -
+              name: MySQL
+          preprocessing:
+            -
+              type: REGEX
+              parameters:
+                - '(Server version)\s+(.+)'
+                - \2
+            -
+              type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1d
+          triggers:
+            -
+              expression: '{diff()}=1 and {strlen()}>0'
+              name: 'MySQL: Version has changed (new version value receives: {ITEM.VALUE})'
+              priority: INFO
+              description: 'Versão do MySQL alterada.'
+      discovery_rules:
+        -
+          name: 'Databases discovery'
+          key: 'mysql.db.discovery["{$MYSQL.HOST}","{$MYSQL.PORT}"]'
+          delay: 1h
+          filter:
+            conditions:
+              -
+                macro: '{#DBNAME}'
+                value: information_schema
+                operator: NOT_MATCHES_REGEX
+                formulaid: A
+          item_prototypes:
+            -
+              name: 'MySQL: Size of database {#DBNAME}'
+              key: 'mysql.dbsize["{$MYSQL.HOST}","{$MYSQL.PORT}","{#DBNAME}"]'
+              delay: 5m
+              units: B
+              description: 'Tamanho do Banco de dados'
+              applications:
+                -
+                  name: MySQL
+              preprocessing:
+                -
+                  type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - 1h
+          preprocessing:
+            -
+              type: JAVASCRIPT
+              parameters:
+                - |
+                  return JSON.stringify(value.split("\n").map(function (name) {
+                      return ({"{#DBNAME}": name});
+                  }));
+            -
+              type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1d
+        -
+          name: 'MariaDB discovery'
+          type: DEPENDENT
+          key: mysql.extra_metric.discovery
+          delay: '0'
+          item_prototypes:
+            -
+              name: 'MySQL: Binlog commits'
+              type: DEPENDENT
+              key: 'mysql.binlog_commits[{#SINGLETON}]'
+              delay: '0'
+              history: 7d
+              value_type: FLOAT
+              description: 'Número total de transações comprometidas para o binary log.'
+              applications:
+                -
+                  name: MySQL
+              preprocessing:
+                -
+                  type: XMLPATH
+                  parameters:
+                    - '/resultset/row[field/text()=''Binlog_commits'']/field[@name=''Value'']/text()'
+              master_item:
+                key: 'mysql.get_status_variables["{$MYSQL.HOST}","{$MYSQL.PORT}"]'
+            -
+              name: 'MySQL: Binlog group commits'
+              type: DEPENDENT
+              key: 'mysql.binlog_group_commits[{#SINGLETON}]'
+              delay: '0'
+              history: 7d
+              value_type: FLOAT
+              description: 'Número total do grupo comprometido para o binary log.'
+              applications:
+                -
+                  name: MySQL
+              preprocessing:
+                -
+                  type: XMLPATH
+                  parameters:
+                    - '/resultset/row[field/text()=''Binlog_group_commits'']/field[@name=''Value'']/text()'
+              master_item:
+                key: 'mysql.get_status_variables["{$MYSQL.HOST}","{$MYSQL.PORT}"]'
+            -
+              name: 'MySQL: Master GTID wait count'
+              type: DEPENDENT
+              key: 'mysql.master_gtid_wait_count[{#SINGLETON}]'
+              delay: '0'
+              history: 7d
+              value_type: FLOAT
+              description: 'Número de vezes MASTER_GTID_WAIT chamados.'
+              applications:
+                -
+                  name: MySQL
+              preprocessing:
+                -
+                  type: XMLPATH
+                  parameters:
+                    - '/resultset/row[field/text()=''Master_gtid_wait_count'']/field[@name=''Value'']/text()'
+                -
+                  type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - 6h
+              master_item:
+                key: 'mysql.get_status_variables["{$MYSQL.HOST}","{$MYSQL.PORT}"]'
+            -
+              name: 'MySQL: Master GTID wait timeouts'
+              type: DEPENDENT
+              key: 'mysql.master_gtid_wait_timeouts[{#SINGLETON}]'
+              delay: '0'
+              history: 7d
+              value_type: FLOAT
+              description: 'Número de tempo esgotado ocorrendo no MASTER_GTID_WAIT'
+              applications:
+                -
+                  name: MySQL
+              preprocessing:
+                -
+                  type: XMLPATH
+                  parameters:
+                    - '/resultset/row[field/text()=''Master_gtid_wait_timeouts'']/field[@name=''Value'']/text()'
+                -
+                  type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - 6h
+              master_item:
+                key: 'mysql.get_status_variables["{$MYSQL.HOST}","{$MYSQL.PORT}"]'
+            -
+              name: 'MySQL: Master GTID wait time'
+              type: DEPENDENT
+              key: 'mysql.master_gtid_wait_time[{#SINGLETON}]'
+              delay: '0'
+              history: 7d
+              value_type: FLOAT
+              description: 'O número de vezes gasto no MASTER_GTID_WAIT'
+              applications:
+                -
+                  name: MySQL
+              preprocessing:
+                -
+                  type: XMLPATH
+                  parameters:
+                    - '/resultset/row[field/text()=''Master_gtid_wait_time'']/field[@name=''Value'']/text()'
+                -
+                  type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - 6h
+              master_item:
+                key: 'mysql.get_status_variables["{$MYSQL.HOST}","{$MYSQL.PORT}"]'
+          master_item:
+            key: 'mysql.version["{$MYSQL.HOST}","{$MYSQL.PORT}"]'
+          preprocessing:
+            -
+              type: JAVASCRIPT
+              parameters:
+                - 'return JSON.stringify(value.search(''MariaDB'')>-1 ? [{''{#SINGLETON}'': ''''}] : []);'
+        -
+          name: 'Replication discovery'
+          key: 'mysql.replication.discovery["{$MYSQL.HOST}","{$MYSQL.PORT}"]'
+          delay: 1h
+          item_prototypes:
+            -
+              name: 'MySQL: Replication Seconds Behind Master {#MASTERHOST}'
+              type: DEPENDENT
+              key: 'mysql.seconds_behind_master["{#MASTERHOST}"]'
+              delay: '0'
+              history: 7d
+              units: s
+              description: |
+                The number of seconds that the slave SQL thread is behind processing the master binary log.
+                A high number (or an increasing one) can indicate that the slave is unable to handle events
+                from the master in a timely fashion.
+              applications:
+                -
+                  name: MySQL
+              preprocessing:
+                -
+                  type: XMLPATH
+                  parameters:
+                    - '/resultset/row/field[@name=''Seconds_Behind_Master'']/text()'
+                -
+                  type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - 1h
+                -
+                  type: NOT_MATCHES_REGEX
+                  parameters:
+                    - 'null'
+                  error_handler: CUSTOM_ERROR
+                  error_handler_params: 'Replication is not performed.'
+              master_item:
+                key: 'mysql.slave_status["{$MYSQL.HOST}","{$MYSQL.PORT}","{#MASTERHOST}"]'
+              trigger_prototypes:
+                -
+                  expression: '{min(5m)}>{$MYSQL.REPL_LAG.MAX.WARN}'
+                  name: 'MySQL: Replication lag is too high (over {$MYSQL.RPL_LAG.MAX.WARN} for 5m)'
+                  priority: WARNING
+            -
+              name: 'MySQL: Replication Slave IO Running {#MASTERHOST}'
+              type: DEPENDENT
+              key: 'mysql.slave_io_running["{#MASTERHOST}"]'
+              delay: '0'
+              history: 7d
+              trends: '0'
+              value_type: CHAR
+              description: |
+                Whether the I/O thread for reading the master's binary log is running. 
+                Normally, you want this to be Yes unless you have not yet started replication or have 
+                explicitly stopped it with STOP SLAVE.
+              applications:
+                -
+                  name: MySQL
+              preprocessing:
+                -
+                  type: XMLPATH
+                  parameters:
+                    - '/resultset/row/field[@name=''Slave_IO_Running'']/text()'
+                -
+                  type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - 1h
+              master_item:
+                key: 'mysql.slave_status["{$MYSQL.HOST}","{$MYSQL.PORT}","{#MASTERHOST}"]'
+              trigger_prototypes:
+                -
+                  expression: '{count(#1,"Yes",ne)}=1'
+                  name: 'MySQL: The slave I/O thread is not connected to a replication master'
+                  priority: WARNING
+                  dependencies:
+                    -
+                      name: 'MySQL: The slave I/O thread is not running'
+                      expression: '{MySQL by Zabbix agent:mysql.slave_io_running["{#MASTERHOST}"].count(#1,"No",eq)}=1'
+                -
+                  expression: '{count(#1,"No",eq)}=1'
+                  name: 'MySQL: The slave I/O thread is not running'
+                  priority: AVERAGE
+            -
+              name: 'MySQL: Replication Slave SQL Running {#MASTERHOST}'
+              type: DEPENDENT
+              key: 'mysql.slave_sql_running["{#MASTERHOST}"]'
+              delay: '0'
+              history: 7d
+              trends: '0'
+              value_type: CHAR
+              description: |
+                Whether the SQL thread for executing events in the relay log is running. 
+                As with the I/O thread, this should normally be Yes.
+              applications:
+                -
+                  name: MySQL
+              preprocessing:
+                -
+                  type: XMLPATH
+                  parameters:
+                    - '/resultset/row/field[@name=''Slave_SQL_Running'']/text()'
+                -
+                  type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - 1h
+              master_item:
+                key: 'mysql.slave_status["{$MYSQL.HOST}","{$MYSQL.PORT}","{#MASTERHOST}"]'
+              trigger_prototypes:
+                -
+                  expression: '{count(#1,"No",eq)}=1'
+                  name: 'MySQL: The SQL thread is not running'
+                  priority: WARNING
+                  dependencies:
+                    -
+                      name: 'MySQL: The slave I/O thread is not running'
+                      expression: '{MySQL by Zabbix agent:mysql.slave_io_running["{#MASTERHOST}"].count(#1,"No",eq)}=1'
+            -
+              name: 'MySQL: Replication Slave SQL Running State {#MASTER_HOST}'
+              type: DEPENDENT
+              key: 'mysql.slave_sql_running_state["{#MASTER_HOST}"]'
+              delay: '0'
+              history: 7d
+              trends: '0'
+              value_type: TEXT
+              description: 'This shows the state of the SQL driver threads.'
+              applications:
+                -
+                  name: MySQL
+              preprocessing:
+                -
+                  type: XMLPATH
+                  parameters:
+                    - '/resultset/row[field/text()=''Slave_SQL_Running_State'']/field[@name=''Value'']/text()'
+                -
+                  type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - 6h
+              master_item:
+                key: 'mysql.slave_status["{$MYSQL.HOST}","{$MYSQL.PORT}","{#MASTERHOST}"]'
+            -
+              name: 'MySQL: Replication Slave status {#MASTERHOST}'
+              key: 'mysql.slave_status["{$MYSQL.HOST}","{$MYSQL.PORT}","{#MASTERHOST}"]'
+              trends: '0'
+              value_type: TEXT
+              description: 'The item gets status information on essential parameters of the slave threads.'
+              applications:
+                -
+                  name: 'Zabbix raw items'
+          preprocessing:
+            -
+              type: JAVASCRIPT
+              parameters:
+                - |
+                  var matches = value.match(/Master_Host.*>(.*)<.*/);
+                  if (matches) {
+                      return JSON.stringify([{"{#MASTERHOST}": matches[1]}]);
+                  }
+                  
+                  return '[]';
+            -
+              type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1d
+      macros:
+        -
+          macro: '{$MYSQL.ABORTED_CONN.MAX.WARN}'
+          value: '3'
+          description: 'The number of failed attempts to connect to the MySQL server for trigger expression.'
+        -
+          macro: '{$MYSQL.BUFF_UTIL.MIN.WARN}'
+          value: '50'
+          description: 'The minimum buffer pool utilization in percent for trigger expression.'
+        -
+          macro: '{$MYSQL.CREATED_TMP_DISK_TABLES.MAX.WARN}'
+          value: '10'
+          description: 'The maximum number of created tmp tables on a disk per second for trigger expressions.'
+        -
+          macro: '{$MYSQL.CREATED_TMP_FILES.MAX.WARN}'
+          value: '10'
+          description: 'The maximum number of created tmp files on a disk per second for trigger expressions.'
+        -
+          macro: '{$MYSQL.CREATED_TMP_TABLES.MAX.WARN}'
+          value: '30'
+          description: 'The maximum number of created tmp tables in memory per second for trigger expressions.'
+        -
+          macro: '{$MYSQL.HOST}'
+          value: localhost
+          description: 'Hostname or IP of MySQL host or container.'
+        -
+          macro: '{$MYSQL.INNODB_LOG_FILES}'
+          value: '2'
+          description: 'Number of physical files in the InnoDB redo log for calculating innodb_log_file_size.'
+        -
+          macro: '{$MYSQL.PORT}'
+          value: '3306'
+          description: 'MySQL service port.'
+        -
+          macro: '{$MYSQL.REPL_LAG.MAX.WARN}'
+          value: 30m
+          description: 'The lag of slave from master for trigger expression.'
+        -
+          macro: '{$MYSQL.SLOW_QUERIES.MAX.WARN}'
+          value: '3'
+          description: 'The number of slow queries for trigger expression.'
+  graphs:
+    -
+      name: 'MySQL: Bandwidth'
+      graph_items:
+        -
+          sortorder: '1'
+          color: 199C0D
+          item:
+            host: 'MySQL by Zabbix agent'
+            key: mysql.bytes_received.rate
+        -
+          sortorder: '2'
+          color: F63100
+          item:
+            host: 'MySQL by Zabbix agent'
+            key: mysql.bytes_sent.rate
+    -
+      name: 'MySQL: Connections'
+      graph_items:
+        -
+          sortorder: '1'
+          color: 199C0D
+          item:
+            host: 'MySQL by Zabbix agent'
+            key: mysql.aborted_clients.rate
+        -
+          sortorder: '2'
+          color: F63100
+          item:
+            host: 'MySQL by Zabbix agent'
+            key: mysql.aborted_connects.rate
+        -
+          sortorder: '3'
+          color: 2774A4
+          item:
+            host: 'MySQL by Zabbix agent'
+            key: mysql.connections.rate
+        -
+          sortorder: '4'
+          color: F7941D
+          item:
+            host: 'MySQL by Zabbix agent'
+            key: mysql.max_used_connections
+    -
+      name: 'MySQL: InnoDB buffer pool'
+      graph_items:
+        -
+          sortorder: '1'
+          color: 199C0D
+          item:
+            host: 'MySQL by Zabbix agent'
+            key: mysql.innodb_buffer_pool_pages_free
+        -
+          sortorder: '2'
+          color: F63100
+          item:
+            host: 'MySQL by Zabbix agent'
+            key: mysql.innodb_buffer_pool_pages_total
+        -
+          sortorder: '3'
+          color: 2774A4
+          item:
+            host: 'MySQL by Zabbix agent'
+            key: mysql.innodb_buffer_pool_read_requests.rate
+        -
+          sortorder: '4'
+          color: F7941D
+          item:
+            host: 'MySQL by Zabbix agent'
+            key: mysql.innodb_buffer_pool_reads.rate
+    -
+      name: 'MySQL: Operations'
+      graph_items:
+        -
+          sortorder: '1'
+          color: 199C0D
+          item:
+            host: 'MySQL by Zabbix agent'
+            key: mysql.com_delete.rate
+        -
+          sortorder: '2'
+          color: F63100
+          item:
+            host: 'MySQL by Zabbix agent'
+            key: mysql.com_insert.rate
+        -
+          sortorder: '3'
+          color: 2774A4
+          item:
+            host: 'MySQL by Zabbix agent'
+            key: mysql.com_select.rate
+        -
+          sortorder: '4'
+          color: F7941D
+          item:
+            host: 'MySQL by Zabbix agent'
+            key: mysql.com_update.rate
+    -
+      name: 'MySQL: Queries'
+      graph_items:
+        -
+          sortorder: '1'
+          color: 199C0D
+          item:
+            host: 'MySQL by Zabbix agent'
+            key: mysql.queries.rate
+        -
+          sortorder: '2'
+          color: F63100
+          item:
+            host: 'MySQL by Zabbix agent'
+            key: mysql.questions.rate
+        -
+          sortorder: '3'
+          color: 2774A4
+          item:
+            host: 'MySQL by Zabbix agent'
+            key: mysql.slow_queries.rate
+    -
+      name: 'MySQL: Threads'
+      graph_items:
+        -
+          sortorder: '1'
+          color: 199C0D
+          item:
+            host: 'MySQL by Zabbix agent'
+            key: mysql.threads_cached
+        -
+          sortorder: '2'
+          color: F63100
+          item:
+            host: 'MySQL by Zabbix agent'
+            key: mysql.threads_connected
+        -
+          sortorder: '3'
+          color: 2774A4
+          item:
+            host: 'MySQL by Zabbix agent'
+            key: mysql.threads_created.rate
+        -
+          sortorder: '4'
+          color: F7941D
+          item:
+            host: 'MySQL by Zabbix agent'
+            key: mysql.threads_running

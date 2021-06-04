@@ -1,0 +1,1205 @@
+zabbix_export:
+  version: '5.4'
+  date: '2021-05-28T03:28:29Z'
+  groups:
+    -
+      uuid: 57b7ae836ca64446ba2c296389c009b7
+      name: Templates/Modules
+    -
+      uuid: 31a2c7b235b1462495f4bad087ee8943
+      name: 'Templates Huawei'
+  templates:
+    -
+      uuid: f6c031abaebb45929dba607260ff45b3
+      template: 'Template Optical Modules Huawei'
+      name: 'Template Optical Modules Huawei'
+      groups:
+        -
+          name: Templates/Modules
+        -
+          name: 'Templates Huawei'
+      discovery_rules:
+        -
+          uuid: c5600c6b8835487ea10f66f7b215dcbb
+          name: 'Network Optical Modules Multi Lane'
+          type: SNMP_AGENT
+          snmp_oid: 'discovery[{#SNMPVALUE},1.3.6.1.2.1.47.1.1.1.1.8,{#IFTYPE},1.3.6.1.2.1.47.1.1.1.1.2,{#TEMPERATURE},1.3.6.1.4.1.2011.5.25.31.1.1.3.1.5,{#IFNAME},1.3.6.1.2.1.47.1.1.1.1.7]'
+          key: net.optical.ml.discovery
+          filter:
+            evaltype: FORMULA
+            formula: 'A and B or C and B'
+            conditions:
+              -
+                macro: '{#IFNAME}'
+                value: 40GE
+                formulaid: A
+              -
+                macro: '{#IFNAME}'
+                value: 100GE
+                formulaid: C
+              -
+                macro: '{#TEMPERATURE}'
+                value: '-255'
+                operator: NOT_MATCHES_REGEX
+                formulaid: B
+          lifetime: 1d
+          item_prototypes:
+            -
+              uuid: 5f7fccf29609434c86470edfc60e1120
+              name: 'Optical Module Interface {#IFNAME}: RxPower Lane0'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.2011.5.25.31.1.1.3.1.32.{#SNMPINDEX}'
+              key: 'hwEntityOpticalLaneRxPowerMLLane0[{#SNMPINDEX}]'
+              delay: 5m
+              history: 10d
+              value_type: FLOAT
+              units: dBm
+              description: 'Rx Power Linha 0'
+              preprocessing:
+                -
+                  type: JAVASCRIPT
+                  parameters:
+                    - |
+                      var split = value.split(',');
+                      split = split.map(Number);
+                      value = split;
+                      return value;
+                -
+                  type: REGEX
+                  parameters:
+                    - '([^\,\s]*),([^\,\s]*),([^,\s]*),([^,\s]*)'
+                    - \1
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '0.01'
+                -
+                  type: JAVASCRIPT
+                  parameters:
+                    - |
+                      value = parseFloat(value);
+                      value = value.toFixed(2);
+                      return value;
+              tags:
+                -
+                  tag: Application
+                  value: 'Transceiver Data Interface {#IFNAME}'
+            -
+              uuid: b4d0ad04009e4c698c337ccd96a9023d
+              name: 'Optical Module Interface {#IFNAME}: RxPower Lane1'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.2011.5.25.31.1.1.3.1.32.{#SNMPINDEX}'
+              key: 'hwEntityOpticalLaneRxPowerMLLane1[{#SNMPINDEX}]'
+              delay: 5m
+              history: 10d
+              value_type: FLOAT
+              units: dBm
+              description: 'Rx Power Linha 1'
+              preprocessing:
+                -
+                  type: JAVASCRIPT
+                  parameters:
+                    - |
+                      var split = value.split(',');
+                      split = split.map(Number);
+                      value = split;
+                      return value;
+                -
+                  type: REGEX
+                  parameters:
+                    - '([^\,\s]*),([^\,\s]*),([^,\s]*),([^,\s]*)'
+                    - \2
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '0.01'
+                -
+                  type: JAVASCRIPT
+                  parameters:
+                    - |
+                      value = parseFloat(value);
+                      value = value.toFixed(2);
+                      return value;
+              tags:
+                -
+                  tag: Application
+                  value: 'Transceiver Data Interface {#IFNAME}'
+            -
+              uuid: 51ac0c68fb0f417b98d65a9d0dfd3d59
+              name: 'Optical Module Interface {#IFNAME}: RxPower Lane2'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.2011.5.25.31.1.1.3.1.32.{#SNMPINDEX}'
+              key: 'hwEntityOpticalLaneRxPowerMLLane2[{#SNMPINDEX}]'
+              delay: 5m
+              history: 10d
+              value_type: FLOAT
+              units: dBm
+              description: 'Rx Power Linha 2'
+              preprocessing:
+                -
+                  type: JAVASCRIPT
+                  parameters:
+                    - |
+                      var split = value.split(',');
+                      split = split.map(Number);
+                      value = split;
+                      return value;
+                -
+                  type: REGEX
+                  parameters:
+                    - '([^\,\s]*),([^\,\s]*),([^,\s]*),([^,\s]*)'
+                    - \3
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '0.01'
+                -
+                  type: JAVASCRIPT
+                  parameters:
+                    - |
+                      value = parseFloat(value);
+                      value = value.toFixed(2);
+                      return value;
+              tags:
+                -
+                  tag: Application
+                  value: 'Transceiver Data Interface {#IFNAME}'
+            -
+              uuid: 52de65d1e2964e4bba667270b5151e23
+              name: 'Optical Module Interface {#IFNAME}: RxPower Lane3'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.2011.5.25.31.1.1.3.1.32.{#SNMPINDEX}'
+              key: 'hwEntityOpticalLaneRxPowerMLLane3[{#SNMPINDEX}]'
+              delay: 5m
+              history: 10d
+              value_type: FLOAT
+              units: dBm
+              description: 'Rx Power Linha 3'
+              preprocessing:
+                -
+                  type: JAVASCRIPT
+                  parameters:
+                    - |
+                      var split = value.split(',');
+                      split = split.map(Number);
+                      value = split;
+                      return value;
+                -
+                  type: REGEX
+                  parameters:
+                    - '([^\,\s]*),([^\,\s]*),([^,\s]*),([^,\s]*)'
+                    - \4
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '0.01'
+                -
+                  type: JAVASCRIPT
+                  parameters:
+                    - |
+                      value = parseFloat(value);
+                      value = value.toFixed(2);
+                      return value;
+              tags:
+                -
+                  tag: Application
+                  value: 'Transceiver Data Interface {#IFNAME}'
+            -
+              uuid: 8d7f2d9af7264ffcb756eb893d1adaaa
+              name: 'Optical Module Interface {#IFNAME}: TxPower Lane0'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.2011.5.25.31.1.1.3.1.33.{#SNMPINDEX}'
+              key: 'hwEntityOpticalLaneTxPowerMLLane0[{#SNMPINDEX}]'
+              delay: 5m
+              history: 10d
+              value_type: FLOAT
+              units: dBm
+              description: 'Tx Power na Linha 0'
+              preprocessing:
+                -
+                  type: JAVASCRIPT
+                  parameters:
+                    - |
+                      var split = value.split(',');
+                      split = split.map(Number);
+                      value = split;
+                      return value;
+                -
+                  type: REGEX
+                  parameters:
+                    - '([^\,\s]*),([^\,\s]*),([^,\s]*),([^,\s]*)'
+                    - \1
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '0.01'
+                -
+                  type: JAVASCRIPT
+                  parameters:
+                    - |
+                      value = parseFloat(value);
+                      value = value.toFixed(2);
+                      return value;
+              tags:
+                -
+                  tag: Application
+                  value: 'Transceiver Data Interface {#IFNAME}'
+            -
+              uuid: 6e889677f0a84cd29f73278da5540df8
+              name: 'Optical Module Interface {#IFNAME}: TxPower Lane1'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.2011.5.25.31.1.1.3.1.33.{#SNMPINDEX}'
+              key: 'hwEntityOpticalLaneTxPowerMLLane1[{#SNMPINDEX}]'
+              delay: 5m
+              history: 10d
+              value_type: FLOAT
+              units: dBm
+              description: 'Tx Power Linha 1'
+              preprocessing:
+                -
+                  type: JAVASCRIPT
+                  parameters:
+                    - |
+                      var split = value.split(',');
+                      split = split.map(Number);
+                      value = split;
+                      return value;
+                -
+                  type: REGEX
+                  parameters:
+                    - '([^\,\s]*),([^\,\s]*),([^,\s]*),([^,\s]*)'
+                    - \2
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '0.01'
+                -
+                  type: JAVASCRIPT
+                  parameters:
+                    - |
+                      value = parseFloat(value);
+                      value = value.toFixed(2);
+                      return value;
+              tags:
+                -
+                  tag: Application
+                  value: 'Transceiver Data Interface {#IFNAME}'
+            -
+              uuid: 4f1acb538dd34a1e9aed1491c260c3e6
+              name: 'Optical Module Interface {#IFNAME}: TxPower Lane2'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.2011.5.25.31.1.1.3.1.33.{#SNMPINDEX}'
+              key: 'hwEntityOpticalLaneTxPowerMLLane2[{#SNMPINDEX}]'
+              delay: 5m
+              history: 10d
+              value_type: FLOAT
+              units: dBm
+              description: 'Tx Power Linha 2'
+              preprocessing:
+                -
+                  type: JAVASCRIPT
+                  parameters:
+                    - |
+                      var split = value.split(',');
+                      split = split.map(Number);
+                      value = split;
+                      return value;
+                -
+                  type: REGEX
+                  parameters:
+                    - '([^\,\s]*),([^\,\s]*),([^,\s]*),([^,\s]*)'
+                    - \3
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '0.01'
+                -
+                  type: JAVASCRIPT
+                  parameters:
+                    - |
+                      value = parseFloat(value);
+                      value = value.toFixed(2);
+                      return value;
+              tags:
+                -
+                  tag: Application
+                  value: 'Transceiver Data Interface {#IFNAME}'
+            -
+              uuid: d764ab1fe41546b2a0f2c092214bc355
+              name: 'Optical Module Interface {#IFNAME}: TxPower Lane3'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.2011.5.25.31.1.1.3.1.33.{#SNMPINDEX}'
+              key: 'hwEntityOpticalLaneTxPowerMLLane3[{#SNMPINDEX}]'
+              delay: 5m
+              history: 10d
+              value_type: FLOAT
+              units: dBm
+              description: 'Tx Power Linha 3'
+              preprocessing:
+                -
+                  type: JAVASCRIPT
+                  parameters:
+                    - |
+                      var split = value.split(',');
+                      split = split.map(Number);
+                      value = split;
+                      return value;
+                -
+                  type: REGEX
+                  parameters:
+                    - '([^\,\s]*),([^\,\s]*),([^,\s]*),([^,\s]*)'
+                    - \4
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '0.01'
+                -
+                  type: JAVASCRIPT
+                  parameters:
+                    - |
+                      value = parseFloat(value);
+                      value = value.toFixed(2);
+                      return value;
+              tags:
+                -
+                  tag: Application
+                  value: 'Transceiver Data Interface {#IFNAME}'
+            -
+              uuid: 0d2a9d2c1d724cf787267d3fca16e330
+              name: 'Optical Module Interface {#IFNAME}: RxPower High Threshold'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.2011.5.25.31.1.1.3.1.14.{#SNMPINDEX}'
+              key: 'hwEntityOpticalRxHighThresholdML[{#SNMPINDEX}]'
+              delay: 30m
+              history: 30d
+              value_type: FLOAT
+              units: dBm
+              description: 'Limite alto do RxPower'
+              preprocessing:
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '0.01'
+              tags:
+                -
+                  tag: Application
+                  value: 'Transceiver Data Interface {#IFNAME}'
+            -
+              uuid: e7ffb83084ef4e5ea3916a39d530acdd
+              name: 'Optical Module Interface {#IFNAME}: RxPower High Warning Threshold'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.2011.5.25.31.1.1.3.1.21.{#SNMPINDEX}'
+              key: 'hwEntityOpticalRxHighWarnThresholdML[{#SNMPINDEX}]'
+              delay: 30m
+              history: 30d
+              value_type: FLOAT
+              units: dBm
+              description: 'Limite alto de alerta do RxPower'
+              preprocessing:
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '0.01'
+              tags:
+                -
+                  tag: Application
+                  value: 'Transceiver Data Interface {#IFNAME}'
+            -
+              uuid: 9079bb59c4894359896a6f2473d53f77
+              name: 'Optical Module Interface {#IFNAME}: RxPower Low Threshold'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.2011.5.25.31.1.1.3.1.13.{#SNMPINDEX}'
+              key: 'hwEntityOpticalRxLowThresholdML[{#SNMPINDEX}]'
+              delay: 30m
+              history: 30d
+              value_type: FLOAT
+              units: dBm
+              description: 'Limite baixo para Rx Power'
+              preprocessing:
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '0.01'
+              tags:
+                -
+                  tag: Application
+                  value: 'Transceiver Data Interface {#IFNAME}'
+            -
+              uuid: 76fbb1ba8fde456b9f2b5307804bfbfe
+              name: 'Optical Module Interface {#IFNAME}: RxPower Low Warning Threshold'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.2011.5.25.31.1.1.3.1.20.{#SNMPINDEX}'
+              key: 'hwEntityOpticalRxLowWarnThresholdML[{#SNMPINDEX}]'
+              delay: 30m
+              history: 30d
+              value_type: FLOAT
+              units: dBm
+              description: 'Limite de alerta baixo para RX power'
+              preprocessing:
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '0.01'
+              tags:
+                -
+                  tag: Application
+                  value: 'Transceiver Data Interface {#IFNAME}'
+            -
+              uuid: eab3f989b6b84eafb0bdd73e0e7e9d21
+              name: 'Optical Module Interface {#IFNAME}: Temperature'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.2011.5.25.31.1.1.3.1.5.{#SNMPINDEX}'
+              key: 'hwEntityOpticalTemperatureML[{#SNMPINDEX}]'
+              delay: 5m
+              history: 10d
+              value_type: FLOAT
+              units: ºC
+              description: Temperatura
+              tags:
+                -
+                  tag: Application
+                  value: 'Transceiver Data Interface {#IFNAME}'
+              trigger_prototypes:
+                -
+                  uuid: 4722001de6324eca9faf548ca8f48ae9
+                  expression: |
+                    last(/Template Optical Modules Huawei/hwEntityOpticalTemperatureML[{#SNMPINDEX}])
+                    >=
+                    {$TRANSCEIVER_TEMP_WARN}
+                  recovery_mode: RECOVERY_EXPRESSION
+                  recovery_expression: |
+                    last(/Template Optical Modules Huawei/hwEntityOpticalTemperatureML[{#SNMPINDEX}])
+                    <
+                    {$TRANSCEIVER_TEMP_WARN}
+                  name: 'High Temperature on Optical Module ML: {#IFNAME}'
+                  priority: HIGH
+                  description: |
+                    Temperature on Optical Module more than {$TRANSCEIVER_TEMP_WARN}
+                    Last value: {ITEM.LASTVALUE1}.
+                  manual_close: 'YES'
+            -
+              uuid: 9f2c1239f1c74f90b4a22e5af7d9a12e
+              name: 'Optical Module Interface {#IFNAME}: TxPower High Threshold'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.2011.5.25.31.1.1.3.1.16.{#SNMPINDEX}'
+              key: 'hwEntityOpticalTxHighThresholdML[{#SNMPINDEX}]'
+              delay: 30m
+              history: 30d
+              value_type: FLOAT
+              units: dBm
+              description: 'Limite alto para TX Power'
+              preprocessing:
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '0.01'
+              tags:
+                -
+                  tag: Application
+                  value: 'Transceiver Data Interface {#IFNAME}'
+            -
+              uuid: 6ad70fd5ad2443b99198f93c40090cd1
+              name: 'Optical Module Interface {#IFNAME}: TxPower High Warning Threshold'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.2011.5.25.31.1.1.3.1.23.{#SNMPINDEX}'
+              key: 'hwEntityOpticalTxHighWarnThresholdML[{#SNMPINDEX}]'
+              delay: 30m
+              history: 30d
+              value_type: FLOAT
+              units: dBm
+              description: 'Limite Alto de alerta para Tx Power'
+              preprocessing:
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '0.01'
+              tags:
+                -
+                  tag: Application
+                  value: 'Transceiver Data Interface {#IFNAME}'
+            -
+              uuid: 7e57747dc18c4a799c92c7a8ab5d9280
+              name: 'Optical Module Interface {#IFNAME}: TxPower Low Threshold'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.2011.5.25.31.1.1.3.1.15.{#SNMPINDEX}'
+              key: 'hwEntityOpticalTxLowThresholdML[{#SNMPINDEX}]'
+              delay: 30m
+              history: 30d
+              value_type: FLOAT
+              units: dBm
+              description: 'Limite baixo para Tx Power'
+              preprocessing:
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '0.01'
+              tags:
+                -
+                  tag: Application
+                  value: 'Transceiver Data Interface {#IFNAME}'
+            -
+              uuid: 23999d6439bb4f0d9ca81861b97b8034
+              name: 'Optical Module Interface {#IFNAME}: TxPower Low Warning Threshold'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.2011.5.25.31.1.1.3.1.22.{#SNMPINDEX}'
+              key: 'hwEntityOpticalTxLowWarnThresholdML[{#SNMPINDEX}]'
+              delay: 30m
+              history: 30d
+              value_type: FLOAT
+              units: dBm
+              description: 'Limite baixo de alerta para Tx Power'
+              preprocessing:
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '0.01'
+              tags:
+                -
+                  tag: Application
+                  value: 'Transceiver Data Interface {#IFNAME}'
+            -
+              uuid: 703f79d3f1c64235ac5b9763d0b267b4
+              name: 'Optical Module Interface {#IFNAME}: Vendor Name'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.2011.5.25.31.1.1.3.1.24.{#SNMPINDEX}'
+              key: 'hwEntityOpticalVenderNameML[{#SNMPINDEX}]'
+              delay: 1h
+              history: 30d
+              trends: '0'
+              value_type: TEXT
+              description: 'Fabricante do cabo'
+              tags:
+                -
+                  tag: Application
+                  value: 'Transceiver Data Interface {#IFNAME}'
+            -
+              uuid: 27a8adcc3e4241c0b16fee3d0f3690ac
+              name: 'Optical Module Interface {#IFNAME}: Type'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.2011.5.25.31.1.1.3.1.25.{#SNMPINDEX}'
+              key: 'hwEntityOpticalVenderPnML[{#SNMPINDEX}]'
+              delay: 1h
+              history: 30d
+              trends: '0'
+              value_type: TEXT
+              description: 'Tipo do Cabo'
+              tags:
+                -
+                  tag: Application
+                  value: 'Transceiver Data Interface {#IFNAME}'
+          trigger_prototypes:
+            -
+              uuid: 4a1741023b564ae8a9454062cd9679ed
+              expression: |
+                ((last(/Template Optical Modules Huawei/hwEntityOpticalLaneRxPowerMLLane0[{#SNMPINDEX}]) or
+                 last(/Template Optical Modules Huawei/hwEntityOpticalLaneRxPowerMLLane1[{#SNMPINDEX}]) or
+                 last(/Template Optical Modules Huawei/hwEntityOpticalLaneRxPowerMLLane2[{#SNMPINDEX}]) or
+                 last(/Template Optical Modules Huawei/hwEntityOpticalLaneRxPowerMLLane3[{#SNMPINDEX}])) 
+                 <= 
+                (last(/Template Optical Modules Huawei/hwEntityOpticalRxLowWarnThresholdML[{#SNMPINDEX}])))
+                
+                and
+                
+                ((last(/Template Optical Modules Huawei/hwEntityOpticalLaneRxPowerMLLane0[{#SNMPINDEX}]) or
+                 last(/Template Optical Modules Huawei/hwEntityOpticalLaneRxPowerMLLane1[{#SNMPINDEX}]) or
+                 last(/Template Optical Modules Huawei/hwEntityOpticalLaneRxPowerMLLane2[{#SNMPINDEX}]) or
+                 last(/Template Optical Modules Huawei/hwEntityOpticalLaneRxPowerMLLane3[{#SNMPINDEX}]))
+                <> -40)
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: |
+                ((last(/Template Optical Modules Huawei/hwEntityOpticalLaneRxPowerMLLane0[{#SNMPINDEX}]) or
+                 last(/Template Optical Modules Huawei/hwEntityOpticalLaneRxPowerMLLane1[{#SNMPINDEX}]) or
+                 last(/Template Optical Modules Huawei/hwEntityOpticalLaneRxPowerMLLane2[{#SNMPINDEX}]) or
+                 last(/Template Optical Modules Huawei/hwEntityOpticalLaneRxPowerMLLane3[{#SNMPINDEX}])) 
+                 >
+                (last(/Template Optical Modules Huawei/hwEntityOpticalRxLowWarnThresholdML[{#SNMPINDEX}])))
+                
+                and
+                
+                ((last(/Template Optical Modules Huawei/hwEntityOpticalLaneRxPowerMLLane0[{#SNMPINDEX}]) or
+                 last(/Template Optical Modules Huawei/hwEntityOpticalLaneRxPowerMLLane1[{#SNMPINDEX}]) or
+                 last(/Template Optical Modules Huawei/hwEntityOpticalLaneRxPowerMLLane2[{#SNMPINDEX}]) or
+                 last(/Template Optical Modules Huawei/hwEntityOpticalLaneRxPowerMLLane3[{#SNMPINDEX}]))
+                <> -40)
+              name: 'Low Rx Signal on Optical Module ML: {#IFNAME}'
+              priority: DISASTER
+              description: |
+                Rx Signal is low.
+                Last value: {ITEM.LASTVALUE1}.
+              manual_close: 'YES'
+            -
+              uuid: cc03d3d682634932b00c5206b18ddf02
+              expression: |
+                ((last(/Template Optical Modules Huawei/hwEntityOpticalLaneTxPowerMLLane0[{#SNMPINDEX}]) or
+                 last(/Template Optical Modules Huawei/hwEntityOpticalLaneTxPowerMLLane1[{#SNMPINDEX}]) or
+                 last(/Template Optical Modules Huawei/hwEntityOpticalLaneTxPowerMLLane2[{#SNMPINDEX}]) or
+                 last(/Template Optical Modules Huawei/hwEntityOpticalLaneTxPowerMLLane3[{#SNMPINDEX}])) 
+                 <= 
+                (last(/Template Optical Modules Huawei/hwEntityOpticalTxLowWarnThresholdML[{#SNMPINDEX}])))
+                
+                and
+                
+                ((last(/Template Optical Modules Huawei/hwEntityOpticalLaneTxPowerMLLane0[{#SNMPINDEX}]) or
+                 last(/Template Optical Modules Huawei/hwEntityOpticalLaneTxPowerMLLane1[{#SNMPINDEX}]) or
+                 last(/Template Optical Modules Huawei/hwEntityOpticalLaneTxPowerMLLane2[{#SNMPINDEX}]) or
+                 last(/Template Optical Modules Huawei/hwEntityOpticalLaneTxPowerMLLane3[{#SNMPINDEX}])) 
+                <> -40)
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: |
+                ((last(/Template Optical Modules Huawei/hwEntityOpticalLaneTxPowerMLLane0[{#SNMPINDEX}]) or
+                 last(/Template Optical Modules Huawei/hwEntityOpticalLaneTxPowerMLLane1[{#SNMPINDEX}]) or
+                 last(/Template Optical Modules Huawei/hwEntityOpticalLaneTxPowerMLLane2[{#SNMPINDEX}]) or
+                 last(/Template Optical Modules Huawei/hwEntityOpticalLaneTxPowerMLLane3[{#SNMPINDEX}])) 
+                 >
+                (last(/Template Optical Modules Huawei/hwEntityOpticalTxLowWarnThresholdML[{#SNMPINDEX}])))
+                
+                and
+                
+                ((last(/Template Optical Modules Huawei/hwEntityOpticalLaneTxPowerMLLane0[{#SNMPINDEX}]) or
+                 last(/Template Optical Modules Huawei/hwEntityOpticalLaneTxPowerMLLane1[{#SNMPINDEX}]) or
+                 last(/Template Optical Modules Huawei/hwEntityOpticalLaneTxPowerMLLane2[{#SNMPINDEX}]) or
+                 last(/Template Optical Modules Huawei/hwEntityOpticalLaneTxPowerMLLane3[{#SNMPINDEX}])) 
+                <> -40)
+              name: 'Low Tx Signal on Optical Module ML: {#IFNAME}'
+              priority: DISASTER
+              description: |
+                Low Tx Signal.
+                Last value: {ITEM.LASTVALUE1}.
+              manual_close: 'YES'
+            -
+              uuid: a0ea134fb6e946f2be165a8976d5cb0f
+              expression: |
+                ((change(/Template Optical Modules Huawei/hwEntityOpticalLaneRxPowerMLLane0[{#SNMPINDEX}]) <= {$ATTENUATIONFACTOR}) 
+                or
+                (change(/Template Optical Modules Huawei/hwEntityOpticalLaneRxPowerMLLane1[{#SNMPINDEX}]) <= {$ATTENUATIONFACTOR}) 
+                or
+                (change(/Template Optical Modules Huawei/hwEntityOpticalLaneRxPowerMLLane2[{#SNMPINDEX}]) <= {$ATTENUATIONFACTOR}) 
+                or
+                (change(/Template Optical Modules Huawei/hwEntityOpticalLaneRxPowerMLLane3[{#SNMPINDEX}]) <= {$ATTENUATIONFACTOR}))
+                
+                and
+                
+                ((last(/Template Optical Modules Huawei/hwEntityOpticalLaneRxPowerMLLane0[{#SNMPINDEX}]) 
+                or
+                 last(/Template Optical Modules Huawei/hwEntityOpticalLaneRxPowerMLLane1[{#SNMPINDEX}]) 
+                or
+                 last(/Template Optical Modules Huawei/hwEntityOpticalLaneRxPowerMLLane2[{#SNMPINDEX}]) 
+                or
+                 last(/Template Optical Modules Huawei/hwEntityOpticalLaneRxPowerMLLane3[{#SNMPINDEX}]))
+                <> -40)
+              recovery_mode: NONE
+              name: 'Signal Atenuation on Optical Module ML: {#IFNAME}'
+              status: DISABLED
+              discover: NO_DISCOVER
+              priority: HIGH
+              manual_close: 'YES'
+          graph_prototypes:
+            -
+              uuid: aa207f423ae44ffcac15c88ce50873b5
+              name: 'Optical Module Interface {#IFNAME}: Rx Signals'
+              graph_items:
+                -
+                  sortorder: '1'
+                  drawtype: BOLD_LINE
+                  color: 59DF00
+                  item:
+                    host: 'Template Optical Modules Huawei'
+                    key: 'hwEntityOpticalRxHighThresholdML[{#SNMPINDEX}]'
+                -
+                  sortorder: '2'
+                  color: FF0000
+                  item:
+                    host: 'Template Optical Modules Huawei'
+                    key: 'hwEntityOpticalLaneRxPowerMLLane0[{#SNMPINDEX}]'
+                -
+                  sortorder: '3'
+                  color: 0040FF
+                  item:
+                    host: 'Template Optical Modules Huawei'
+                    key: 'hwEntityOpticalLaneRxPowerMLLane1[{#SNMPINDEX}]'
+                -
+                  sortorder: '4'
+                  color: FFFF00
+                  item:
+                    host: 'Template Optical Modules Huawei'
+                    key: 'hwEntityOpticalLaneRxPowerMLLane2[{#SNMPINDEX}]'
+                -
+                  sortorder: '5'
+                  color: BF00FF
+                  item:
+                    host: 'Template Optical Modules Huawei'
+                    key: 'hwEntityOpticalLaneRxPowerMLLane3[{#SNMPINDEX}]'
+                -
+                  sortorder: '6'
+                  drawtype: BOLD_LINE
+                  color: CC6600
+                  item:
+                    host: 'Template Optical Modules Huawei'
+                    key: 'hwEntityOpticalRxLowThresholdML[{#SNMPINDEX}]'
+            -
+              uuid: 544e0093f4da4b29beb4896329e527f0
+              name: 'Optical Module Interface {#IFNAME}: Temperature'
+              graph_items:
+                -
+                  sortorder: '1'
+                  drawtype: BOLD_LINE
+                  color: FF0000
+                  item:
+                    host: 'Template Optical Modules Huawei'
+                    key: 'hwEntityOpticalTemperatureML[{#SNMPINDEX}]'
+            -
+              uuid: f9de73348822422f876c67a3b8671e4d
+              name: 'Optical Module Interface {#IFNAME}: Tx Signals'
+              graph_items:
+                -
+                  sortorder: '1'
+                  drawtype: BOLD_LINE
+                  color: 59DF00
+                  item:
+                    host: 'Template Optical Modules Huawei'
+                    key: 'hwEntityOpticalTxHighThresholdML[{#SNMPINDEX}]'
+                -
+                  sortorder: '2'
+                  color: FF0000
+                  item:
+                    host: 'Template Optical Modules Huawei'
+                    key: 'hwEntityOpticalLaneTxPowerMLLane0[{#SNMPINDEX}]'
+                -
+                  sortorder: '3'
+                  color: 0040FF
+                  item:
+                    host: 'Template Optical Modules Huawei'
+                    key: 'hwEntityOpticalLaneTxPowerMLLane1[{#SNMPINDEX}]'
+                -
+                  sortorder: '4'
+                  color: FFFF00
+                  item:
+                    host: 'Template Optical Modules Huawei'
+                    key: 'hwEntityOpticalLaneTxPowerMLLane2[{#SNMPINDEX}]'
+                -
+                  sortorder: '5'
+                  color: BF00FF
+                  item:
+                    host: 'Template Optical Modules Huawei'
+                    key: 'hwEntityOpticalLaneTxPowerMLLane3[{#SNMPINDEX}]'
+                -
+                  sortorder: '6'
+                  drawtype: BOLD_LINE
+                  color: CC6600
+                  item:
+                    host: 'Template Optical Modules Huawei'
+                    key: 'hwEntityOpticalTxLowThresholdML[{#SNMPINDEX}]'
+        -
+          uuid: 309b42251f964d49a73d0f4fc9ef5498
+          name: 'Network Optical Modules Single Lane'
+          type: SNMP_AGENT
+          snmp_oid: 'discovery[{#SNMPVALUE},1.3.6.1.2.1.47.1.1.1.1.8,{#IFTYPE},1.3.6.1.2.1.2.2.1.7,{#TEMPERATURE},1.3.6.1.4.1.2011.5.25.31.1.1.3.1.5,{#IFNAME},1.3.6.1.2.1.47.1.1.1.1.7]'
+          key: net.optical.sl.discovery
+          filter:
+            evaltype: AND
+            conditions:
+              -
+                macro: '{#IFNAME}'
+                value: XG
+                formulaid: A
+              -
+                macro: '{#TEMPERATURE}'
+                value: '-255'
+                operator: NOT_MATCHES_REGEX
+                formulaid: B
+          lifetime: 1d
+          item_prototypes:
+            -
+              uuid: b5be7fd47454493da5fa2c3f9e41b44d
+              name: 'Optical Module Interface {#IFNAME}: RxPower'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.2011.5.25.31.1.1.3.1.32.{#SNMPINDEX}'
+              key: 'hwEntityOpticalLaneRxPower[{#SNMPINDEX}]'
+              delay: 5m
+              history: 10d
+              value_type: FLOAT
+              units: dBm
+              description: 'Rx Power do módulo ótico'
+              preprocessing:
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '0.01'
+                -
+                  type: JAVASCRIPT
+                  parameters:
+                    - |
+                      value = parseFloat(value);
+                      value = value.toFixed(2);
+                      return value;
+              tags:
+                -
+                  tag: Application
+                  value: 'Transceiver Data Interface SL: {#IFNAME}'
+              trigger_prototypes:
+                -
+                  uuid: 1e451758b878454b94c069e572c2072d
+                  expression: |
+                    (change(/Template Optical Modules Huawei/hwEntityOpticalLaneRxPower[{#SNMPINDEX}])
+                     <= 
+                    {$ATTENUATIONFACTOR})
+                    
+                    and
+                    
+                    (last(/Template Optical Modules Huawei/hwEntityOpticalLaneRxPower[{#SNMPINDEX}]) <> -40)
+                  recovery_mode: NONE
+                  name: 'Signal Atenuation on Optical Module SL: {#IFNAME}'
+                  status: DISABLED
+                  discover: NO_DISCOVER
+                  priority: HIGH
+                  manual_close: 'YES'
+            -
+              uuid: 377cd5e474dc4909b444c42ae5fbec34
+              name: 'Optical Module Interface {#IFNAME}: TxPower'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.2011.5.25.31.1.1.3.1.33.{#SNMPINDEX}'
+              key: 'hwEntityOpticalLaneTxPower[{#SNMPINDEX}]'
+              delay: 5m
+              history: 10d
+              value_type: FLOAT
+              units: dBm
+              description: 'Tx Power do módulo ótico'
+              preprocessing:
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '0.01'
+                -
+                  type: JAVASCRIPT
+                  parameters:
+                    - |
+                      value = parseFloat(value);
+                      value = value.toFixed(2);
+                      return value;
+              tags:
+                -
+                  tag: Application
+                  value: 'Transceiver Data Interface SL: {#IFNAME}'
+            -
+              uuid: 3fc15ca136504f64a73e8b7583acb283
+              name: 'Optical Module Interface {#IFNAME}: RxPower High Threshold'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.2011.5.25.31.1.1.3.1.14.{#SNMPINDEX}'
+              key: 'hwEntityOpticalRxHighThreshold[{#SNMPINDEX}]'
+              delay: 10m
+              history: 10d
+              value_type: FLOAT
+              units: dBm
+              description: 'Limite alto para o Rx Power'
+              preprocessing:
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '0.01'
+              tags:
+                -
+                  tag: Application
+                  value: 'Transceiver Data Interface SL: {#IFNAME}'
+            -
+              uuid: fbdfe99a7aeb44baa785d66bdf7bac98
+              name: 'Optical Module Interface {#IFNAME}: RxPower High Warning Threshold'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.2011.5.25.31.1.1.3.1.21.{#SNMPINDEX}'
+              key: 'hwEntityOpticalRxHighWarnThreshold[{#SNMPINDEX}]'
+              delay: 10m
+              history: 10d
+              value_type: FLOAT
+              units: dBm
+              description: 'Limite de alerta alto para Rx Power'
+              preprocessing:
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '0.01'
+              tags:
+                -
+                  tag: Application
+                  value: 'Transceiver Data Interface SL: {#IFNAME}'
+            -
+              uuid: c5727dd352864481818453e24806bd6a
+              name: 'Optical Module Interface {#IFNAME}: RxPower Low Threshold'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.2011.5.25.31.1.1.3.1.13.{#SNMPINDEX}'
+              key: 'hwEntityOpticalRxLowThreshold[{#SNMPINDEX}]'
+              delay: 10m
+              history: 10d
+              value_type: FLOAT
+              units: dBm
+              description: 'Limite Baixo para Rx Power'
+              preprocessing:
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '0.01'
+              tags:
+                -
+                  tag: Application
+                  value: 'Transceiver Data Interface SL: {#IFNAME}'
+            -
+              uuid: aa237701160d4594bb4d91ea3b50bc14
+              name: 'Optical Module Interface {#IFNAME}: RxPower Low Warning Threshold'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.2011.5.25.31.1.1.3.1.20.{#SNMPINDEX}'
+              key: 'hwEntityOpticalRxLowWarnThreshold[{#SNMPINDEX}]'
+              delay: 10m
+              history: 10d
+              value_type: FLOAT
+              units: dBm
+              description: 'Limite baixo de alerta para Rx Power'
+              preprocessing:
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '0.01'
+              tags:
+                -
+                  tag: Application
+                  value: 'Transceiver Data Interface SL: {#IFNAME}'
+            -
+              uuid: 5b2e4d5b5c354b7d83261c8db4517d0b
+              name: 'Optical Module Interface {#IFNAME}: Temperature'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.2011.5.25.31.1.1.3.1.5.{#SNMPINDEX}'
+              key: 'hwEntityOpticalTemperature[{#SNMPINDEX}]'
+              delay: 5m
+              history: 30d
+              value_type: FLOAT
+              units: °C
+              description: 'Temperatura do módulo ótico'
+              tags:
+                -
+                  tag: Application
+                  value: 'Transceiver Data Interface SL: {#IFNAME}'
+              trigger_prototypes:
+                -
+                  uuid: e29633a2d2c94c3aa4d40ba9f6a6a31e
+                  expression: |
+                    last(/Template Optical Modules Huawei/hwEntityOpticalTemperature[{#SNMPINDEX}])
+                    >=
+                    {$TRANSCEIVER_TEMP_WARN}
+                  recovery_mode: RECOVERY_EXPRESSION
+                  recovery_expression: |
+                    last(/Template Optical Modules Huawei/hwEntityOpticalTemperature[{#SNMPINDEX}])
+                    <
+                    {$TRANSCEIVER_TEMP_WARN}
+                  name: 'High Temperature on Optical Module SL: {#IFNAME}'
+                  priority: HIGH
+                  description: 'Last value: {ITEM.LASTVALUE1}.'
+            -
+              uuid: 6e1d811a963c431e8328634b597e8555
+              name: 'Optical Module Interface {#IFNAME}: TxPower High Threshold'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.2011.5.25.31.1.1.3.1.16.{#SNMPINDEX}'
+              key: 'hwEntityOpticalTxHighThreshold[{#SNMPINDEX}]'
+              delay: 10m
+              history: 10d
+              value_type: FLOAT
+              units: dBm
+              description: 'Limite alto para Tx Power'
+              preprocessing:
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '0.01'
+              tags:
+                -
+                  tag: Application
+                  value: 'Transceiver Data Interface SL: {#IFNAME}'
+            -
+              uuid: a97a9e1f3e5a40ae9758211af783e145
+              name: 'Optical Module Interface {#IFNAME}: TxPower High Warning Threshold'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.2011.5.25.31.1.1.3.1.23.{#SNMPINDEX}'
+              key: 'hwEntityOpticalTxHighWarnThreshold[{#SNMPINDEX}]'
+              delay: 10m
+              history: 10d
+              value_type: FLOAT
+              units: dBm
+              description: 'Limite de alerta alto para Tx Power'
+              preprocessing:
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '0.01'
+              tags:
+                -
+                  tag: Application
+                  value: 'Transceiver Data Interface SL: {#IFNAME}'
+            -
+              uuid: 00af386e49fd41fda4021de0d85f1041
+              name: 'Optical Module Interface {#IFNAME}: TxPower Low Threshold'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.2011.5.25.31.1.1.3.1.15.{#SNMPINDEX}'
+              key: 'hwEntityOpticalTxLowThreshold[{#SNMPINDEX}]'
+              delay: 10m
+              history: 10d
+              value_type: FLOAT
+              units: dBm
+              preprocessing:
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '0.01'
+              tags:
+                -
+                  tag: Application
+                  value: 'Transceiver Data Interface SL: {#IFNAME}'
+            -
+              uuid: c889d6e5fae64b6ab2042cab30eaa939
+              name: 'Optical Module Interface {#IFNAME}: TxPower Low Warning Threshold'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.2011.5.25.31.1.1.3.1.22.{#SNMPINDEX}'
+              key: 'hwEntityOpticalTxLowWarnThreshold[{#SNMPINDEX}]'
+              delay: 10m
+              history: 10d
+              value_type: FLOAT
+              units: dBm
+              preprocessing:
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '0.01'
+              tags:
+                -
+                  tag: Application
+                  value: 'Transceiver Data Interface SL: {#IFNAME}'
+            -
+              uuid: 238329911ff34078bce297df01248fb5
+              name: 'Optical Module Interface {#IFNAME}: Vendor Name'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.2011.5.25.31.1.1.3.1.24.{#SNMPINDEX}'
+              key: 'hwEntityOpticalVenderName[{#SNMPINDEX}]'
+              delay: 1h
+              history: 30d
+              trends: '0'
+              value_type: TEXT
+              description: 'Fabricante do cabo'
+              tags:
+                -
+                  tag: Application
+                  value: 'Transceiver Data Interface SL: {#IFNAME}'
+            -
+              uuid: 6f0b12229e1d47ea86f45ee03cc0b555
+              name: 'Optical Module Interface {#IFNAME}: Type'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.2011.5.25.31.1.1.3.1.25.{#SNMPINDEX}'
+              key: 'hwEntityOpticalVenderPn[{#SNMPINDEX}]'
+              delay: 1h
+              history: 30d
+              trends: '0'
+              value_type: TEXT
+              description: 'Tipo do Cabo'
+              tags:
+                -
+                  tag: Application
+                  value: 'Transceiver Data Interface SL: {#IFNAME}'
+          trigger_prototypes:
+            -
+              uuid: eb4c2a0e4f2e4161b85745234fdc7f2d
+              expression: |
+                (last(/Template Optical Modules Huawei/hwEntityOpticalLaneRxPower[{#SNMPINDEX}])
+                 <= 
+                (last(/Template Optical Modules Huawei/hwEntityOpticalRxLowThreshold[{#SNMPINDEX}])))
+                and
+                (last(/Template Optical Modules Huawei/hwEntityOpticalLaneRxPower[{#SNMPINDEX}]) <> -40)
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: |
+                (last(/Template Optical Modules Huawei/hwEntityOpticalLaneRxPower[{#SNMPINDEX}])
+                 >
+                (last(/Template Optical Modules Huawei/hwEntityOpticalRxLowThreshold[{#SNMPINDEX}])))
+                and
+                (last(/Template Optical Modules Huawei/hwEntityOpticalLaneRxPower[{#SNMPINDEX}]) <> -40)
+              name: 'Low Rx Signal on Optical Module SL: {#IFNAME}'
+              priority: DISASTER
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+              manual_close: 'YES'
+            -
+              uuid: 21c3014b2ad54cd2a602974e75aacf91
+              expression: |
+                (last(/Template Optical Modules Huawei/hwEntityOpticalLaneTxPower[{#SNMPINDEX}])
+                 <= 
+                (last(/Template Optical Modules Huawei/hwEntityOpticalTxLowThreshold[{#SNMPINDEX}])))
+                and
+                (last(/Template Optical Modules Huawei/hwEntityOpticalLaneTxPower[{#SNMPINDEX}]) <> -40)
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: |
+                (last(/Template Optical Modules Huawei/hwEntityOpticalLaneTxPower[{#SNMPINDEX}])
+                 >
+                (last(/Template Optical Modules Huawei/hwEntityOpticalTxLowThreshold[{#SNMPINDEX}])))
+                and
+                (last(/Template Optical Modules Huawei/hwEntityOpticalLaneTxPower[{#SNMPINDEX}]) <> -40)
+              name: 'Low Tx Signal on Optical Module SL: {#IFNAME}'
+              priority: DISASTER
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+              manual_close: 'YES'
+          graph_prototypes:
+            -
+              uuid: 12808b30ee5f464095f3bcd88f0c46eb
+              name: 'Optical Module Interface {#IFNAME}: Rx Signals (SL)'
+              graph_items:
+                -
+                  sortorder: '1'
+                  color: 59DF00
+                  item:
+                    host: 'Template Optical Modules Huawei'
+                    key: 'hwEntityOpticalRxHighThreshold[{#SNMPINDEX}]'
+                -
+                  sortorder: '2'
+                  color: 0040FF
+                  item:
+                    host: 'Template Optical Modules Huawei'
+                    key: 'hwEntityOpticalLaneRxPower[{#SNMPINDEX}]'
+                -
+                  sortorder: '3'
+                  color: CC6600
+                  item:
+                    host: 'Template Optical Modules Huawei'
+                    key: 'hwEntityOpticalRxLowThreshold[{#SNMPINDEX}]'
+            -
+              uuid: b3b66f3255cc400fa9ef2c221e4ded37
+              name: 'Optical Module Interface {#IFNAME}: Temperature (SL)'
+              graph_items:
+                -
+                  sortorder: '1'
+                  drawtype: BOLD_LINE
+                  color: FF0000
+                  item:
+                    host: 'Template Optical Modules Huawei'
+                    key: 'hwEntityOpticalTemperature[{#SNMPINDEX}]'
+            -
+              uuid: a62a0451bbdb4979bb4a58abe998862b
+              name: 'Optical Module Interface {#IFNAME}: Tx Signals (SL)'
+              graph_items:
+                -
+                  sortorder: '1'
+                  color: 59DF00
+                  item:
+                    host: 'Template Optical Modules Huawei'
+                    key: 'hwEntityOpticalLaneTxPower[{#SNMPINDEX}]'
+                -
+                  sortorder: '2'
+                  color: 0040FF
+                  item:
+                    host: 'Template Optical Modules Huawei'
+                    key: 'hwEntityOpticalTxHighThreshold[{#SNMPINDEX}]'
+                -
+                  sortorder: '3'
+                  color: CC6600
+                  item:
+                    host: 'Template Optical Modules Huawei'
+                    key: 'hwEntityOpticalTxLowThreshold[{#SNMPINDEX}]'
+      macros:
+        -
+          macro: '{$ATTENUATIONFACTOR}'
+          value: '-2'
+        -
+          macro: '{$SNMP_COMMUNITY}'
+          value: public
+        -
+          macro: '{$TRANSCEIVER_TEMP_WARN}'
+          value: '80'

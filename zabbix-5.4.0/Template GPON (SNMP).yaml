@@ -1,0 +1,1114 @@
+zabbix_export:
+  version: '5.4'
+  date: '2021-05-28T03:38:07Z'
+  groups:
+    -
+      uuid: c79cf0420d594a64afedb5009b0f7f1e
+      name: GPON
+    -
+      uuid: 7df96b18c230490a9a0a9e2307226338
+      name: Templates
+  templates:
+    -
+      uuid: a1e6f42b444243c68dd6aa9c845f0363
+      template: 'Template SNMP GPON'
+      name: 'Template SNMP GPON'
+      description: 'Template para monitoramento dos GPON Parks'
+      groups:
+        -
+          name: GPON
+        -
+          name: Templates
+      items:
+        -
+          uuid: 08cfe5311a2f4eb9b898887ccbe08cd7
+          name: 'CPU Load'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.3893.4.4.1.2.0
+          key: cpu-la
+          delay: 10m
+          units: '%'
+          preprocessing:
+            -
+              type: MULTIPLIER
+              parameters:
+                - '0.1'
+          tags:
+            -
+              tag: Application
+              value: Health
+          triggers:
+            -
+              uuid: f6d5cdceee6e46d4a81e1f6fb5634be2
+              expression: 'last(/Template SNMP GPON/cpu-la)>85'
+              name: 'CPU above 85%'
+              priority: HIGH
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: cb3747b6a4044937b0b06ce655c540b6
+          name: 'ICMP Ping'
+          type: SIMPLE
+          key: icmpping
+          valuemap:
+            name: 'Ping State'
+          tags:
+            -
+              tag: Application
+              value: Status
+          triggers:
+            -
+              uuid: 93c1007d74f24ad2a90acf2a10f8220a
+              expression: 'max(/Template SNMP GPON/icmpping,#3)=0'
+              name: 'Unavailable by ICMP'
+              priority: DISASTER
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: c04248cb7ef6478c8f6fcad97d064c05
+          name: 'ICMP loss'
+          type: SIMPLE
+          key: icmppingloss
+          value_type: FLOAT
+          units: '%'
+          tags:
+            -
+              tag: Application
+              value: Status
+          triggers:
+            -
+              uuid: fdefe9bc730b4babb65cf225dfed8470
+              expression: 'min(/Template SNMP GPON/icmppingloss,5m)>20'
+              name: 'ICMP loss {ITEM.LASTVALUE1}%'
+              priority: AVERAGE
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+              dependencies:
+                -
+                  name: 'Unavailable by ICMP'
+                  expression: 'max(/Template SNMP GPON/icmpping,#3)=0'
+        -
+          uuid: f97b47078010475f99925af3adb2b026
+          name: 'ICMP response time'
+          type: SIMPLE
+          key: icmppingsec
+          value_type: FLOAT
+          units: ms
+          preprocessing:
+            -
+              type: MULTIPLIER
+              parameters:
+                - '1000'
+          tags:
+            -
+              tag: Application
+              value: Status
+          triggers:
+            -
+              uuid: 48e86a20d4f1439e94ed0dece7829bb4
+              expression: 'last(/Template SNMP GPON/icmppingsec)>100'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'last(/Template SNMP GPON/icmppingsec)<100'
+              name: 'ICMP reply {ITEM.LASTVALUE}ms'
+              priority: WARNING
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+              dependencies:
+                -
+                  name: 'Unavailable by ICMP'
+                  expression: 'max(/Template SNMP GPON/icmpping,#3)=0'
+        -
+          uuid: 7ea524d7e27e4d3eab9e48bff84943f8
+          name: Memory
+          type: CALCULATED
+          key: memory
+          delay: 10m
+          units: '%'
+          params: '100*last(//memory-used)/last(//memory-total)'
+          tags:
+            -
+              tag: Application
+              value: Health
+        -
+          uuid: f2c20cf78e3a432591272aa82ddda0b5
+          name: 'Memory Total'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.3893.4.4.2.1.0
+          key: memory-total
+          delay: 10m
+          units: B
+          preprocessing:
+            -
+              type: MULTIPLIER
+              parameters:
+                - '1000'
+          tags:
+            -
+              tag: Application
+              value: Health
+        -
+          uuid: de58e37aec3949a79de5f6d8c0be50af
+          name: 'Memory Used'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.3893.4.4.2.3.0
+          key: memory-used
+          delay: 10m
+          units: B
+          preprocessing:
+            -
+              type: MULTIPLIER
+              parameters:
+                - '1000'
+          tags:
+            -
+              tag: Application
+              value: Health
+        -
+          uuid: 2681ad074b9241d1b43816737b1dc6a9
+          name: 'Traps UNMATCHED'
+          type: SNMP_TRAP
+          key: snmptrap.fallback
+          delay: '0'
+          history: 1d
+          trends: '0'
+          value_type: LOG
+          tags:
+            -
+              tag: Application
+              value: Traps
+        -
+          uuid: baf59286e0764af4b2127fe9461273aa
+          name: 'Traps Login'
+          type: SNMP_TRAP
+          key: 'snmptrap["zte\.1015\.1\.1\.3\.53\.1\.3\.2"]'
+          delay: '0'
+          history: 7d
+          trends: '0'
+          value_type: LOG
+          tags:
+            -
+              tag: Application
+              value: Traps
+        -
+          uuid: 6681bf6af176489fa49f363125990fde
+          name: 'Traps Looping'
+          type: SNMP_TRAP
+          key: 'snmptrap["zxAnGponRmEthUniLoopIndicat"]'
+          delay: '0'
+          history: 7d
+          trends: '0'
+          value_type: LOG
+          description: |
+            ONU detects a loop at the Ethernet UNI
+            
+            Varbinds:
+            0. zxAnGponRmEthUniExpectedType (INTEGER32)
+                  The following coding is used for this attribute:
+                  0x00 = by autosensing, 0x01 to 0xFE (1 to 254) = one of the values
+                  from Table 3 that is compatible with the type of the LIM. Upon
+                  autonomous instantiation, the value 0x00 is used.
+          preprocessing:
+            -
+              type: REGEX
+              parameters:
+                - '(LoopIndicatAlm\b|LoopIndicatClr\b).*?(ZTEGC.{7})'
+                - '\1 \2'
+          tags:
+            -
+              tag: Application
+              value: Traps
+        -
+          uuid: 62779c1f3e3d476bbe8c315d1c3a1118
+          name: 'Traps DGi'
+          type: SNMP_TRAP
+          key: 'snmptrap["zxGponOltDGi"]'
+          delay: '0'
+          history: 7d
+          trends: '0'
+          value_type: LOG
+          description: |
+            ONU is powering off imminently due to loss of power to the ONU itself.
+            
+            Varbinds:
+            0. zxAnGponRmOnuSerialNum (OCTETSTR)
+                  The serial number is unique for each ONU. It is defined in
+                  [ITU-T G.984.3] and [ITU-T G.987.3] and contains the vendor ID and
+                  version number. The first four bytes are an ASCII-encoded
+                  four-letter vendor ID. The second four bytes are a binary encoded
+                  serial number, under the control of the ONU vendor.
+          preprocessing:
+            -
+              type: REGEX
+              parameters:
+                - '(zxGponOltDGi\b|zxGponOltDGiRestore\b).*?(ZTEGC.{7})'
+                - '\1 \2'
+          tags:
+            -
+              tag: Application
+              value: Traps
+        -
+          uuid: 157d61af666e421c9e279f1cbb3f7e34
+          name: 'Traps LOAMi'
+          type: SNMP_TRAP
+          key: 'snmptrap["zxGponOltLOAMi"]'
+          delay: '0'
+          history: 7d
+          trends: '0'
+          value_type: LOG
+          description: |
+            LOAMi is Loss of PLOAM for ONUi. Send 3 times Deactivate_ONU-ID messages. Generate Loss_of_phy_layer_I notification.
+            
+            Varbinds:
+            0. zxAnGponOnuMgmtName (OCTETSTR)
+                  The name of the ONU.
+            
+            1. zxAnGponOnuMgmtTypeName (OCTETSTR)
+                  The ONU type name which should refer to the entry of 
+                  zxAnPonOnuTypeTable.
+            
+            2. zxAnGponOnuMgmtDesc (OCTETSTR)
+                  The description of the ONU.
+            
+            3. zxAnGponOnuMgmtRegistrationInfo (OCTETSTR)
+                  ONU registration information.
+                  This attribute is made up of registration mode and registration
+                  values. Commas are used to separate registration mode
+                  and registration values. A number is used to represent
+                  registration mode of the attribute. The number's value is 
+                  on the list of zxAnGponOnuMgmtRegMode defined values. 
+                  Correspondingly, the registration values' formats are also
+                  defined in zxAnGponOnuMgmtRegMode's description.
+                  
+                  The valid ONU registration information formats are as follows:
+                  1, SN
+                  2, password
+                  3, SN,password
+                  4, register ID
+                  5, register ID,8021x
+                  6, register ID,mutual
+                  7, hex password
+                  8, SN,hex password
+                  9, LOID
+                  10, LOID,password
+                  11, SN,register ID
+                  12, PSK
+                  It's used for trap only. When read this object always returns SN.
+          preprocessing:
+            -
+              type: REGEX
+              parameters:
+                - '(zxGponOltLOAMi\b|zxGponOltLOAMiRestore\b).*?(ZTEGC.{7})'
+                - '\1 \2'
+          tags:
+            -
+              tag: Application
+              value: Traps
+        -
+          uuid: 4e190867030340fbb1ecf0aa80216e04
+          name: 'Traps LOFi'
+          type: SNMP_TRAP
+          key: 'snmptrap["zxGponOltLOFi"]'
+          delay: '0'
+          history: 7d
+          trends: '0'
+          value_type: LOG
+          description: |
+            LOFi is Loss of Frame of ONUi. Send 3 times Deactivate_ONU-ID messages. Generate Loss_of_phy_layer_I notification.
+            
+            Varbinds:
+            0. zxAnGponOnuMgmtName (OCTETSTR)
+                  The name of the ONU.
+            
+            1. zxAnGponOnuMgmtTypeName (OCTETSTR)
+                  The ONU type name which should refer to the entry of 
+                  zxAnPonOnuTypeTable.
+            
+            2. zxAnGponOnuMgmtDesc (OCTETSTR)
+                  The description of the ONU.
+            
+            3. zxAnGponOnuMgmtRegistrationInfo (OCTETSTR)
+                  ONU registration information.
+                  This attribute is made up of registration mode and registration
+                  values. Commas are used to separate registration mode
+                  and registration values. A number is used to represent
+                  registration mode of the attribute. The number's value is 
+                  on the list of zxAnGponOnuMgmtRegMode defined values. 
+                  Correspondingly, the registration values' formats are also
+                  defined in zxAnGponOnuMgmtRegMode's description.
+                  
+                  The valid ONU registration information formats are as follows:
+                  1, SN
+                  2, password
+                  3, SN,password
+                  4, register ID
+                  5, register ID,8021x
+                  6, register ID,mutual
+                  7, hex password
+                  8, SN,hex password
+                  9, LOID
+                  10, LOID,password
+                  11, SN,register ID
+                  12, PSK
+                  It's used for trap only. When read this object always returns SN.
+          preprocessing:
+            -
+              type: REGEX
+              parameters:
+                - '(zxGponOltLOFi\b|zxGponOltLOFiRestore\b).*?(ZTEGC.{7})'
+                - '\1 \2'
+          tags:
+            -
+              tag: Application
+              value: Traps
+        -
+          uuid: e4b823f47dbf48488ec3c6a4b17d9d9c
+          name: 'Traps LOSi'
+          type: SNMP_TRAP
+          key: 'snmptrap["zxGponOltLOSi|zxGponOltLosi"]'
+          delay: '0'
+          history: 7d
+          trends: '0'
+          value_type: LOG
+          description: |
+            LOSi is Loss of Signal for ONUi. Generate notification.
+            
+            Varbinds:
+            0. zxAnGponOnuMgmtName (OCTETSTR)
+                  The name of the ONU.
+            
+            1. zxAnGponOnuMgmtTypeName (OCTETSTR)
+                  The ONU type name which should refer to the entry of 
+                  zxAnPonOnuTypeTable.
+            
+            2. zxAnGponOnuMgmtDesc (OCTETSTR)
+                  The description of the ONU.
+            
+            3. zxAnGponOnuMgmtRegistrationInfo (OCTETSTR)
+                  ONU registration information.
+                  This attribute is made up of registration mode and registration
+                  values. Commas are used to separate registration mode
+                  and registration values. A number is used to represent
+                  registration mode of the attribute. The number's value is 
+                  on the list of zxAnGponOnuMgmtRegMode defined values. 
+                  Correspondingly, the registration values' formats are also
+                  defined in zxAnGponOnuMgmtRegMode's description.
+                  
+                  The valid ONU registration information formats are as follows:
+                  1, SN
+                  2, password
+                  3, SN,password
+                  4, register ID
+                  5, register ID,8021x
+                  6, register ID,mutual
+                  7, hex password
+                  8, SN,hex password
+                  9, LOID
+                  10, LOID,password
+                  11, SN,register ID
+                  12, PSK
+                  It's used for trap only. When read this object always returns SN.
+            
+            4. zxAnPonProtectGroupName
+          preprocessing:
+            -
+              type: REGEX
+              parameters:
+                - '(zxGponOltLosi\b|zxGponOltLosiRestore\b|zxGponOltLOSi\b|zxGponOltLOSiRestore\b).*?(ZTEGC.{7})'
+                - '\1 \2'
+          tags:
+            -
+              tag: Application
+              value: Traps
+        -
+          uuid: 820707b7b13a4a3bb9ae39e74f6c9f5a
+          name: 'Traps MEMi'
+          type: SNMP_TRAP
+          key: 'snmptrap["zxGponOltMEMi"]'
+          delay: '0'
+          history: 7d
+          trends: '0'
+          value_type: LOG
+          description: |
+            MEMi is Message_Error Message from ONUi.
+            
+            Varbinds:
+            0. zxAnGponOnuMgmtName (OCTETSTR)
+                  The name of the ONU.
+            
+            1. zxAnGponOnuMgmtTypeName (OCTETSTR)
+                  The ONU type name which should refer to the entry of 
+                  zxAnPonOnuTypeTable.
+            
+            2. zxAnGponOnuMgmtDesc (OCTETSTR)
+                  The description of the ONU.
+            
+            3. zxAnGponOnuMgmtRegistrationInfo (OCTETSTR)
+                  ONU registration information.
+                  This attribute is made up of registration mode and registration
+                  values. Commas are used to separate registration mode
+                  and registration values. A number is used to represent
+                  registration mode of the attribute. The number's value is 
+                  on the list of zxAnGponOnuMgmtRegMode defined values. 
+                  Correspondingly, the registration values' formats are also
+                  defined in zxAnGponOnuMgmtRegMode's description.
+                  
+                  The valid ONU registration information formats are as follows:
+                  1, SN
+                  2, password
+                  3, SN,password
+                  4, register ID
+                  5, register ID,8021x
+                  6, register ID,mutual
+                  7, hex password
+                  8, SN,hex password
+                  9, LOID
+                  10, LOID,password
+                  11, SN,register ID
+                  12, PSK
+                  It's used for trap only. When read this object always returns SN.
+          preprocessing:
+            -
+              type: REGEX
+              parameters:
+                - '(zxGponOltMEMi\b|zxGponOltMEMiRestore\b).*?(ZTEGC.{7})'
+                - '\1 \2'
+          tags:
+            -
+              tag: Application
+              value: Traps
+        -
+          uuid: bbde1b0d6da6453ea8e4dba629565c95
+          name: 'Traps RDIi'
+          type: SNMP_TRAP
+          key: 'snmptrap["zxGponOltRDIi"]'
+          delay: '0'
+          history: 7d
+          trends: '0'
+          value_type: LOG
+          description: |
+            RDIi is Remote Defect Indication of ONUi.
+            
+            Varbinds:
+            0. zxAnGponOnuMgmtName (OCTETSTR)
+                  The name of the ONU.
+            
+            1. zxAnGponOnuMgmtTypeName (OCTETSTR)
+                  The ONU type name which should refer to the entry of 
+                  zxAnPonOnuTypeTable.
+            
+            2. zxAnGponOnuMgmtDesc (OCTETSTR)
+                  The description of the ONU.
+            
+            3. zxAnGponOnuMgmtRegistrationInfo (OCTETSTR)
+                  ONU registration information.
+                  This attribute is made up of registration mode and registration
+                  values. Commas are used to separate registration mode
+                  and registration values. A number is used to represent
+                  registration mode of the attribute. The number's value is 
+                  on the list of zxAnGponOnuMgmtRegMode defined values. 
+                  Correspondingly, the registration values' formats are also
+                  defined in zxAnGponOnuMgmtRegMode's description.
+                  
+                  The valid ONU registration information formats are as follows:
+                  1, SN
+                  2, password
+                  3, SN,password
+                  4, register ID
+                  5, register ID,8021x
+                  6, register ID,mutual
+                  7, hex password
+                  8, SN,hex password
+                  9, LOID
+                  10, LOID,password
+                  11, SN,register ID
+                  12, PSK
+                  It's used for trap only. When read this object always returns SN.
+          preprocessing:
+            -
+              type: REGEX
+              parameters:
+                - '(zxGponOltRDIi\b|zxGponOltRDIiRestore\b).*?(ZTEGC.{7})'
+                - '\1 \2'
+          tags:
+            -
+              tag: Application
+              value: Traps
+        -
+          uuid: 6826fdaabf704efdbc4ec9fd8524c1ee
+          name: 'Traps SDi'
+          type: SNMP_TRAP
+          key: 'snmptrap["zxGponOltSDi"]'
+          delay: '0'
+          history: 7d
+          trends: '0'
+          value_type: LOG
+          description: |
+            SDi is Signal Degraded of ONUi.
+            
+            Varbinds:
+            0. zxAnGponOnuMgmtName (OCTETSTR)
+                  The name of the ONU.
+            
+            1. zxAnGponOnuMgmtTypeName (OCTETSTR)
+                  The ONU type name which should refer to the entry of 
+                  zxAnPonOnuTypeTable.
+            
+            2. zxAnGponOnuMgmtDesc (OCTETSTR)
+                  The description of the ONU.
+            
+            3. zxAnGponOnuMgmtRegistrationInfo (OCTETSTR)
+                  ONU registration information.
+                  This attribute is made up of registration mode and registration
+                  values. Commas are used to separate registration mode
+                  and registration values. A number is used to represent
+                  registration mode of the attribute. The number's value is 
+                  on the list of zxAnGponOnuMgmtRegMode defined values. 
+                  Correspondingly, the registration values' formats are also
+                  defined in zxAnGponOnuMgmtRegMode's description.
+                  
+                  The valid ONU registration information formats are as follows:
+                  1, SN
+                  2, password
+                  3, SN,password
+                  4, register ID
+                  5, register ID,8021x
+                  6, register ID,mutual
+                  7, hex password
+                  8, SN,hex password
+                  9, LOID
+                  10, LOID,password
+                  11, SN,register ID
+                  12, PSK
+                  It's used for trap only. When read this object always returns SN.
+          preprocessing:
+            -
+              type: REGEX
+              parameters:
+                - '(zxGponOltSDi\b|zxGponOltSDiRestore\b).*?(ZTEGC.{7})'
+                - '\1 \2'
+          tags:
+            -
+              tag: Application
+              value: Traps
+        -
+          uuid: 819fee51fc564a97b596b81d5282fd27
+          name: 'Traps SFi'
+          type: SNMP_TRAP
+          key: 'snmptrap["zxGponOltSFi"]'
+          delay: '0'
+          history: 7d
+          trends: '0'
+          value_type: LOG
+          description: |
+            SFi is Signal Fail of ONUi. Send 3 times Deactivate_ONU-ID messages. Generate Loss_of_phy_layer_I notification.
+            
+            Varbinds:
+            0. zxAnGponOnuMgmtName (OCTETSTR)
+                  The name of the ONU.
+            
+            1. zxAnGponOnuMgmtTypeName (OCTETSTR)
+                  The ONU type name which should refer to the entry of 
+                  zxAnPonOnuTypeTable.
+            
+            2. zxAnGponOnuMgmtDesc (OCTETSTR)
+                  The description of the ONU.
+            
+            3. zxAnGponOnuMgmtRegistrationInfo (OCTETSTR)
+                  ONU registration information.
+                  This attribute is made up of registration mode and registration
+                  values. Commas are used to separate registration mode
+                  and registration values. A number is used to represent
+                  registration mode of the attribute. The number's value is 
+                  on the list of zxAnGponOnuMgmtRegMode defined values. 
+                  Correspondingly, the registration values' formats are also
+                  defined in zxAnGponOnuMgmtRegMode's description.
+                  
+                  The valid ONU registration information formats are as follows:
+                  1, SN
+                  2, password
+                  3, SN,password
+                  4, register ID
+                  5, register ID,8021x
+                  6, register ID,mutual
+                  7, hex password
+                  8, SN,hex password
+                  9, LOID
+                  10, LOID,password
+                  11, SN,register ID
+                  12, PSK
+                  It's used for trap only. When read this object always returns SN.
+          preprocessing:
+            -
+              type: REGEX
+              parameters:
+                - '(zxGponOltSFi\b|zxGponOltSFiRestore\b).*?(ZTEGC.{7})'
+                - '\1 \2'
+          tags:
+            -
+              tag: Application
+              value: Traps
+        -
+          uuid: 84c4e637d40a4c21991909d3ef191945
+          name: 'Traps SUFi'
+          type: SNMP_TRAP
+          key: 'snmptrap["zxGponOltSUFi"]'
+          delay: '0'
+          history: 7d
+          trends: '0'
+          value_type: LOG
+          description: |
+            SUFi is Start-up Failure of ONUi. Send 3 times Deactivate_ONU-ID messages.
+            
+            Varbinds:
+            0. zxAnGponOnuMgmtName (OCTETSTR)
+                  The name of the ONU.
+            
+            1. zxAnGponOnuMgmtTypeName (OCTETSTR)
+                  The ONU type name which should refer to the entry of 
+                  zxAnPonOnuTypeTable.
+            
+            2. zxAnGponOnuMgmtDesc (OCTETSTR)
+                  The description of the ONU.
+            
+            3. zxAnGponOnuMgmtRegistrationInfo (OCTETSTR)
+                  ONU registration information.
+                  This attribute is made up of registration mode and registration
+                  values. Commas are used to separate registration mode
+                  and registration values. A number is used to represent
+                  registration mode of the attribute. The number's value is 
+                  on the list of zxAnGponOnuMgmtRegMode defined values. 
+                  Correspondingly, the registration values' formats are also
+                  defined in zxAnGponOnuMgmtRegMode's description.
+                  
+                  The valid ONU registration information formats are as follows:
+                  1, SN
+                  2, password
+                  3, SN,password
+                  4, register ID
+                  5, register ID,8021x
+                  6, register ID,mutual
+                  7, hex password
+                  8, SN,hex password
+                  9, LOID
+                  10, LOID,password
+                  11, SN,register ID
+                  12, PSK
+                  It's used for trap only. When read this object always returns SN.
+          preprocessing:
+            -
+              type: REGEX
+              parameters:
+                - '(zxGponOltSUFi\b|zxGponOltSUFiRestore\b).*?(ZTEGC.{7})'
+                - '\1 \2'
+          tags:
+            -
+              tag: Application
+              value: Traps
+        -
+          uuid: 9a421175fcac49ab82283cf23fda8ad0
+          name: 'Traps Onu Uni Lan Los'
+          type: SNMP_TRAP
+          key: 'snmptrap["zxGponRootMib\.50\.6\.1\.1\.1"]'
+          delay: '0'
+          history: 7d
+          trends: '0'
+          value_type: LOG
+          description: |
+            No carrier at the Ethernet UNI
+            
+            Varbinds:
+            0. zxAnGponRmEthUniExpectedType (INTEGER32)
+                  The following coding is used for this attribute:
+                  0x00 = by autosensing, 0x01 to 0xFE (1 to 254) = one of the values
+                  from Table 3 that is compatible with the type of the LIM. Upon
+                  autonomous instantiation, the value 0x00 is used.
+          preprocessing:
+            -
+              type: REGEX
+              parameters:
+                - '(Description .*\b).*?(ZTEGC.{7})'
+                - 'Uni Lan Los \1 \2'
+          tags:
+            -
+              tag: Application
+              value: Traps
+        -
+          uuid: 25a63aba772a422ba1cc595e799c97b1
+          name: 'Traps UnCfg'
+          type: SNMP_TRAP
+          key: 'snmptrap["zxGponUnCfg"]'
+          delay: '0'
+          history: 7d
+          trends: '0'
+          value_type: LOG
+          tags:
+            -
+              tag: Application
+              value: Traps
+        -
+          uuid: c32a3da1f15840749835d0ac6220465c
+          name: 'Device contact details'
+          type: SNMP_AGENT
+          snmp_oid: sysContact.0
+          key: sysContact
+          delay: 1d
+          trends: '0'
+          value_type: CHAR
+          tags:
+            -
+              tag: Application
+              value: General
+        -
+          uuid: 13dd5f05eb224442acdca5d9c5926ef9
+          name: 'Device description'
+          type: SNMP_AGENT
+          snmp_oid: sysDescr.0
+          key: sysDescr
+          delay: 1d
+          trends: '0'
+          value_type: CHAR
+          tags:
+            -
+              tag: Application
+              value: General
+        -
+          uuid: 15abfc32c47548e69b5c6aeec0c8f4a5
+          name: 'Device location'
+          type: SNMP_AGENT
+          snmp_oid: sysLocation.0
+          key: sysLocation
+          delay: 1d
+          trends: '0'
+          value_type: CHAR
+          tags:
+            -
+              tag: Application
+              value: General
+        -
+          uuid: 616b2c5ce71d4383950c31086595c99d
+          name: 'Device name'
+          type: SNMP_AGENT
+          snmp_oid: sysName.0
+          key: sysName
+          delay: 1d
+          history: 1d
+          trends: '0'
+          value_type: CHAR
+          tags:
+            -
+              tag: Application
+              value: General
+        -
+          uuid: c587efbb2892404fad76be147ed7ece6
+          name: Temperature
+          type: SNMP_AGENT
+          snmp_oid: iso.3.6.1.4.1.3893.1.27.1.1.3.2
+          key: temperature
+          delay: 5m
+          units: °C
+          tags:
+            -
+              tag: Application
+              value: Health
+        -
+          uuid: a05a908145354542a49e68fa78b7dec7
+          name: Uptime
+          type: SNMP_AGENT
+          snmp_oid: sysUpTime.0
+          key: uptime
+          delay: 10m
+          value_type: FLOAT
+          units: s
+          preprocessing:
+            -
+              type: MULTIPLIER
+              parameters:
+                - '0.01'
+          tags:
+            -
+              tag: Application
+              value: Health
+          triggers:
+            -
+              uuid: c005ea8411814ac88bf894502a92e5d3
+              expression: 'last(/Template SNMP GPON/uptime,#2)<120'
+              name: 'Device has rebooted'
+              priority: HIGH
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+      discovery_rules:
+        -
+          uuid: e809f2f796d14bf0a883bc485417f1e7
+          name: 'OLT Cards'
+          type: SNMP_AGENT
+          snmp_oid: 'discovery[{#SNMPVALUE},1.3.6.1.4.1.3902.1015.2.1.1.3.1.4]'
+          key: cardindex
+          delay: 5m
+          item_prototypes:
+            -
+              uuid: 1012acf675e8438bab3a531ee0398e30
+              name: 'OLT CARD CPU LOAD {#SNMPVALUE} $1'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.3902.1015.2.1.1.3.1.9.{#SNMPINDEX}'
+              key: 'cardcpu[{#SNMPINDEX}]'
+              tags:
+                -
+                  tag: Application
+                  value: Health
+              trigger_prototypes:
+                -
+                  uuid: d6097a607b7942149511209248d5de9f
+                  expression: 'avg(/Template SNMP GPON/cardcpu[{#SNMPINDEX}],10m)>90'
+                  name: 'CARD {#SNMPVALUE} {#SNMPINDEX} CPU too high!'
+                  priority: HIGH
+                  description: 'Last value: {ITEM.LASTVALUE1}.'
+            -
+              uuid: d57878e0f22f4dba95c271206b3d42c5
+              name: 'OLT CARD MEMORY {#SNMPVALUE} $1'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.3902.1015.2.1.1.3.1.11.{#SNMPINDEX}'
+              key: 'cardmem[{#SNMPINDEX}]'
+              units: '%'
+              tags:
+                -
+                  tag: Application
+                  value: Health
+              trigger_prototypes:
+                -
+                  uuid: 5d2e8e7523fc457284f2837dfc8bb7cd
+                  expression: 'avg(/Template SNMP GPON/cardmem[{#SNMPINDEX}],10m)>85'
+                  name: 'CARD {#SNMPVALUE} {#SNMPINDEX} MEMORY too high!'
+                  priority: HIGH
+                  description: 'Last value: {ITEM.LASTVALUE1}.'
+            -
+              uuid: 4696e6cbd2e3436a9b1a4256d29fc2e7
+              name: 'OLT CARD OPERATIONAL STATUS {#SNMPVALUE} $1'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.3902.1015.2.1.1.3.1.5.{#SNMPINDEX}'
+              key: 'cardoperstat[{#SNMPINDEX}]'
+              tags:
+                -
+                  tag: Application
+                  value: Health
+              trigger_prototypes:
+                -
+                  uuid: 1c5ef5edc06e4da3a15c87975c89a076
+                  expression: 'last(/Template SNMP GPON/cardoperstat[{#SNMPINDEX}])<>1'
+                  name: 'CARD {#SNMPVALUE} operational status changed'
+                  priority: HIGH
+                  description: 'Last value: {ITEM.LASTVALUE1}.'
+            -
+              uuid: 8c8d4360dbc549508ae756ecf9bb28f6
+              name: 'OLT CARD STANDBY STATUS {#SNMPVALUE} $1'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.3902.1015.2.1.1.3.1.13.{#SNMPINDEX}'
+              key: 'cardstandby[{#SNMPINDEX}]'
+              tags:
+                -
+                  tag: Application
+                  value: Health
+              trigger_prototypes:
+                -
+                  uuid: ef566d05b79f4ec39566cdff5ec91967
+                  expression: 'last(/Template SNMP GPON/cardstandby[{#SNMPINDEX}])<>1 and last(/Template SNMP GPON/cardstandby[{#SNMPINDEX}])<>2'
+                  name: 'CARD {#SNMPVALUE} standby status changed'
+                  priority: HIGH
+                  description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: 3e4eda4162344e039e646cd4b91a46d6
+          name: 'Network interfaces'
+          type: SNMP_AGENT
+          snmp_oid: 'discovery[{#SNMPVALUE},ifDescr]'
+          key: ifDescr
+          delay: 5m
+          lifetime: 5d
+          item_prototypes:
+            -
+              uuid: 9331ce939ecb4e719cea4e9e1d9de9a9
+              name: 'Incoming traffic on interface $1'
+              type: SNMP_AGENT
+              snmp_oid: 'ifHCInOctets.{#SNMPINDEX}'
+              key: 'ifInOctets[{#SNMPVALUE}]'
+              delay: 10m
+              units: bps
+              preprocessing:
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '8'
+              tags:
+                -
+                  tag: Application
+                  value: Interfaces
+            -
+              uuid: 42fd1bba2d4d4a53995df5872461c407
+              name: 'Operational status of interface $1'
+              type: SNMP_AGENT
+              snmp_oid: 'ifOperStatus.{#SNMPINDEX}'
+              key: 'ifOperStatus[{#SNMPVALUE}]'
+              delay: 10m
+              valuemap:
+                name: 'SNMP interface status (ifOperStatus)'
+              tags:
+                -
+                  tag: Application
+                  value: Interfaces
+              trigger_prototypes:
+                -
+                  uuid: 54ed7597df4a4baa9d9f2370a05ac262
+                  expression: '(last(/Template SNMP GPON/ifOperStatus[{#SNMPVALUE}],#1)<>last(/Template SNMP GPON/ifOperStatus[{#SNMPVALUE}],#2))=1'
+                  name: 'Interface {#SNMPVALUE} operational status changed'
+                  priority: AVERAGE
+                  description: 'Last value: {ITEM.LASTVALUE1}.'
+            -
+              uuid: 3c78f6192aef482aa56637c1781176f4
+              name: 'Outgoing traffic on interface $1'
+              type: SNMP_AGENT
+              snmp_oid: 'ifHCOutOctets.{#SNMPINDEX}'
+              key: 'ifOutOctets[{#SNMPVALUE}]'
+              delay: 10m
+              units: bps
+              preprocessing:
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '8'
+              tags:
+                -
+                  tag: Application
+                  value: Interfaces
+        -
+          uuid: d5ed98781f18430abd776080af5b9a35
+          name: ONUs
+          type: SNMP_AGENT
+          snmp_oid: 'discovery[{#SNMPVALUE},.1.3.6.1.4.1.6771.10.1.5.1.62]'
+          key: onuAlias
+          delay: 5m
+          item_prototypes:
+            -
+              uuid: 5f87d83c72f846b7b9e2c7aedc879c17
+              name: 'ONU $1 DOWNSTREAM SIGNAL'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.6771.10.1.5.1.15.{#SNMPINDEX}'
+              key: 'onuDwRx[{#SNMPVALUE}]'
+              delay: 600s
+              units: dbm
+              preprocessing:
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '0.01'
+              tags:
+                -
+                  tag: Application
+                  value: Interfaces
+              trigger_prototypes:
+                -
+                  uuid: 8fc187819f2b4630addc0faac704a2f3
+                  expression: 'last(/Template SNMP GPON/onuDwRx[{#SNMPVALUE}])>28'
+                  name: 'ONU {#SNMPVALUE} LOW SIGNAL'
+                  priority: INFO
+                  description: |
+                    Signal > 28
+                    Last value: {ITEM.LASTVALUE1}.
+        -
+          uuid: 478dc363d5114fb3bad4085ad8de2be3
+          name: 'ONUs - Signal'
+          type: SNMP_AGENT
+          snmp_oid: 'discovery[{#SNMPVALUE},.1.3.6.1.4.1.3902.1012.3.28.1.1.2, {#ONUDESC}, .1.3.6.1.4.1.3902.1012.3.28.1.1.3]'
+          key: onuIndex
+          delay: 5m
+          item_prototypes:
+            -
+              uuid: 1473011b82fb48f7967893a42ad37330
+              name: 'rx 1310nm {#ONUDESCR}'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.3902.1015.1010.11.2.1.2.{#SNMPINDEX}'
+              key: 'rx1310[{#SNMPINDEX}]'
+              delay: 1h
+              value_type: FLOAT
+              preprocessing:
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '0.001'
+              tags:
+                -
+                  tag: Application
+                  value: ONU
+              trigger_prototypes:
+                -
+                  uuid: 34b76e272a6946fb8174c696164e34d0
+                  expression: 'last(/Template SNMP GPON/rx1310[{#SNMPINDEX}])<=-30 and last(/Template SNMP GPON/rx1310[{#SNMPINDEX}])<>-80'
+                  name: 'SIGNAL LOW rx 1310nm {#ONUDESC}'
+                  priority: INFO
+                  description: 'Last value: {ITEM.LASTVALUE1}.'
+            -
+              uuid: b6e92093d31f458eb780cd53317821ac
+              name: 'rx 1490nm {#ONUDESCR}'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.3902.1012.3.50.12.1.1.10.{#SNMPINDEX}.1'
+              key: 'rx1490[{#SNMPINDEX}]'
+              value_type: FLOAT
+              preprocessing:
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '0.002'
+              tags:
+                -
+                  tag: Application
+                  value: ONU
+              trigger_prototypes:
+                -
+                  uuid: ac8a988f4d6c4fad9111387afb5987a4
+                  expression: 'last(/Template SNMP GPON/rx1490[{#SNMPINDEX}])<=6 and last(/Template SNMP GPON/rx1490[{#SNMPINDEX}])<>131.07'
+                  name: 'SIGNAL LOW rx 1490nm {#ONUDESCR}'
+                  priority: INFO
+                  description: 'Last value: {ITEM.LASTVALUE1}.'
+      valuemaps:
+        -
+          uuid: 618e34c75f74446aa1b9300cdc8d3d58
+          name: 'Ping State'
+          mappings:
+            -
+              value: '0'
+              newvalue: Down
+            -
+              value: '1'
+              newvalue: Up
+        -
+          uuid: 14810838252c47e88ddd2e89110d5521
+          name: 'SNMP interface status (ifOperStatus)'
+          mappings:
+            -
+              value: '1'
+              newvalue: up
+            -
+              value: '2'
+              newvalue: down
+            -
+              value: '3'
+              newvalue: testing
+            -
+              value: '4'
+              newvalue: unknown
+            -
+              value: '5'
+              newvalue: dormant
+            -
+              value: '6'
+              newvalue: notPresent
+            -
+              value: '7'
+              newvalue: lowerLayerDown
+  triggers:
+    -
+      uuid: 7ddb13b1f5ab46bb973d076a44271f48
+      expression: '(last(/Template SNMP GPON/memory-used)/last(/Template SNMP GPON/memory-total))*100>85'
+      name: 'Memory above 85%'
+      priority: HIGH
+      description: 'Last value: {ITEM.LASTVALUE1}.'

@@ -1,0 +1,534 @@
+zabbix_export:
+  version: '5.4'
+  date: '2021-05-28T03:21:11Z'
+  groups:
+    -
+      uuid: 7df96b18c230490a9a0a9e2307226338
+      name: Templates
+  templates:
+    -
+      uuid: 1fbb9786317540a5b30159e1a77c02f4
+      template: 'Template Energy APC'
+      name: 'Template Energy APC'
+      templates:
+        -
+          name: 'Template Module ICMP Ping'
+      groups:
+        -
+          name: Templates
+      items:
+        -
+          uuid: 4b618c7524374188b8c44ac8d977b3bf
+          name: 'Battery Actual Voltage'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.318.1.1.1.2.2.8.0
+          key: upsAdvBatteryActualVoltage
+          units: V
+          tags:
+            -
+              tag: Application
+              value: Battery
+          triggers:
+            -
+              uuid: 19f524e120554e1ca938be02c71639b1
+              expression: 'last(/Template Energy APC/upsAdvBatteryActualVoltage)>=230'
+              name: 'High Voltage in  {HOST.HOST}'
+              priority: HIGH
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: deb7ac2e9bc34769839b33152372af59
+          name: 'Battery Capacity'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.318.1.1.1.2.2.1.0
+          key: upsAdvBatteryCapacity
+          units: '%'
+          tags:
+            -
+              tag: Application
+              value: Battery
+          triggers:
+            -
+              uuid: 257390998f5d4b9b86e84143e8430c24
+              expression: 'last(/Template Energy APC/upsAdvBatteryCapacity)<=20'
+              name: 'Battery capacity below 20%'
+              priority: HIGH
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+            -
+              uuid: fecfad7f4f9d4955bc3a601c079daa46
+              expression: 'last(/Template Energy APC/upsAdvBatteryCapacity)<=40'
+              name: 'Battery capacity below 40%'
+              priority: HIGH
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: cf5391a696bc4bbc88c18f101000cf4d
+          name: 'Battery Current'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.318.1.1.1.2.2.9.0
+          key: upsAdvBatteryCurrent
+          delay: 2m
+          units: A
+          tags:
+            -
+              tag: Application
+              value: Battery
+        -
+          uuid: eae18d2dc2594bf085b1f36d740409de
+          name: 'Number of Batteries Connected with problem'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.318.1.1.1.2.2.6.0
+          key: upsAdvBatteryNumOfBadBattPacks
+          delay: 10m
+          trends: '0'
+          value_type: TEXT
+          tags:
+            -
+              tag: Application
+              value: Battery
+        -
+          uuid: 4027466b56784665af0dc71eeca29b21
+          name: 'Number of Batteries Connected'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.318.1.1.1.2.2.5.0
+          key: upsAdvBatteryNumOfBattPacks
+          delay: 10m
+          tags:
+            -
+              tag: Application
+              value: Battery
+        -
+          uuid: cb76a98810844c8fb3545953130b8291
+          name: 'Battery RunTime Remaining'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.318.1.1.1.2.2.3.0
+          key: upsAdvBatteryRunTimeRemaining
+          delay: 5m
+          units: s
+          preprocessing:
+            -
+              type: MULTIPLIER
+              parameters:
+                - '0.01'
+          tags:
+            -
+              tag: Application
+              value: Battery
+        -
+          uuid: dc9868f6b65a45ab969805c26f839a3b
+          name: 'Battery Temperature'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.318.1.1.1.2.2.2.0
+          key: upsAdvBatteryTemperature
+          units: °C
+          tags:
+            -
+              tag: Application
+              value: Battery
+          triggers:
+            -
+              uuid: 7f38384b056d4bd5b21a5b937b32cf89
+              expression: 'last(/Template Energy APC/upsAdvBatteryTemperature)>45'
+              name: 'High Temperature on Battery'
+              priority: WARNING
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: cdce070fdd914540a04671a3cc71ce80
+          name: 'High Transfer Volt'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.318.1.1.1.5.2.2.0
+          key: upsAdvConfigHighTransferVolt
+          units: VAC
+          tags:
+            -
+              tag: Application
+              value: Devices
+        -
+          uuid: 27c4d856bb6d455c95dca34da49e09ee
+          name: 'Low Battery Runtime'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.318.1.1.1.5.2.8.0
+          key: upsAdvConfigLowBatteryRunTime
+          units: uptime
+          tags:
+            -
+              tag: Application
+              value: Devices
+        -
+          uuid: 87232763f01b4f2faa3cefa38c40557c
+          name: 'Low Transfer Volt'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.318.1.1.1.5.2.3.0
+          key: upsAdvConfigLowTransferVolt
+          units: VAC
+          tags:
+            -
+              tag: Application
+              value: Devices
+        -
+          uuid: e1bbe4505f864aaca072c7c665b8b392
+          name: 'Rated Output Voltage'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.318.1.1.1.5.2.1.0
+          key: upsAdvConfigRatedOutputVoltage
+          units: VAC
+          tags:
+            -
+              tag: Application
+              value: Devices
+        -
+          uuid: 31e1457964c14f228f16e1b03636e1cb
+          name: 'Delay Shutdown off'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.318.1.1.1.5.2.10.0
+          key: upsAdvConfigShutoffDelay
+          units: uptime
+          tags:
+            -
+              tag: Application
+              value: Devices
+        -
+          uuid: 2b15f89e751e48eda155b434340c1cf8
+          name: 'Data of manufacture'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.318.1.1.1.1.2.2.0
+          key: upsAdvIdentDateOfManufacture
+          delay: 1h
+          trends: '0'
+          value_type: TEXT
+          tags:
+            -
+              tag: Application
+              value: System
+        -
+          uuid: b01b5318fd5048658a3806d2d051a6e8
+          name: 'Firmware Revision'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.318.1.1.1.1.2.1.0
+          key: upsAdvIdentFirmwareRevision
+          delay: 1h
+          trends: '0'
+          value_type: TEXT
+          tags:
+            -
+              tag: Application
+              value: System
+        -
+          uuid: c334d5ca9f2b440689a6ac6323adbb4c
+          name: 'Serial Number'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.318.1.1.1.1.2.3.0
+          key: upsAdvIdentSerialNumber
+          delay: 1h
+          trends: '0'
+          value_type: TEXT
+          tags:
+            -
+              tag: Application
+              value: System
+        -
+          uuid: 44199b369638423d9f121609fedd0574
+          name: 'Input Frequency'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.318.1.1.1.3.2.4.0
+          key: upsAdvInputFrequency
+          units: Hz
+          tags:
+            -
+              tag: Application
+              value: Input
+        -
+          uuid: c848ca9a24b64e7e9255409647a687b4
+          name: 'Input Line Voltage'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.318.1.1.1.3.2.1.0
+          key: upsAdvInputLineVoltage
+          delay: 3m
+          units: VAC
+          tags:
+            -
+              tag: Application
+              value: Input
+        -
+          uuid: 2569dbffa1c34bbbb370fea0eafd84b7
+          name: 'Input Max Line Voltage'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.318.1.1.1.3.2.2.0
+          key: upsAdvInputMaxLineVoltage
+          units: VAC
+          tags:
+            -
+              tag: Application
+              value: Input
+        -
+          uuid: 2b434adf347b45bd846d0462d461abc4
+          name: 'Input Min Line Voltage'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.318.1.1.1.3.2.3.0
+          key: upsAdvInputMinLineVoltage
+          units: VAC
+          tags:
+            -
+              tag: Application
+              value: Input
+        -
+          uuid: 807af3bfa07c465bb2d9a11702359d81
+          name: 'Output Current'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.318.1.1.1.4.2.4.0
+          key: upsAdvOutputCurrent
+          delay: 3m
+          units: A
+          tags:
+            -
+              tag: Application
+              value: Output
+        -
+          uuid: 8e80994363224d51bee80ad626d9d4f6
+          name: 'Output Frequency'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.318.1.1.1.4.2.2.0
+          key: upsAdvOutputFrequency
+          delay: 3m
+          units: Hz
+          tags:
+            -
+              tag: Application
+              value: Output
+        -
+          uuid: 898bf1f5ad8a413d97df7db88b389f0d
+          name: 'Output Load'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.318.1.1.1.4.2.3.0
+          key: upsAdvOutputLoad
+          delay: 3m
+          units: '%'
+          tags:
+            -
+              tag: Application
+              value: Output
+        -
+          uuid: 2ae588d2aa3948b892787c99064d9c03
+          name: 'Output Voltage'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.318.1.1.1.4.2.1.0
+          key: upsAdvOutputVoltage
+          units: VAC
+          tags:
+            -
+              tag: Application
+              value: Output
+        -
+          uuid: e3bd7df2b1da4b468286cc5ad569cc28
+          name: 'Battery Last Replace Date'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.318.1.1.1.2.1.3.0
+          key: upsBasicBatteryLastReplaceDate
+          delay: 1h
+          trends: '0'
+          value_type: TEXT
+          tags:
+            -
+              tag: Application
+              value: Battery
+        -
+          uuid: d580f3fd64c945ccb5958e87c04b542c
+          name: 'Battery Status'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.318.1.1.1.2.1.1.0
+          key: upsBasicBatteryStatus
+          tags:
+            -
+              tag: Application
+              value: Battery
+          triggers:
+            -
+              uuid: fee8ea8ad1a64f1bb624b05214e5f937
+              expression: 'last(/Template Energy APC/upsBasicBatteryStatus)=3'
+              name: 'Low Battery'
+              priority: HIGH
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: db5067877b1748cdb7063cf64a1df737
+          name: 'Time on battery'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.318.1.1.1.2.1.2.0
+          key: upsBasicBatteryTimeOnBattery
+          delay: 3m
+          trends: '0'
+          value_type: TEXT
+          tags:
+            -
+              tag: Application
+              value: Battery
+        -
+          uuid: 03096d62320642478a4007b01a00cccd
+          name: 'Number of devices Connected'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.318.1.1.1.5.1.1.0
+          key: upsBasicConfigNumDevices
+          tags:
+            -
+              tag: Application
+              value: Devices
+        -
+          uuid: d26ff0ab553941edbfb047c6abd3789f
+          name: 'Model Name'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.318.1.1.1.1.1.1.0
+          key: upsBasicIdentModel
+          delay: 1h
+          trends: '0'
+          value_type: TEXT
+          tags:
+            -
+              tag: Application
+              value: System
+        -
+          uuid: 9abed55d30494a41a1af2753c1197eec
+          name: 'Ident Name'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.318.1.1.1.1.1.2.0
+          key: upsBasicIdentName
+          delay: 1h
+          trends: '0'
+          value_type: TEXT
+          tags:
+            -
+              tag: Application
+              value: System
+        -
+          uuid: c56534614bcd44dc88af287a6c303171
+          name: 'Input Phase'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.318.1.1.1.3.1.1.0
+          key: upsBasicInputPhase
+          tags:
+            -
+              tag: Application
+              value: Input
+        -
+          uuid: c2fdc99ece9447d5b341f830cdf487c3
+          name: 'Output Phase'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.318.1.1.1.4.1.2.0
+          key: upsBasicOutputPhase
+          tags:
+            -
+              tag: Application
+              value: Output
+        -
+          uuid: 3f62307722f74b508415e75d1a7c6fd9
+          name: 'Output Status'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.318.1.1.1.4.1.1.0
+          key: upsBasicOutputStatus
+          tags:
+            -
+              tag: Application
+              value: Output
+        -
+          uuid: 79d207198421416d8c4cefb117d6a66b
+          name: 'Battery Replace Indicator'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.318.1.1.1.2.2.4.0
+          key: upsBatteryReplaceIndicator
+          tags:
+            -
+              tag: Application
+              value: Battery
+          triggers:
+            -
+              uuid: ca35fa1be2864286a2b99db99cd3424f
+              expression: 'last(/Template Energy APC/upsBatteryReplaceIndicator)=2'
+              name: 'Battery needs replacement'
+              priority: WARNING
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+        -
+          uuid: f49f766b77f642e6950874607e3f8c37
+          name: 'Total DC Current'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.318.1.1.1.2.2.10.0
+          key: upsTotalDCCurrent
+          units: A
+          tags:
+            -
+              tag: Application
+              value: Battery
+        -
+          uuid: 6e7b972fbb3b4d4e80ccdf50100dad14
+          name: 'SNMP availability'
+          type: INTERNAL
+          key: 'zabbix[host,snmp,available]'
+          tags:
+            -
+              tag: Application
+              value: Status
+          triggers:
+            -
+              uuid: 6f1200fc2fed4038a6265b7c2340de48
+              expression: 'max(/Template Energy APC/zabbix[host,snmp,available],5m)=0'
+              name: 'SNMP Indisponível em {HOST.HOST}'
+              priority: WARNING
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+  graphs:
+    -
+      uuid: 239bd8f6ef354ac8a16587ab09dd8bb4
+      name: 'Battery Capacity'
+      graph_items:
+        -
+          sortorder: '1'
+          color: 199C0D
+          item:
+            host: 'Template Energy APC'
+            key: upsAdvBatteryCapacity
+    -
+      uuid: 34f564002b38495eb1504112fdd4a044
+      name: 'Battery RunTime Remaining'
+      graph_items:
+        -
+          sortorder: '1'
+          color: 199C0D
+          item:
+            host: 'Template Energy APC'
+            key: upsAdvBatteryRunTimeRemaining
+    -
+      uuid: 8939d577a87246ce9e63c280a0dfe0e1
+      name: 'Battery Temperature'
+      graph_items:
+        -
+          sortorder: '1'
+          color: 199C0D
+          item:
+            host: 'Template Energy APC'
+            key: upsAdvBatteryTemperature
+    -
+      uuid: 86796aea56c244338e6e57bbaf6469a9
+      name: 'Input X Output (Frequency)'
+      graph_items:
+        -
+          sortorder: '1'
+          color: 199C0D
+          item:
+            host: 'Template Energy APC'
+            key: upsAdvInputFrequency
+        -
+          sortorder: '2'
+          color: F63100
+          item:
+            host: 'Template Energy APC'
+            key: upsAdvOutputFrequency
+    -
+      uuid: 27e9464b793347f49c34fa225bbed9b9
+      name: 'Input x Output (Voltage)'
+      graph_items:
+        -
+          sortorder: '1'
+          color: 199C0D
+          item:
+            host: 'Template Energy APC'
+            key: upsAdvInputLineVoltage
+        -
+          sortorder: '2'
+          color: F63100
+          item:
+            host: 'Template Energy APC'
+            key: upsAdvOutputVoltage
