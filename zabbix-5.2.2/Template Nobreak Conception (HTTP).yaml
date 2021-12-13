@@ -1,0 +1,561 @@
+zabbix_export:
+  version: '5.4'
+  date: '2021-12-13T14:47:46Z'
+  groups:
+    -
+      uuid: 7df96b18c230490a9a0a9e2307226338
+      name: Templates
+  templates:
+    -
+      uuid: b20e2a7378ce41fb9147843543873f06
+      template: 'Template Nobreak Conception by HTTP'
+      name: 'Template Nobreak Conception by HTTP'
+      groups:
+        -
+          name: Templates
+      items:
+        -
+          uuid: a9a355694f4d4bc9a114623dd7825d36
+          name: Barramento
+          type: DEPENDENT
+          key: barramento
+          delay: '0'
+          value_type: FLOAT
+          units: V
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - '$.[21].1'
+            -
+              type: STR_REPLACE
+              parameters:
+                - V
+                - ' '
+          master_item:
+            key: teste
+        -
+          uuid: 1a80bebdfa404878adcb43b0308bb603
+          name: Bateria
+          type: DEPENDENT
+          key: bateria
+          delay: '0'
+          value_type: FLOAT
+          units: V
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - '$.[22].1'
+            -
+              type: STR_REPLACE
+              parameters:
+                - V
+                - ' '
+          master_item:
+            key: teste
+        -
+          uuid: aed288d0576f479d8efab48113eca866
+          name: 'ByPass [1]'
+          type: DEPENDENT
+          key: byPass1
+          delay: '0'
+          value_type: FLOAT
+          units: V
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - '$.[4].1'
+            -
+              type: STR_REPLACE
+              parameters:
+                - V
+                - ' '
+          master_item:
+            key: teste
+        -
+          uuid: 3ff873eb03d842b6ab58100c6e3600b5
+          name: 'ByPass [2]'
+          type: DEPENDENT
+          key: byPass2
+          delay: '0'
+          value_type: FLOAT
+          units: V
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - '$.[5].1'
+            -
+              type: STR_REPLACE
+              parameters:
+                - V
+                - ' '
+          master_item:
+            key: teste
+        -
+          uuid: 226db2fb4feb4cdf9be169158a9b671d
+          name: 'ByPass [3]'
+          type: DEPENDENT
+          key: byPass3
+          delay: '0'
+          value_type: FLOAT
+          units: V
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - '$.[6].1'
+            -
+              type: STR_REPLACE
+              parameters:
+                - V
+                - ' '
+          master_item:
+            key: teste
+        -
+          uuid: 2aeb57da35174d1c878c608b8a20c898
+          name: 'ByPass [4]'
+          type: DEPENDENT
+          key: byPass4
+          delay: '0'
+          value_type: FLOAT
+          units: Hz
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - '$.[7].1'
+            -
+              type: STR_REPLACE
+              parameters:
+                - Hz
+                - ' '
+          master_item:
+            key: teste
+        -
+          uuid: f63da23f10ac4ce892a90f57f2af78b8
+          name: 'Entrada [1]'
+          type: DEPENDENT
+          key: entrada1
+          delay: '0'
+          value_type: FLOAT
+          units: V
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - '$.[0].1'
+            -
+              type: STR_REPLACE
+              parameters:
+                - V
+                - ' '
+          master_item:
+            key: teste
+        -
+          uuid: 4789361c7a0b4a789db2edb91a54877d
+          name: 'Entrada [2]'
+          type: DEPENDENT
+          key: entrada2
+          delay: '0'
+          value_type: FLOAT
+          units: V
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - '$.[1].1'
+            -
+              type: STR_REPLACE
+              parameters:
+                - V
+                - ' '
+          master_item:
+            key: teste
+        -
+          uuid: eac77932b3734d6b9b47721953f4f785
+          name: 'Entrada [3]'
+          type: DEPENDENT
+          key: entrada3
+          delay: '0'
+          value_type: FLOAT
+          units: V
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - '$.[2].1'
+            -
+              type: STR_REPLACE
+              parameters:
+                - V
+                - ' '
+          master_item:
+            key: teste
+        -
+          uuid: 67b2e37553844887ac11af631efdec3c
+          name: 'Entrada [4]'
+          type: DEPENDENT
+          key: entrada4
+          delay: '0'
+          value_type: FLOAT
+          units: Hz
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - '$.[3].1'
+            -
+              type: STR_REPLACE
+              parameters:
+                - Hz
+                - ' '
+          master_item:
+            key: teste
+        -
+          uuid: 415c3bb629ae4e16a53787f3fbd8c9da
+          name: 'Saida [1]'
+          type: DEPENDENT
+          key: saida1
+          delay: '0'
+          value_type: FLOAT
+          units: V
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - '$.[8].1'
+            -
+              type: STR_REPLACE
+              parameters:
+                - V
+                - ' '
+          master_item:
+            key: teste
+        -
+          uuid: 34a1f779e6574b73b964440c9a2e6c27
+          name: 'Saida [2]'
+          type: DEPENDENT
+          key: saida2
+          delay: '0'
+          value_type: FLOAT
+          units: V
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - '$.[9].1'
+            -
+              type: STR_REPLACE
+              parameters:
+                - V
+                - ' '
+          master_item:
+            key: teste
+        -
+          uuid: 30c0907e07504968bba61f94376d2e21
+          name: 'Saida [3]'
+          type: DEPENDENT
+          key: saida3
+          delay: '0'
+          value_type: FLOAT
+          units: V
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - '$.[10].1'
+            -
+              type: STR_REPLACE
+              parameters:
+                - V
+                - ' '
+          master_item:
+            key: teste
+        -
+          uuid: 6dad1f975da649149f8fbafffd84a5f8
+          name: 'Saida [4]'
+          type: DEPENDENT
+          key: saida4
+          delay: '0'
+          value_type: FLOAT
+          units: Hz
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - '$.[11].1'
+            -
+              type: STR_REPLACE
+              parameters:
+                - Hz
+                - ' '
+          master_item:
+            key: teste
+        -
+          uuid: ee27b6dbe1d9493480100ccd4aa0bb22
+          name: 'Saida [5]'
+          type: DEPENDENT
+          key: saida5
+          delay: '0'
+          value_type: FLOAT
+          units: KVA
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - '$.[12].1'
+            -
+              type: STR_REPLACE
+              parameters:
+                - KVA
+                - ' '
+            -
+              type: REGEX
+              parameters:
+                - \S\S\S\S
+                - \0
+          master_item:
+            key: teste
+        -
+          uuid: 882275e5cb22423e8b18cd443addd020
+          name: 'Saida [6]'
+          type: DEPENDENT
+          key: saida6
+          delay: '0'
+          value_type: FLOAT
+          units: KVA
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - '$.[13].1'
+            -
+              type: STR_REPLACE
+              parameters:
+                - KVA
+                - ' '
+            -
+              type: REGEX
+              parameters:
+                - \S\S\S\S
+                - \0
+          master_item:
+            key: teste
+        -
+          uuid: 207d7c2f33f14e6a923758423e911bbb
+          name: 'Saida [7]'
+          type: DEPENDENT
+          key: saida7
+          delay: '0'
+          value_type: FLOAT
+          units: KVA
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - '$.[14].1'
+            -
+              type: STR_REPLACE
+              parameters:
+                - KVA
+                - ' '
+            -
+              type: REGEX
+              parameters:
+                - \S\S\S\S
+                - \0
+          master_item:
+            key: teste
+        -
+          uuid: f3a1fa121dea4a8584bf2a0b31ff4735
+          name: 'Saida [8]'
+          type: DEPENDENT
+          key: saida8
+          delay: '0'
+          value_type: FLOAT
+          units: KW
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - '$.[15].1'
+            -
+              type: STR_REPLACE
+              parameters:
+                - KW
+                - ' '
+            -
+              type: REGEX
+              parameters:
+                - \S\S\S\S
+                - \0
+          master_item:
+            key: teste
+        -
+          uuid: 9fc022237df9436b892b8c6303c539f5
+          name: 'Saida [9]'
+          type: DEPENDENT
+          key: saida9
+          delay: '0'
+          value_type: FLOAT
+          units: KW
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - '$.[16].1'
+            -
+              type: STR_REPLACE
+              parameters:
+                - KW
+                - ' '
+            -
+              type: REGEX
+              parameters:
+                - \S\S\S\S
+                - \0
+          master_item:
+            key: teste
+        -
+          uuid: e7ed79c757dc4f2c9a7f2a5d9fb6943b
+          name: 'Saida [10]'
+          type: DEPENDENT
+          key: saida10
+          delay: '0'
+          value_type: FLOAT
+          units: KW
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - '$.[17].1'
+            -
+              type: STR_REPLACE
+              parameters:
+                - KW
+                - ' '
+            -
+              type: REGEX
+              parameters:
+                - \S\S\S\S
+                - \0
+          master_item:
+            key: teste
+        -
+          uuid: d1dfab549630475aa778554a57e3b2da
+          name: 'Saida [11]'
+          type: DEPENDENT
+          key: saida11
+          delay: '0'
+          value_type: FLOAT
+          units: A
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - '$.[18].1'
+            -
+              type: STR_REPLACE
+              parameters:
+                - A
+                - ' '
+            -
+              type: REGEX
+              parameters:
+                - \S\S\S\S
+                - \0
+          master_item:
+            key: teste
+        -
+          uuid: 7591c38f161d4050b92afde857ce7cfb
+          name: 'Saida [12]'
+          type: DEPENDENT
+          key: saida12
+          delay: '0'
+          value_type: FLOAT
+          units: A
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - '$.[19].1'
+            -
+              type: STR_REPLACE
+              parameters:
+                - A
+                - ' '
+            -
+              type: REGEX
+              parameters:
+                - \S\S\S\S
+                - \0
+          master_item:
+            key: teste
+        -
+          uuid: c6579712c8bb4753913099ee9615d9f2
+          name: 'Saida [13]'
+          type: DEPENDENT
+          key: saida13
+          delay: '0'
+          value_type: FLOAT
+          units: A
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - '$.[20].1'
+            -
+              type: STR_REPLACE
+              parameters:
+                - A
+                - ' '
+            -
+              type: REGEX
+              parameters:
+                - \S\S\S\S
+                - \0
+          master_item:
+            key: teste
+        -
+          uuid: fab61aa5d7c748f288eaadbda48c54ca
+          name: Temperatura
+          type: DEPENDENT
+          key: temperatura
+          delay: '0'
+          value_type: FLOAT
+          units: °C
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - '$.[23].1'
+            -
+              type: STR_REPLACE
+              parameters:
+                - '&#176;C'
+                - ' '
+          master_item:
+            key: teste
+        -
+          uuid: 5e852e205747474f874017421d695c3e
+          name: 'Nobreak Conception: Get Values'
+          type: HTTP_AGENT
+          key: teste
+          trends: '0'
+          value_type: TEXT
+          preprocessing:
+            -
+              type: CSV_TO_JSON
+              parameters:
+                - ''
+                - ''
+                - '0'
+          timeout: 60s
+          url: 'http://{HOST.IP}/medicoes.cgi'
+          query_fields:
+            -
+              name: /1
+          status_codes: '200,401'
